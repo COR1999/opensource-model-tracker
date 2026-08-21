@@ -9,7 +9,6 @@ export async function POST(req: NextRequest) {
 
   let models: ModelInfo[] = [];
   if (modelIds && modelIds.length > 0) {
-    // Test specific models - look them up
     const [nvidiaModels, openCodeModels] = await Promise.allSettled([
       fetchNvidiaModels(apiKey),
       fetchOpenCodeModels(),
@@ -20,7 +19,6 @@ export async function POST(req: NextRequest) {
     ];
     models = all.filter((m) => modelIds.includes(m.id));
   } else {
-    // Test all
     const [nvidiaModels, openCodeModels] = await Promise.allSettled([
       fetchNvidiaModels(apiKey),
       fetchOpenCodeModels(),
@@ -38,8 +36,21 @@ export async function POST(req: NextRequest) {
     const batchResults = await Promise.allSettled(
       batch.map((m) => testModel(apiKey, m))
     );
-    for (const r of batchResults) {
-      if (r.status === "fulfilled") results.push(r.value);
+    for (let j = 0; j < batchResults.length; j++) {
+      const r = batchResults[j];
+      if (r.status === "fulfilled") {
+        results.push(r.value);
+      } else {
+        results.push({
+          modelId: batch[j].id,
+          provider: batch[j].provider,
+          status: "error" as const,
+          httpCode: 0,
+          responseTimeMs: 0,
+          supportsFunctionCalling: false,
+          error: r.reason?.message || "Test failed",
+        });
+      }
     }
   }
 

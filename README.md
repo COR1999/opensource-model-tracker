@@ -1,42 +1,36 @@
 # Open Source Model Tracker
 
-Dashboard to track which free AI models are available across NVIDIA NIM and OpenCode.
+Dashboard to track which free AI models are available across NVIDIA NIM and OpenCode. NVIDIA regularly adds, removes, and sunsets models without announcements — this tool tells you what's actually live right now.
 
 ## Features
 
-- Lists all available models from NVIDIA API and OpenCode free tiers
-- Tests each model with a live API call
-- Shows status (working/slow/error/removed), response time, HTTP code
-- Checks function calling support
-- Filter by provider (NVIDIA / OpenCode)
-- Search by model name
-- Sort by any column
-- Auto-refreshes every 5 minutes
-- Parallel testing with concurrency limit
+- Live model discovery from NVIDIA NIM API and OpenCode free tiers
+- Real API testing — hits each model with an actual request
+- Function-calling detection via tools payload
+- New model alerts — badges models that appeared since your last visit
+- Model categories — filter by chat, code, vision, embedding, audio
+- 7-day uptime history tracked per model
+- T3 Code warnings for models known to break with Chat Completions
+- NVIDIA model links to build.nvidia.com for every model
+- Shareable snapshot links to share status with others
+- Daily Vercel Cron job for automated testing
+- Auto-refresh every 5 minutes
+- 10 concurrent model tests with 15s timeout
 
 ## Setup
 
-1. Get an NVIDIA API key from [build.nvidia.com](https://build.nvidia.com/settings/api-keys)
-2. Copy `.env.example` to `.env.local`:
-   ```bash
-   cp .env.example .env.local
-   ```
-3. Add your key to `.env.local`:
-   ```
-   NVIDIA_API_KEY=nvapi-your-key-here
-   ```
-4. Install and run:
-   ```bash
-   npm install
-   npm run dev
-   ```
+1. Get an NVIDIA API key from build.nvidia.com
+2. Copy .env.example to .env.local
+3. Add your NVIDIA_API_KEY and optionally CRON_SECRET
+4. npm install && npm run dev
 
 ## Deploy to Vercel
 
 1. Push to GitHub
-2. Import repo on [vercel.com](https://vercel.com)
-3. Add `NVIDIA_API_KEY` in Project Settings > Environment Variables
-4. Deploy
+2. Import repo on vercel.com
+3. Add NVIDIA_API_KEY in Project Settings > Environment Variables
+4. (Optional) Add CRON_SECRET for secure cron auth
+5. Deploy
 
 ## Tech Stack
 
