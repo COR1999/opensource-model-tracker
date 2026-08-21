@@ -94,6 +94,8 @@ function saveLastResults(results: Map<string, TestResult>) {
   localStorage.setItem(STORAGE_KEYS.LAST_RESULTS, JSON.stringify([...results.values()]));
 }
 
+const BATCH_SIZE = 10;
+
 export default function Dashboard() {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [results, setResults] = useState<Map<string, TestResult>>(loadLastResults);
@@ -110,6 +112,7 @@ export default function Dashboard() {
   const [newModels, setNewModels] = useState<Set<string>>(new Set());
   const [uptime, setUptime] = useState<Record<string, UptimeRecord[]>>(loadUptime);
   const [shareTooltip, setShareTooltip] = useState(false);
+  const [testProgress, setTestProgress] = useState({ done: 0, total: 0 });
 
   const loadModels = useCallback(async () => {
     setLoadingModels(true);
@@ -187,21 +190,52 @@ export default function Dashboard() {
 
   const testAll = async () => {
     setTestingAll(true);
-    try {
-      const res = await fetch("/api/test-all", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (data.results) {
-        const map = new Map<string, TestResult>();
-        for (const r of data.results) map.set(r.modelId, r);
-        updateResults(map);
+    setTestProgress({ done: 0, total: models.length });
+    const allResults = new Map<string, TestResult>();
+
+    for (let i = 0; i < models.length; i += BATCH_SIZE) {
+      const batch = models.slice(i, i + BATCH_SIZE);
+      const modelIds = batch.map((m) => m.id);
+
+      try {
+        const res = await fetch("/api/test-all", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ modelIds }),
+        });
+        const data = await res.json();
+        if (data.results) {
+          for (const r of data.results) {
+            allResults.set(r.modelId, r);
+          }
+          setTestProgress({ done: Math.min(i + BATCH_SIZE, models.length), total: models.length });
+        }
+      } catch {
+        for (const m of batch) {
+          allResults.set(m.id, {
+            modelId: m.id,
+            provider: m.provider,
+            status: "error",
+            httpCode: 0,
+            responseTimeMs: 0,
+            supportsFunctionCalling: false,
+            error: "Batch request failed",
+          });
+        }
       }
-    } catch {
-      setError("Failed to test all models");
+
+      setResults(new Map(allResults));
+      saveLastResults(new Map(allResults));
     }
+
+    let updatedUptime = uptime;
+    for (const [id, result] of allResults) {
+      updatedUptime = appendUptime(updatedUptime, id, result);
+    }
+    saveUptime(updatedUptime);
+    setUptime(loadUptime());
+
+    setTestProgress({ done: models.length, total: models.length });
     setTestingAll(false);
   };
 
@@ -333,7 +367,7 @@ export default function Dashboard() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Testing...
+              Testing {testProgress.done}/{testProgress.total}
             </span>
           ) : (
             "Test All Models"

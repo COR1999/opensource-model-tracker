@@ -162,7 +162,7 @@ export async function testModel(
 ): Promise<TestResult> {
   const start = Date.now();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
     const baseUrl = model.provider === "opencode"
