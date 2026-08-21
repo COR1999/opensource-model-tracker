@@ -34,6 +34,14 @@ export const T3_KNOWN_BREAKING = new Set([
   "openai/gpt-oss-20b",
 ]);
 
+// Models known to be consistently slow (>8s) — skip during test-all to save time
+export const KNOWN_SLOW = new Set([
+  "openai/gpt-oss-120b",
+  "google/gemma-4-31b-it",
+  "deepseek-ai/deepseek-v4-flash-0731",
+  "minimaxai/minimax-m3",
+]);
+
 // Manual category mapping for known NVIDIA models
 const CATEGORY_MAP: Record<string, ModelCategory> = {
   // Chat / General
@@ -136,6 +144,10 @@ export function nvidiaModelUrl(modelId: string): string {
 
 export function isT3Breaking(modelId: string): boolean {
   return T3_KNOWN_BREAKING.has(modelId);
+}
+
+export function isKnownSlow(modelId: string): boolean {
+  return KNOWN_SLOW.has(modelId);
 }
 
 // Tools definition for function-calling detection
