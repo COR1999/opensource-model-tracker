@@ -9,6 +9,7 @@ import {
   nvidiaModelUrl,
   isT3Breaking,
   isKnownSlow,
+  isT3Available,
 } from "@/lib/models";
 
 type SortKey = "displayName" | "provider" | "status" | "responseTimeMs" | "category";
@@ -589,11 +590,19 @@ export default function Dashboard() {
                       </td>
                     ))}
                   </tr>
-                  <tr className={`border-b ${border}`}>
-                    <td className={`px-3 py-2 ${textMuted}`}>Category</td>
+                  <tr className={\`border-b \${border}\`}>
+                    <td className={\`px-3 py-2 \${textMuted}\`}>Category</td>
                     {compared.map((m) => (
                       <td key={m.id} className="px-3 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category)}`}>{m.category}</span>
+                        <span className={\`text-xs px-2 py-0.5 rounded-full \${categoryBadge(m.category)}\`}>{m.category}</span>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className={\`border-b \${border}\`}>
+                    <td className={\`px-3 py-2 \${textMuted}\`}>In T3 Code</td>
+                    {compared.map((m) => (
+                      <td key={m.id} className="px-3 py-2 text-xs">
+                        {isT3Available(m.id) ? <span className="text-emerald-400">Yes</span> : <span className={textMuted}>No</span>}
                       </td>
                     ))}
                   </tr>
@@ -752,6 +761,7 @@ export default function Dashboard() {
                       { key: "provider" as SortKey, label: "Provider" },
                       { key: "displayName" as SortKey, label: "Model" },
                       { key: "category" as SortKey, label: "Category" },
+                      { key: null, label: "T3" },
                       { key: "status" as SortKey, label: "Status" },
                       { key: "responseTimeMs" as SortKey, label: "Response" },
                       { key: null, label: "Uptime" },
@@ -776,6 +786,7 @@ export default function Dashboard() {
                     const isNew = newModels.has(m.id);
                     const uptimePercent = computeUptimePercent(uptime[m.id] || []);
                     const t3Breaks = isT3Breaking(m.id);
+                    const t3Avail = isT3Available(m.id);
                     const isSelected = compareIds.has(m.id);
                     return (
                       <tr
@@ -819,9 +830,16 @@ export default function Dashboard() {
                           <div className={`text-xs ${textMuted} font-mono`}>{m.id}</div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category)}`}>
+                          <span className={\`text-xs px-2 py-0.5 rounded-full \${categoryBadge(m.category)}\`}>
                             {m.category}
                           </span>
+                        </td>
+                        <td className="px-4 py-3 text-xs">
+                          {t3Avail ? (
+                            <span className="text-emerald-400" title="Available in T3 Code">Yes</span>
+                          ) : (
+                            <span className={textMuted}>No</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           {r ? (
@@ -887,7 +905,7 @@ export default function Dashboard() {
                   })}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={9} className={`px-4 py-10 text-center ${textMuted}`}>
+                      <td colSpan={10} className={\`px-4 py-10 text-center \${textMuted}\`}>
                         No models found
                       </td>
                     </tr>
@@ -902,6 +920,7 @@ export default function Dashboard() {
                 const r = results.get(m.id);
                 const isNew = newModels.has(m.id);
                 const t3Breaks = isT3Breaking(m.id);
+                const t3Avail = isT3Available(m.id);
                 const uptimePercent = computeUptimePercent(uptime[m.id] || []);
                 return (
                   <div
@@ -945,8 +964,11 @@ export default function Dashboard() {
                     </div>
                     <div className={`text-xs ${textMuted} font-mono mb-2`}>{m.id}</div>
                     <div className="flex flex-wrap gap-2 text-xs">
-                      <span className={`px-2 py-0.5 rounded-full border ${providerBadge(m.provider)}`}>{m.provider}</span>
-                      <span className={`px-2 py-0.5 rounded-full ${categoryBadge(m.category)}`}>{m.category}</span>
+                      <span className={\`px-2 py-0.5 rounded-full border \${providerBadge(m.provider)}\`}>{m.provider}</span>
+                      <span className={\`px-2 py-0.5 rounded-full \${categoryBadge(m.category)}\`}>{m.category}</span>
+                      <span className={t3Avail ? "text-emerald-400" : \`\${textMuted}\`}>
+                        T3: {t3Avail ? "Yes" : "No"}
+                      </span>
                       {r && (
                         <>
                           <span className={statusColor(r.status)}>{r.status}</span>
