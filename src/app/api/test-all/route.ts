@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     ];
   }
 
-  const CONCURRENCY = 5;
+  const CONCURRENCY = 10;
   const results = [];
   for (let i = 0; i < models.length; i += CONCURRENCY) {
     const batch = models.slice(i, i + CONCURRENCY);
