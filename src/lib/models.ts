@@ -392,7 +392,8 @@ export async function testModel(
       };
     }
 
-    const data = await res.json();
+    // Parse (and thus validate) the response even though the body is unused
+    await res.json();
 
     // Step 2: Probe function calling separately (best-effort, don't fail the test)
     let hasTools = false;
@@ -429,10 +430,15 @@ export async function testModel(
     clearTimeout(timeout);
     const elapsed = Date.now() - start;
     const msg = err instanceof Error ? err.message : "Unknown error";
+    // controller.abort() throws AbortError; AbortSignal.timeout() throws
+    // TimeoutError — both mean the model didn't answer in time. Message
+    // sniffing misses TimeoutError ("The operation timed out").
+    const isTimeout =
+      err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError");
     return {
       modelId: model.id,
       provider: model.provider,
-      status: msg.includes("abort") ? "timeout" : "error",
+      status: isTimeout ? "timeout" : "error",
       httpCode: 0,
       responseTimeMs: elapsed,
       supportsFunctionCalling: false,

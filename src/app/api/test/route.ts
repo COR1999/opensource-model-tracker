@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { testModel, ModelInfo, Provider } from "@/lib/models";
+import { isAuthorized } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 function parseModel(value: unknown): ModelInfo | null {
   if (typeof value !== "object" || value === null) return null;
@@ -22,6 +24,10 @@ function parseModel(value: unknown): ModelInfo | null {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const apiKey = process.env.NVIDIA_API_KEY || "";
   const body = await req.json().catch(() => null);
   const model = parseModel(body?.model);
