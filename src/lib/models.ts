@@ -1,4 +1,5 @@
 const NVIDIA_BASE = "https://integrate.api.nvidia.com/v1";
+const OPENCODE_BASE = "https://opencode-ai.vercel.app/api/v1";
 
 export type Provider = "nvidia" | "opencode";
 
@@ -97,7 +98,7 @@ function inferCategory(id: string): ModelCategory {
 // OpenCode free tier models — discovered from API
 export async function fetchOpenCodeModels(): Promise<ModelInfo[]> {
   try {
-    const res = await fetch("https://opencode-ai.vercel.app/api/v1/models", {
+    const res = await fetch(`${OPENCODE_BASE}/models`, {
       signal: AbortSignal.timeout(10000),
     });
     if (!res.ok) return FALLBACK_OPENCODE_MODELS;
@@ -126,6 +127,7 @@ const FALLBACK_OPENCODE_MODELS: ModelInfo[] = [
 export async function fetchNvidiaModels(apiKey: string): Promise<ModelInfo[]> {
   const res = await fetch(`${NVIDIA_BASE}/models`, {
     headers: { Authorization: `Bearer ${apiKey}` },
+    signal: AbortSignal.timeout(10000),
   });
   if (!res.ok) throw new Error(`Failed to fetch models: ${res.status}`);
   const data = await res.json();
@@ -340,14 +342,12 @@ export async function testModel(
   const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
-    const baseUrl = model.provider === "opencode"
-      ? "https://opencode-ai.vercel.app/api/v1"
-      : NVIDIA_BASE;
+    const baseUrl = model.provider === "opencode" ? OPENCODE_BASE : NVIDIA_BASE;
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
-    if (apiKey) {
+    if (model.provider === "nvidia" && apiKey) {
       headers["Authorization"] = `Bearer ${apiKey}`;
     }
 
