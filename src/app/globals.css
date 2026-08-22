@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+@variant light (&:where(.light, .light *));
+
+html {
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.rounded::-webkit-scrollbar {
+  width: 6px;
+}
+.rounded::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rounded::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+}
