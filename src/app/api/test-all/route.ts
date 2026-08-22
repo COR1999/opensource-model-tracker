@@ -5,7 +5,10 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.NVIDIA_API_KEY || "";
-  const { modelIds } = await req.json();
+  const body = await req.json().catch(() => null);
+  const modelIds = Array.isArray(body?.modelIds)
+    ? body.modelIds.filter((id: unknown) => typeof id === "string")
+    : [];
 
   let models: ModelInfo[] = [];
   if (modelIds && modelIds.length > 0) {
