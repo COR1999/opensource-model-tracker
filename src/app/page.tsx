@@ -322,8 +322,14 @@ export default function Dashboard() {
   };
 
   const shareResults = () => {
-    const data = { results: [...results.values()] };
-    const encoded = btoa(JSON.stringify(data));
+    const data = { ts: Date.now(), results: [...results.values()] };
+    const bytes = new TextEncoder().encode(JSON.stringify(data));
+    let binary = "";
+    for (const b of bytes) binary += String.fromCharCode(b);
+    const encoded = btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
     const url = `${window.location.origin}/results/${encoded}`;
     navigator.clipboard.writeText(url).then(() => {
       setShareTooltip(true);
