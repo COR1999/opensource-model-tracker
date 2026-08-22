@@ -2,12 +2,22 @@ import { NextResponse } from "next/server";
 import { testModel, fetchNvidiaModels, fetchOpenCodeModels } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  // Fail closed: this endpoint tests every model with the server API key, so
+  // it must never be reachable without auth. If CRON_SECRET is unset, deny
+  // rather than silently skipping the check.
+  if (!cronSecret) {
+    return NextResponse.json(
+      { error: "CRON_SECRET is not configured" },
+      { status: 503 }
+    );
+  }
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,33 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import { testModel, fetchNvidiaModels, fetchOpenCodeModels, ModelInfo } from "@/lib/models";
+import { isAuthorized } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
+// Testing every model costs the server API key ~2 upstream calls per model, so
+// cap how many models a single request may test.
+const MAX_MODELS_PER_REQUEST = 25;
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.NVIDIA_API_KEY || "";
-  const { modelIds } = await req.json();
-
-  let models: ModelInfo[] = [];
-  if (modelIds && modelIds.length > 0) {
-    const [nvidiaModels, openCodeModels] = await Promise.allSettled([
-      fetchNvidiaModels(apiKey),
-      fetchOpenCodeModels(),
-    ]);
-    const all = [
-      ...(nvidiaModels.status === "fulfilled" ? nvidiaModels.value : []),
-      ...(openCodeModels.status === "fulfilled" ? openCodeModels.value : []),
-    ];
-    models = all.filter((m) => modelIds.includes(m.id));
-  } else {
-    const [nvidiaModels, openCodeModels] = await Promise.allSettled([
-      fetchNvidiaModels(apiKey),
-      fetchOpenCodeModels(),
-    ]);
-    models = [
-      ...(nvidiaModels.status === "fulfilled" ? nvidiaModels.value : []),
-      ...(openCodeModels.status === "fulfilled" ? openCodeModels.value : []),
-    ];
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  let modelIds: string[] | undefined;
+  try {
+    ({ modelIds } = await req.json());
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const apiKey = process.env.NVIDIA_API_KEY || "";
+
+  if (!Array.isArray(modelIds) || modelIds.length === 0) {
+    return NextResponse.json(
+      { error: "modelIds (non-empty array) required" },
+      { status: 400 }
+    );
+  }
+  if (modelIds.length > MAX_MODELS_PER_REQUEST) {
+    return NextResponse.json(
+      { error: `Too many models per request (max ${MAX_MODELS_PER_REQUEST})` },
+      { status: 400 }
+    );
+  }
+
+  const [nvidiaModels, openCodeModels] = await Promise.allSettled([
+    fetchNvidiaModels(apiKey),
+    fetchOpenCodeModels(),
+  ]);
+  const all = [
+    ...(nvidiaModels.status === "fulfilled" ? nvidiaModels.value : []),
+    ...(openCodeModels.status === "fulfilled" ? openCodeModels.value : []),
+  ];
+  const models: ModelInfo[] = all.filter((m) => modelIds.includes(m.id));
 
   const CONCURRENCY = 10;
   const results = [];
