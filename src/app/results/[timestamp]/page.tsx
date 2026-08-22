@@ -28,20 +28,25 @@ const statusColor = (s: string) => {
 export default function ResultsPage({ params }: { params: Promise<{ timestamp: string }> }) {
   const { timestamp } = use(params);
   const [results, setResults] = useState<Result[]>([]);
+  const [snapshotTs, setSnapshotTs] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
-      const decoded = decodeURIComponent(timestamp);
-      const data = JSON.parse(atob(decoded));
-      setResults(data.results || []);
+      let b64 = timestamp.replace(/-/g, "+").replace(/_/g, "/");
+      b64 += "=".repeat((4 - (b64.length % 4)) % 4);
+      const binary = atob(b64);
+      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+      const data = JSON.parse(new TextDecoder().decode(bytes));
+      setResults(Array.isArray(data.results) ? data.results : []);
+      setSnapshotTs(typeof data.ts === "number" ? data.ts : null);
     } catch {
       setResults([]);
     }
     setLoading(false);
   }, [timestamp]);
 
-  const date = new Date(parseInt(timestamp) || Date.now());
+  const date = new Date(snapshotTs ?? Date.now());
 
   if (loading) {
     return (
