@@ -2,6 +2,7 @@
 
 import { use } from "react";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface Result {
   modelId: string;
@@ -55,9 +56,9 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
       <div className="max-w-5xl mx-auto px-4 py-8 text-center text-gray-500">
         <h1 className="text-xl font-bold text-white mb-2">Invalid or Expired Link</h1>
         <p>This results link is invalid or the data has been corrupted.</p>
-        <a href="/" className="text-blue-400 hover:underline mt-4 inline-block">
+        <Link href="/" className="text-blue-400 hover:underline mt-4 inline-block">
           Go to Model Tracker
-        </a>
+        </Link>
       </div>
     );
   }
@@ -140,9 +141,9 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
       </div>
 
       <div className="mt-6 text-center">
-        <a href="/" className="text-blue-400 hover:underline text-sm">
+        <Link href="/" className="text-blue-400 hover:underline text-sm">
           Open Model Tracker
-        </a>
+        </Link>
       </div>
     </div>
   );
