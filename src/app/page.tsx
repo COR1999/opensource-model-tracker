@@ -101,6 +101,7 @@ export default function Dashboard() {
     const params = new URLSearchParams(window.location.search);
     const provider = params.get("provider");
     if (provider === "nvidia" || provider === "opencode" || provider === "openrouter") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- seeding from URL after mount is deliberate: reading it during render breaks SSR prerender
       setProviderFilter(provider);
     }
     const category = params.get("category");
@@ -113,6 +114,7 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is browser-only; loading in an effect (not render) is what keeps SSR output stable
     setResults(loadLastResults());
     setUptime(loadUptime());
     setChangelog(loadChangelog());
@@ -218,6 +220,7 @@ export default function Dashboard() {
   }, [changelog]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial catalog fetch on mount; refreshes are timer-driven, not render-driven
     loadModels();
     const interval = setInterval(loadModels, 5 * 60 * 1000);
     return () => clearInterval(interval);

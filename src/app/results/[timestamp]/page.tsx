@@ -24,12 +24,13 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
 
   useEffect(() => {
     const { ts, results: decoded } = decodeSnapshot(timestamp);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- snapshot payload lives in the URL, not any store; decode after mount to keep SSR output deterministic
     setSnapshotTs(ts);
     setResults(decoded);
     setLoading(false);
   }, [timestamp]);
 
-  const date = new Date(snapshotTs ?? Date.now());
+  const date = snapshotTs !== null ? new Date(snapshotTs) : null;
 
   if (loading) {
     return (
@@ -66,7 +67,7 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Shared Test Results</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Snapshot from {date.toLocaleDateString()} {date.toLocaleTimeString()}
+          Snapshot from {date?.toLocaleDateString()} {date?.toLocaleTimeString()}
         </p>
         <div className="flex gap-4 mt-3 text-sm">
           <span className="text-emerald-400">{working} working</span>
