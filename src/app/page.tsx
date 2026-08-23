@@ -206,6 +206,9 @@ export default function Dashboard() {
   const [showChangelog, setShowChangelog] = useState(false);
   const [changelog, setChangelog] = useState<ChangelogEntry[]>(loadChangelog);
   const [hideEndpoints, setHideEndpoints] = useState<boolean>(loadHideEndpoints);
+  const [workingOnly, setWorkingOnly] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedList, setCopiedList] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.HIDE_ENDPOINTS, hideEndpoints ? "true" : "false");
@@ -408,6 +411,34 @@ export default function Dashboard() {
     });
   };
 
+  const copyId = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 1500);
+    } catch {
+      // clipboard unavailable (insecure context); no-op
+    }
+  };
+
+  const usableIds = models
+    .filter((m) => {
+      const s = results.get(m.id)?.status;
+      return s === "working" || s === "slow";
+    })
+    .map((m) => m.id);
+
+  const copyWorkingIds = async () => {
+    if (usableIds.length === 0) return;
+    try {
+      await navigator.clipboard.writeText(usableIds.join("\n"));
+      setCopiedList(true);
+      setTimeout(() => setCopiedList(false), 2000);
+    } catch {
+      // clipboard unavailable; no-op
+    }
+  };
+
   const filtered = models
     .filter(
       (m) =>
@@ -417,6 +448,9 @@ export default function Dashboard() {
           m.category === "chat" ||
           m.category === "code" ||
           m.category === "vision") &&
+        (!workingOnly ||
+          results.get(m.id)?.status === "working" ||
+          results.get(m.id)?.status === "slow") &&
         (m.id.toLowerCase().includes(search.toLowerCase()) ||
           m.displayName.toLowerCase().includes(search.toLowerCase()) ||
           m.ownedBy.toLowerCase().includes(search.toLowerCase()))
@@ -608,6 +642,13 @@ export default function Dashboard() {
               ) : (
                 "Test All"
               )}
+            </button>
+            <button
+              onClick={copyWorkingIds}
+              disabled={usableIds.length === 0}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm border ${cardBg} ${border} disabled:opacity-50 disabled:cursor-not-allowed ${textMuted}`}
+            >
+              {copiedList ? "Copied!" : `Copy Working (${usableIds.length})`}
             </button>
             <div className="relative">
               <button
@@ -845,10 +886,20 @@ export default function Dashboard() {
                   : `${inputBg} ${border} ${textMuted} hover:border-gray-500`
               }`}
             >
-              {c.label}
+                {c.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setWorkingOnly(!workingOnly)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
+                workingOnly
+                  ? "bg-emerald-600 border-emerald-500 text-white"
+                  : `${inputBg} ${border} ${textMuted} hover:border-gray-500`
+              }`}
+            >
+              Working only
             </button>
-          ))}
-        </div>
+          </div>
 
         {/* Hide unusable endpoints */}
         <div className="mb-6">
@@ -950,7 +1001,19 @@ export default function Dashboard() {
                               </span>
                             )}
                           </div>
-                          <div className={`text-xs ${textMuted} font-mono`}>{m.id}</div>
+                          <div className="flex items-center gap-1.5">
+                            <div className={`text-xs ${textMuted} font-mono`}>{m.id}</div>
+                            <button
+                              onClick={() => copyId(m.id)}
+                              title={`Copy ${m.id}`}
+                              aria-label={`Copy model ID ${m.id}`}
+                              className={`text-[10px] px-1 rounded transition-colors ${
+                                copiedId === m.id ? "text-emerald-400" : `${textMuted} hover:underline`
+                              }`}
+                            >
+                              {copiedId === m.id ? "copied" : "copy"}
+                            </button>
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category)}`}>
@@ -1080,13 +1143,25 @@ export default function Dashboard() {
                           </span>
                         )}
                       </div>
-                      <button
-                        onClick={() => testOne(m)}
-                        disabled={testingSingle === m.id}
-                        className={`px-3 py-1 ${cardBg} rounded text-xs border ${border} disabled:opacity-50`}
-                      >
-                        {testingSingle === m.id ? "..." : "Test"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => copyId(m.id)}
+                          title={`Copy ${m.id}`}
+                          aria-label={`Copy model ID ${m.id}`}
+                          className={`px-2 py-1 rounded text-xs border ${border} ${
+                            copiedId === m.id ? "text-emerald-400" : textMuted
+                          }`}
+                        >
+                          {copiedId === m.id ? "copied" : "copy id"}
+                        </button>
+                        <button
+                          onClick={() => testOne(m)}
+                          disabled={testingSingle === m.id}
+                          className={`px-3 py-1 ${cardBg} rounded text-xs border ${border} disabled:opacity-50`}
+                        >
+                          {testingSingle === m.id ? "..." : "Test"}
+                        </button>
+                      </div>
                     </div>
                     <div className={`text-xs ${textMuted} font-mono mb-2`}>{m.id}</div>
                     {uptimePercent > 0 && (
