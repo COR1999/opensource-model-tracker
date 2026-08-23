@@ -206,25 +206,28 @@ export async function fetchOpenRouterModels(): Promise<ModelInfo[]> {
   }
 }
 
-const FALLBACK_OPENROUTER_MODELS: ModelInfo[] = [
-  { id: "openrouter/dots-studio/dots-3-note-preview:free", displayName: "Dots.3 Note Preview", provider: "openrouter", ownedBy: "dots-studio", category: "chat" },
-  { id: "openrouter/liquid/lfm-2.5-2.6b:free", displayName: "LFM 2.5 2.6B", provider: "openrouter", ownedBy: "liquid", category: "chat" },
-  { id: "openrouter/nvidia/nemotron-3.5-lightning:free", displayName: "Nemotron 3.5 Lightning", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
-  { id: "openrouter/thinkingmachines/inkling-small:free", displayName: "Inkling Small", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat" },
-  { id: "openrouter/poolside/laguna-s-2.1:free", displayName: "Laguna S 2.1", provider: "openrouter", ownedBy: "poolside", category: "code" },
-  { id: "openrouter/thinkingmachines/inkling:free", displayName: "Inkling", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat" },
-  { id: "openrouter/poolside/laguna-xs-2.1:free", displayName: "Laguna XS 2.1", provider: "openrouter", ownedBy: "poolside", category: "code" },
-  { id: "openrouter/cohere/north-mini-code:free", displayName: "North Mini Code", provider: "openrouter", ownedBy: "cohere", category: "code" },
-  { id: "openrouter/z-ai/glm-5.2:free", displayName: "GLM 5.2", provider: "openrouter", ownedBy: "z-ai", category: "chat" },
-  { id: "openrouter/nvidia/nemotron-3.5-content-safety:free", displayName: "Nemotron 3.5 Content Safety", provider: "openrouter", ownedBy: "nvidia", category: "other" },
-  { id: "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free", displayName: "Nemotron 3 Ultra 550B", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
-  { id: "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", displayName: "Nemotron 3 Nano Omni 30B Reasoning", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
-  { id: "openrouter/google/gemma-4-26b-a4b-it:free", displayName: "Gemma 4 26B A4B IT", provider: "openrouter", ownedBy: "google", category: "chat" },
-  { id: "openrouter/google/gemma-4-31b-it:free", displayName: "Gemma 4 31B IT", provider: "openrouter", ownedBy: "google", category: "chat" },
-  { id: "openrouter/nvidia/nemotron-3-super-120b-a12b:free", displayName: "Nemotron 3 Super 120B", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
-  { id: "openrouter/nvidia/nemotron-3-nano-30b-a3b:free", displayName: "Nemotron 3 Nano 30B", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
-  { id: "openrouter/nvidia/nemotron-nano-12b-v2-vl:free", displayName: "Nemotron Nano 12B V2 VL", provider: "openrouter", ownedBy: "nvidia", category: "vision" },
-  { id: "openrouter/nvidia/nemotron-nano-9b-v2:free", displayName: "Nemotron Nano 9B V2", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
+// Mirrors the live OpenRouter :free catalog (verified 2026-08-23) so the
+// dashboard still renders fully - including context lengths - when the
+// discovery API is unreachable. Refresh when OpenRouter changes its lineup.
+export const FALLBACK_OPENROUTER_MODELS: ModelInfo[] = [
+  { id: "openrouter/dots-studio/dots-3-note-preview:free", displayName: "Dots.3 Note Preview", provider: "openrouter", ownedBy: "dots-studio", category: "chat", contextLength: 512000 },
+  { id: "openrouter/liquid/lfm-2.5-2.6b:free", displayName: "LFM 2.5 2.6B", provider: "openrouter", ownedBy: "liquid", category: "chat", contextLength: 65536 },
+  { id: "openrouter/nvidia/nemotron-3.5-lightning:free", displayName: "Nemotron 3.5 Lightning", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 1000000 },
+  { id: "openrouter/thinkingmachines/inkling-small:free", displayName: "Inkling Small", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat", contextLength: 262144 },
+  { id: "openrouter/poolside/laguna-s-2.1:free", displayName: "Laguna S 2.1", provider: "openrouter", ownedBy: "poolside", category: "code", contextLength: 262144 },
+  { id: "openrouter/thinkingmachines/inkling:free", displayName: "Inkling", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat", contextLength: 262144 },
+  { id: "openrouter/poolside/laguna-xs-2.1:free", displayName: "Laguna XS 2.1", provider: "openrouter", ownedBy: "poolside", category: "code", contextLength: 262144 },
+  { id: "openrouter/cohere/north-mini-code:free", displayName: "North Mini Code", provider: "openrouter", ownedBy: "cohere", category: "code", contextLength: 256000 },
+  { id: "openrouter/z-ai/glm-5.2:free", displayName: "GLM 5.2", provider: "openrouter", ownedBy: "z-ai", category: "chat", contextLength: 256000 },
+  { id: "openrouter/nvidia/nemotron-3.5-content-safety:free", displayName: "Nemotron 3.5 Content Safety", provider: "openrouter", ownedBy: "nvidia", category: "other", contextLength: 128000 },
+  { id: "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free", displayName: "Nemotron 3 Ultra 550B", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 1000000 },
+  { id: "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", displayName: "Nemotron 3 Nano Omni 30B Reasoning", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 256000 },
+  { id: "openrouter/google/gemma-4-26b-a4b-it:free", displayName: "Gemma 4 26B A4B IT", provider: "openrouter", ownedBy: "google", category: "chat", contextLength: 262144 },
+  { id: "openrouter/google/gemma-4-31b-it:free", displayName: "Gemma 4 31B IT", provider: "openrouter", ownedBy: "google", category: "chat", contextLength: 262144 },
+  { id: "openrouter/nvidia/nemotron-3-super-120b-a12b:free", displayName: "Nemotron 3 Super 120B", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 262144 },
+  { id: "openrouter/nvidia/nemotron-3-nano-30b-a3b:free", displayName: "Nemotron 3 Nano 30B", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 256000 },
+  { id: "openrouter/nvidia/nemotron-nano-12b-v2-vl:free", displayName: "Nemotron Nano 12B V2 VL", provider: "openrouter", ownedBy: "nvidia", category: "vision", contextLength: 128000 },
+  { id: "openrouter/nvidia/nemotron-nano-9b-v2:free", displayName: "Nemotron Nano 9B V2", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 128000 },
 ];
 
 export async function fetchNvidiaModels(apiKey: string): Promise<ModelInfo[]> {

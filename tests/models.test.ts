@@ -8,7 +8,26 @@ import {
   openrouterModelUrl,
   opencodeModelUrl,
   T3_AVAILABLE_MODELS,
+  FALLBACK_OPENROUTER_MODELS,
 } from "@/lib/models";
+
+describe("FALLBACK_OPENROUTER_MODELS", () => {
+  it("is complete: every entry carries provider, category and contextLength", () => {
+    const categories = new Set(["chat", "code", "vision", "embedding", "audio", "other"]);
+    for (const m of FALLBACK_OPENROUTER_MODELS) {
+      expect(m.provider).toBe("openrouter");
+      expect(m.id.startsWith("openrouter/")).toBe(true);
+      expect(m.id.endsWith(":free")).toBe(true);
+      expect(categories.has(m.category)).toBe(true);
+      expect(m.contextLength).toBeGreaterThan(0);
+    }
+  });
+
+  it("has no duplicate ids", () => {
+    const ids = FALLBACK_OPENROUTER_MODELS.map((m) => m.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
 
 describe("inferCategory", () => {
   it("classifies by explicit map entry before keywords", () => {
