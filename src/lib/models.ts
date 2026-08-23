@@ -1,5 +1,5 @@
 const NVIDIA_BASE = "https://integrate.api.nvidia.com/v1";
-const OPENCODE_BASE = "https://opencode-ai.vercel.app/api/v1";
+const OPENCODE_BASE = "https://opencode.ai/zen/v1";
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 
 export type Provider = "nvidia" | "opencode" | "openrouter";
@@ -99,7 +99,8 @@ function inferCategory(rawId: string): ModelCategory {
   return "other";
 }
 
-// OpenCode free tier models — discovered from API
+// OpenCode Zen free tier — gateway lists paid models too; keep only
+// "-free"-suffixed ids plus big-pickle (the unsuffixed free agent model)
 export async function fetchOpenCodeModels(): Promise<ModelInfo[]> {
   try {
     const res = await fetch(`${OPENCODE_BASE}/models`, {
@@ -108,14 +109,23 @@ export async function fetchOpenCodeModels(): Promise<ModelInfo[]> {
     if (!res.ok) return FALLBACK_OPENCODE_MODELS;
     const data = await res.json();
     const models: ModelInfo[] = (data.data || [])
-      .filter((m: { id: string }) => m.id && !m.id.includes("embedding"))
-      .map((m: { id: string; owned_by?: string }) => ({
-        id: `opencode/${m.id}`,
-        displayName: m.id.split("/").pop() || m.id,
-        provider: "opencode" as Provider,
-        ownedBy: m.owned_by || "opencode",
-        category: inferCategory(m.id),
-      }));
+      .filter(
+        (m: { id: string }) =>
+          m.id && (m.id.endsWith("-free") || m.id === "big-pickle")
+      )
+      .map((m: { id: string; owned_by?: string }) => {
+        const id = `opencode/${m.id}`;
+        // Zen's listing carries no metadata; reuse the curated fallback
+        // category where the id is known rather than defaulting to "other"
+        const known = FALLBACK_OPENCODE_MODELS.find((f) => f.id === id);
+        return {
+          id,
+          displayName: (m.id.split("/").pop() || m.id).replace(/-free$/, ""),
+          provider: "opencode" as Provider,
+          ownedBy: m.owned_by || "opencode",
+          category: known ? known.category : inferCategory(m.id),
+        };
+      });
     return models.length > 0 ? models : FALLBACK_OPENCODE_MODELS;
   } catch {
     return FALLBACK_OPENCODE_MODELS;
@@ -123,9 +133,15 @@ export async function fetchOpenCodeModels(): Promise<ModelInfo[]> {
 }
 
 const FALLBACK_OPENCODE_MODELS: ModelInfo[] = [
-  { id: "opencode/mimo-v2.5-free", displayName: "MiMo V2.5 Free", provider: "opencode", ownedBy: "opencode", category: "code" },
-  { id: "opencode/hy3-free", displayName: "Hy3 Free", provider: "opencode", ownedBy: "opencode", category: "chat" },
   { id: "opencode/big-pickle", displayName: "Big Pickle", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  { id: "opencode/deepseek-v4-flash-free", displayName: "DeepSeek V4 Flash", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  { id: "opencode/x-preview-f-free", displayName: "X Preview F", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  { id: "opencode/muse-spark-1.2-contributor-free", displayName: "Muse Spark 1.2 Contributor", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  { id: "opencode/mimo-v2.5-free", displayName: "MiMo V2.5", provider: "opencode", ownedBy: "opencode", category: "code" },
+  { id: "opencode/hy3-free", displayName: "Hy3", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  { id: "opencode/nemotron-3-ultra-free", displayName: "Nemotron 3 Ultra", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  { id: "opencode/nemotron-3.5-lightning-free", displayName: "Nemotron 3.5 Lightning", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  { id: "opencode/laguna-s-2.1-free", displayName: "Laguna S 2.1", provider: "opencode", ownedBy: "opencode", category: "code" },
 ];
 
 // OpenRouter free tier — ids ending ":free". Listing models needs no auth;
@@ -226,6 +242,9 @@ export const T3_AVAILABLE_MODELS = new Set([
   "nvidia/nvidia/active-speaker-detection",
   "nvidia/baai/bge-m3",
   "opencode/big-pickle",
+  "zen/big-pickle",
+  "zen/deepseek-v4-flash-free",
+  "zen/laguna-s-2.1-free",
   "nvidia/bytedance/seed-oss-36b-instruct",
   "nvidia/nvidia/cosmos-reason2-8b",
   "nvidia/nvidia/cosmos-predict1-5b",
