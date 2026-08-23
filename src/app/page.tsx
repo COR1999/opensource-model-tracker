@@ -5,7 +5,6 @@ import {
   ModelInfo,
   TestResult,
   ModelCategory,
-  Provider,
   UptimeRecord,
   nvidiaModelUrl,
   openrouterModelUrl,
@@ -22,8 +21,13 @@ import {
   categoryBadge,
   computeUptimePercent,
   accents,
+  styles,
   type Theme,
 } from "@/lib/display";
+import ChangelogPanel from "@/components/ChangelogPanel";
+import ComparePanel from "@/components/ComparePanel";
+import StatsGrid, { computeCounts } from "@/components/StatsGrid";
+import ProviderHealthStrip, { computeProviderHealth } from "@/components/ProviderHealthStrip";
 import {
   STORAGE_KEYS,
   type ChangelogEntry,
@@ -102,7 +106,6 @@ export default function Dashboard() {
     const q = params.get("q");
     if (q) setSearch(q);
     if (params.get("working") === "1") setWorkingOnly(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   useEffect(() => {
@@ -428,38 +431,10 @@ export default function Dashboard() {
   };
 
   const accent = accents(theme);
-
-  const counts = {
-    total: models.length,
-    nvidia: models.filter((m) => m.provider === "nvidia").length,
-    opencode: models.filter((m) => m.provider === "opencode").length,
-    openrouter: models.filter((m) => m.provider === "openrouter").length,
-    working: [...results.values()].filter((r) => r.status === "working").length,
-    slow: [...results.values()].filter((r) => r.status === "slow").length,
-    error: [...results.values()].filter((r) => r.status === "error" || r.status === "timeout").length,
-    removed: [...results.values()].filter((r) => r.status === "removed").length,
-    new: newModels.size,
-  };
-
-  const PROVIDERS: Provider[] = ["nvidia", "opencode", "openrouter"];
-  const providerHealth = PROVIDERS.map((p) => {
-    const pr = [...results.values()].filter((r) => r.provider === p);
-    const working = pr.filter((r) => r.status === "working").length;
-    const slow = pr.filter((r) => r.status === "slow").length;
-    const down = pr.filter((r) => r.status === "error" || r.status === "timeout").length;
-    const tested = working + slow + down;
-    const times = pr.filter((r) => r.status === "working").map((r) => r.responseTimeMs);
-    const avgMs = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0;
-    return { provider: p, total: models.filter((m) => m.provider === p).length, tested, working, slow, down, avgMs };
-  });
-
+  const { bg, cardBg, border, text, textMuted, inputBg } = styles(theme);
+  const counts = computeCounts(models, results, newModels.size);
+  const providerHealth = computeProviderHealth(models, results);
   const compared = models.filter((m) => compareIds.has(m.id));
-  const bg = theme === "dark" ? "bg-gray-950" : "bg-gray-50";
-  const cardBg = theme === "dark" ? "bg-gray-900" : "bg-white";
-  const border = theme === "dark" ? "border-gray-800" : "border-gray-200";
-  const text = theme === "dark" ? "text-white" : "text-gray-900";
-  const textMuted = theme === "dark" ? "text-gray-500" : "text-gray-400";
-  const inputBg = theme === "dark" ? "bg-gray-900" : "bg-white";
 
   return (
     <div className={`min-h-screen ${bg} ${text} transition-colors`}>
@@ -551,116 +526,11 @@ export default function Dashboard() {
         </div>
 
         {/* Changelog Panel */}
-        {showChangelog && (
-          <div className={`mb-6 p-4 rounded-lg border ${cardBg} ${border}`}>
-            <h2 className="font-bold mb-3">Model Changelog (30 days)</h2>
-            {changelog.length === 0 ? (
-              <p className={`text-sm ${textMuted}`}>No changes recorded yet. Changes are tracked as you visit.</p>
-            ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {[...changelog].reverse().map((e, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm">
-                    <span className={e.type === "added" ? accent.ok : accent.bad}>
-                      {e.type === "added" ? "+" : "-"}
-                    </span>
-                    <span className="font-mono text-xs">{e.displayName}</span>
-                    <span className={`text-xs ${textMuted}`}>
-                      {new Date(e.timestamp).toLocaleDateString()} {new Date(e.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {showChangelog && <ChangelogPanel entries={changelog} theme={theme} />}
 
         {/* Compare Panel */}
         {showCompare && compared.length > 0 && (
-          <div className={`mb-6 p-4 rounded-lg border ${cardBg} ${border}`}>
-            <h2 className="font-bold mb-3">Model Comparison</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className={`border-b ${border}`}>
-                    <th className="text-left px-3 py-2">Metric</th>
-                    {compared.map((m) => (
-                      <th key={m.id} className="text-left px-3 py-2">{m.displayName}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className={`border-b ${border}`}>
-                    <td className={`px-3 py-2 ${textMuted}`}>Provider</td>
-                    {compared.map((m) => (
-                      <td key={m.id} className="px-3 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full border ${providerBadge(m.provider, theme)}`}>{m.provider}</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className={`border-b ${border}`}>
-                    <td className={`px-3 py-2 ${textMuted}`}>Category</td>
-                    {compared.map((m) => (
-                      <td key={m.id} className="px-3 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category, theme)}`}>{m.category}</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className={`border-b ${border}`}>
-                    <td className={`px-3 py-2 ${textMuted}`}>In T3 Code</td>
-                    {compared.map((m) => (
-                      <td key={m.id} className="px-3 py-2 text-xs">
-                        {isT3Available(m.id) ? <span className={accent.ok}>Yes</span> : <span className={textMuted}>No</span>}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className={`border-b ${border}`}>
-                    <td className={`px-3 py-2 ${textMuted}`}>Status</td>
-                    {compared.map((m) => {
-                      const r = results.get(m.id);
-                      return (
-                        <td key={m.id} className={`px-3 py-2 font-medium ${statusColor(r?.status || "error", theme)}`}>
-                          {r?.status || "not tested"}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr className={`border-b ${border}`}>
-                    <td className={`px-3 py-2 ${textMuted}`}>Response</td>
-                    {compared.map((m) => {
-                      const r = results.get(m.id);
-                      return (
-                        <td key={m.id} className="px-3 py-2 font-mono text-xs">
-                          {r ? `${r.responseTimeMs}ms` : "-"}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr className={`border-b ${border}`}>
-                    <td className={`px-3 py-2 ${textMuted}`}>Function Calling</td>
-                    {compared.map((m) => {
-                      const r = results.get(m.id);
-                      return (
-                        <td key={m.id} className="px-3 py-2 text-xs">
-                          {r?.supportsFunctionCalling ? "Yes" : "No"}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr>
-                    <td className={`px-3 py-2 ${textMuted}`}>Uptime</td>
-                    {compared.map((m) => {
-                      const pct = computeUptimePercent(uptime[m.id] || []);
-                      return (
-                        <td key={m.id} className="px-3 py-2 text-xs">
-                          {pct > 0 ? `${pct}%` : "-"}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <ComparePanel models={compared} results={results} uptime={uptime} theme={theme} />
         )}
 
         {/* Error */}
@@ -687,50 +557,10 @@ export default function Dashboard() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-3 mb-6">
-          {[
-            { label: "Total", value: counts.total, color: theme === "dark" ? "text-white" : "text-gray-900" },
-            { label: "NVIDIA", value: counts.nvidia, color: "text-green-400" },
-            { label: "OpenCode", value: counts.opencode, color: "text-purple-400" },
-            { label: "OpenRouter", value: counts.openrouter, color: "text-blue-400" },
-            { label: "Working", value: counts.working, color: accent.ok },
-            { label: "Slow", value: counts.slow, color: accent.warn },
-            { label: "Error", value: counts.error, color: accent.bad },
-            { label: "Removed", value: counts.removed, color: "text-gray-500" },
-            { label: "New", value: counts.new, color: accent.info },
-          ].map((s) => (
-            <div key={s.label} className={`${cardBg} rounded-lg p-3 text-center border ${border}`}>
-              <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-              <div className={`text-xs ${textMuted}`}>{s.label}</div>
-            </div>
-          ))}
-        </div>
+        <StatsGrid counts={counts} theme={theme} />
 
         {/* Provider health */}
-        <div className="grid sm:grid-cols-3 gap-3 mb-6">
-          {providerHealth.map((h) => {
-            const ok = h.tested > 0 && h.down === 0;
-            const partial = h.tested > 0 && h.working + h.slow > 0;
-            const dot = h.tested === 0 ? "bg-gray-500" : ok ? "bg-emerald-400" : partial ? "bg-yellow-400" : "bg-red-400";
-            const accentColor = h.tested === 0 ? textMuted : ok ? accent.ok : partial ? accent.warn : accent.bad;
-            return (
-              <div key={h.provider} className={`${cardBg} rounded-lg p-3 border ${border}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`inline-block w-2 h-2 rounded-full ${dot}`} />
-                  <span className="font-medium text-sm capitalize">{h.provider}</span>
-                  <span className={`ml-auto text-xs ${accentColor}`}>
-                    {h.tested === 0 ? "not tested" : `${h.working + h.slow}/${h.tested} up`}
-                  </span>
-                </div>
-                <div className={`text-xs ${textMuted}`}>
-                  {h.tested === 0
-                    ? `${h.total} models · run Test All to check`
-                    : `${h.working} working · ${h.slow} slow · ${h.down} down${h.avgMs ? ` · avg ${h.avgMs}ms` : ""}`}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <ProviderHealthStrip health={providerHealth} theme={theme} />
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-4">

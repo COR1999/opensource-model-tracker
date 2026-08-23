@@ -12,7 +12,7 @@ import {
   loadHideEndpoints,
   loadTheme,
 } from "@/lib/storage";
-import type { TestResult, UptimeRecord } from "@/lib/models";
+import type { TestResult } from "@/lib/models";
 
 // Minimal localStorage stand-in: storage.ts is browser-only and vitest runs
 // in node, so every test here exercises the real functions against this mock.

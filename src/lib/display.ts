@@ -2,6 +2,29 @@ import type { ModelCategory, UptimeRecord } from "./models";
 
 export type Theme = "dark" | "light";
 
+// Surface/typography tokens shared by every panel so components stay
+// theme-consistent without re-deriving class strings.
+export interface StyleTokens {
+  bg: string;
+  cardBg: string;
+  border: string;
+  text: string;
+  textMuted: string;
+  inputBg: string;
+}
+
+export function styles(theme: Theme): StyleTokens {
+  const dark = theme === "dark";
+  return {
+    bg: dark ? "bg-gray-950" : "bg-gray-50",
+    cardBg: dark ? "bg-gray-900" : "bg-white",
+    border: dark ? "border-gray-800" : "border-gray-200",
+    text: dark ? "text-white" : "text-gray-900",
+    textMuted: dark ? "text-gray-500" : "text-gray-400",
+    inputBg: dark ? "bg-gray-900" : "bg-white",
+  };
+}
+
 // Semantic accent colors used outside status cells (stat cards, badges,
 // links); every value must stay legible on the theme's card background.
 export function accents(theme: Theme): { ok: string; warn: string; bad: string; info: string } {
