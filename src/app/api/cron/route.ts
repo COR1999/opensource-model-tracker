@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { testModel, fetchNvidiaModels, fetchOpenCodeModels } from "@/lib/models";
+import { testModel, fetchNvidiaModels, fetchOpenCodeModels, fetchOpenRouterModels } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -23,14 +23,16 @@ export async function GET(req: Request) {
 
   const apiKey = process.env.NVIDIA_API_KEY || "";
 
-  const [nvidiaModels, openCodeModels] = await Promise.allSettled([
+  const [nvidiaModels, openCodeModels, openRouterModels] = await Promise.allSettled([
     fetchNvidiaModels(apiKey),
     fetchOpenCodeModels(),
+    fetchOpenRouterModels(),
   ]);
 
   const models = [
     ...(nvidiaModels.status === "fulfilled" ? nvidiaModels.value : []),
     ...(openCodeModels.status === "fulfilled" ? openCodeModels.value : []),
+    ...(openRouterModels.status === "fulfilled" ? openRouterModels.value : []),
   ];
 
   const CONCURRENCY = 10;

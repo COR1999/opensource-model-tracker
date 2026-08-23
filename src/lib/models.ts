@@ -1,7 +1,8 @@
 const NVIDIA_BASE = "https://integrate.api.nvidia.com/v1";
 const OPENCODE_BASE = "https://opencode-ai.vercel.app/api/v1";
+const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 
-export type Provider = "nvidia" | "opencode";
+export type Provider = "nvidia" | "opencode" | "openrouter";
 
 export type ModelCategory = "chat" | "code" | "vision" | "embedding" | "audio" | "other";
 
@@ -85,11 +86,14 @@ const CATEGORY_MAP: Record<string, ModelCategory> = {
   "nvidia/riva-tts": "audio",
 };
 
-function inferCategory(id: string): ModelCategory {
+function inferCategory(rawId: string): ModelCategory {
+  // OpenRouter free ids carry a ":free" suffix that would hide category hints
+  const id = rawId.replace(/:free$/, "");
   if (CATEGORY_MAP[id]) return CATEGORY_MAP[id];
   const lower = id.toLowerCase();
   if (lower.includes("embed")) return "embedding";
   if (lower.includes("vision") || lower.includes("neva")) return "vision";
+  if (lower.includes("-vl") || lower.endsWith("vl")) return "vision";
   if (lower.includes("coder") || lower.includes("code")) return "code";
   if (lower.includes("tts") || lower.includes("speech") || lower.includes("audio") || lower.includes("whisper")) return "audio";
   return "other";
@@ -124,6 +128,55 @@ const FALLBACK_OPENCODE_MODELS: ModelInfo[] = [
   { id: "opencode/big-pickle", displayName: "Big Pickle", provider: "opencode", ownedBy: "opencode", category: "chat" },
 ];
 
+// OpenRouter free tier — ids ending ":free". Listing models needs no auth;
+// running inference does (OPENROUTER_API_KEY), so tests report a config
+// error until the key is set rather than a misleading upstream 401.
+export async function fetchOpenRouterModels(): Promise<ModelInfo[]> {
+  try {
+    const res = await fetch(`${OPENROUTER_BASE}/models`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return FALLBACK_OPENROUTER_MODELS;
+    const data = await res.json();
+    const models: ModelInfo[] = (data.data || [])
+      .filter((m: { id?: string }) => typeof m.id === "string" && m.id.endsWith(":free"))
+      .map((m: { id: string; name?: string }) => ({
+        id: `openrouter/${m.id}`,
+        displayName:
+          typeof m.name === "string" && m.name.trim()
+            ? m.name.replace(/\s*\(free\)\s*$/i, "")
+            : m.id.split("/").pop() || m.id,
+        provider: "openrouter" as Provider,
+        ownedBy: m.id.split("/")[0],
+        category: inferCategory(m.id),
+      }));
+    return models.length > 0 ? models : FALLBACK_OPENROUTER_MODELS;
+  } catch {
+    return FALLBACK_OPENROUTER_MODELS;
+  }
+}
+
+const FALLBACK_OPENROUTER_MODELS: ModelInfo[] = [
+  { id: "openrouter/dots-studio/dots-3-note-preview:free", displayName: "Dots.3 Note Preview", provider: "openrouter", ownedBy: "dots-studio", category: "chat" },
+  { id: "openrouter/liquid/lfm-2.5-2.6b:free", displayName: "LFM 2.5 2.6B", provider: "openrouter", ownedBy: "liquid", category: "chat" },
+  { id: "openrouter/nvidia/nemotron-3.5-lightning:free", displayName: "Nemotron 3.5 Lightning", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
+  { id: "openrouter/thinkingmachines/inkling-small:free", displayName: "Inkling Small", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat" },
+  { id: "openrouter/poolside/laguna-s-2.1:free", displayName: "Laguna S 2.1", provider: "openrouter", ownedBy: "poolside", category: "code" },
+  { id: "openrouter/thinkingmachines/inkling:free", displayName: "Inkling", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat" },
+  { id: "openrouter/poolside/laguna-xs-2.1:free", displayName: "Laguna XS 2.1", provider: "openrouter", ownedBy: "poolside", category: "code" },
+  { id: "openrouter/cohere/north-mini-code:free", displayName: "North Mini Code", provider: "openrouter", ownedBy: "cohere", category: "code" },
+  { id: "openrouter/z-ai/glm-5.2:free", displayName: "GLM 5.2", provider: "openrouter", ownedBy: "z-ai", category: "chat" },
+  { id: "openrouter/nvidia/nemotron-3.5-content-safety:free", displayName: "Nemotron 3.5 Content Safety", provider: "openrouter", ownedBy: "nvidia", category: "other" },
+  { id: "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free", displayName: "Nemotron 3 Ultra 550B", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
+  { id: "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", displayName: "Nemotron 3 Nano Omni 30B Reasoning", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
+  { id: "openrouter/google/gemma-4-26b-a4b-it:free", displayName: "Gemma 4 26B A4B IT", provider: "openrouter", ownedBy: "google", category: "chat" },
+  { id: "openrouter/google/gemma-4-31b-it:free", displayName: "Gemma 4 31B IT", provider: "openrouter", ownedBy: "google", category: "chat" },
+  { id: "openrouter/nvidia/nemotron-3-super-120b-a12b:free", displayName: "Nemotron 3 Super 120B", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
+  { id: "openrouter/nvidia/nemotron-3-nano-30b-a3b:free", displayName: "Nemotron 3 Nano 30B", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
+  { id: "openrouter/nvidia/nemotron-nano-12b-v2-vl:free", displayName: "Nemotron Nano 12B V2 VL", provider: "openrouter", ownedBy: "nvidia", category: "vision" },
+  { id: "openrouter/nvidia/nemotron-nano-9b-v2:free", displayName: "Nemotron Nano 9B V2", provider: "openrouter", ownedBy: "nvidia", category: "chat" },
+];
+
 export async function fetchNvidiaModels(apiKey: string): Promise<ModelInfo[]> {
   const res = await fetch(`${NVIDIA_BASE}/models`, {
     headers: { Authorization: `Bearer ${apiKey}` },
@@ -142,6 +195,10 @@ export async function fetchNvidiaModels(apiKey: string): Promise<ModelInfo[]> {
 
 export function nvidiaModelUrl(modelId: string): string {
   return `https://build.nvidia.com/${modelId}`;
+}
+
+export function openrouterModelUrl(modelId: string): string {
+  return `https://openrouter.ai/${modelId.replace(/^openrouter\//, "")}`;
 }
 
 export function isT3Breaking(modelId: string): boolean {
@@ -342,7 +399,13 @@ export async function testModel(
   const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
-    const baseUrl = model.provider === "opencode" ? OPENCODE_BASE : NVIDIA_BASE;
+    const baseUrl =
+      model.provider === "opencode" ? OPENCODE_BASE
+      : model.provider === "openrouter" ? OPENROUTER_BASE
+      : NVIDIA_BASE;
+
+    // Tracker ids are provider-namespaced; upstream APIs expect them bare
+    const upstreamId = model.id.replace(/^(opencode|openrouter)\//, "");
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -350,13 +413,29 @@ export async function testModel(
     if (model.provider === "nvidia" && apiKey) {
       headers["Authorization"] = `Bearer ${apiKey}`;
     }
+    if (model.provider === "openrouter") {
+      const openrouterKey = process.env.OPENROUTER_API_KEY || "";
+      if (!openrouterKey) {
+        clearTimeout(timeout);
+        return {
+          modelId: model.id,
+          provider: model.provider,
+          status: "error",
+          httpCode: 0,
+          responseTimeMs: Date.now() - start,
+          supportsFunctionCalling: false,
+          error: "OPENROUTER_API_KEY not configured on server - free models still require auth",
+        };
+      }
+      headers["Authorization"] = `Bearer ${openrouterKey}`;
+    }
 
     // Step 1: Test without tools — just check if model responds
     const res = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers,
       body: JSON.stringify({
-        model: model.provider === "opencode" ? model.id.replace("opencode/", "") : model.id,
+        model: upstreamId,
         messages: [{ role: "user", content: "hi" }],
         max_tokens: 5,
       }),
@@ -402,7 +481,7 @@ export async function testModel(
         method: "POST",
         headers,
         body: JSON.stringify({
-          model: model.provider === "opencode" ? model.id.replace("opencode/", "") : model.id,
+          model: upstreamId,
           messages: [{ role: "user", content: "hi" }],
           max_tokens: 5,
           tools: TOOLS_PAYLOAD,

@@ -9,7 +9,7 @@ function parseModel(value: unknown): ModelInfo | null {
   if (typeof value !== "object" || value === null) return null;
   const m = value as Record<string, unknown>;
   if (typeof m.id !== "string" || !m.id) return null;
-  if (m.provider !== "nvidia" && m.provider !== "opencode") return null;
+  if (m.provider !== "nvidia" && m.provider !== "opencode" && m.provider !== "openrouter") return null;
   return {
     id: m.id,
     displayName: typeof m.displayName === "string" ? m.displayName : m.id,
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   if (!model) {
     return NextResponse.json(
-      { error: "model required with string id and provider of nvidia or opencode" },
+      { error: "model required with string id and provider of nvidia, opencode, or openrouter" },
       { status: 400 }
     );
   }

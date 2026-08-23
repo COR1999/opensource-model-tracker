@@ -7,6 +7,7 @@ import {
   ModelCategory,
   UptimeRecord,
   nvidiaModelUrl,
+  openrouterModelUrl,
   isT3Breaking,
   isKnownSlow,
   isT3Available,
@@ -20,6 +21,7 @@ const STORAGE_KEYS = {
   LAST_RESULTS: "model-tracker-last-results",
   CHANGELOG: "model-tracker-changelog",
   THEME: "model-tracker-theme",
+  HIDE_ENDPOINTS: "model-tracker-hide-endpoints",
 } as const;
 
 const CATEGORY_OPTIONS: { value: ModelCategory | "all"; label: string }[] = [
@@ -45,6 +47,16 @@ function loadKnownModels(): Set<string> {
     return raw ? new Set(JSON.parse(raw)) : new Set();
   } catch {
     return new Set();
+  }
+}
+
+// Default true: embeddings/TTS/image/classifier endpoints are noise unless you
+// specifically want them; opting out persists.
+function loadHideEndpoints(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEYS.HIDE_ENDPOINTS) !== "false";
+  } catch {
+    return true;
   }
 }
 
@@ -152,6 +164,11 @@ export default function Dashboard() {
   const [showCompare, setShowCompare] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
   const [changelog, setChangelog] = useState<ChangelogEntry[]>(loadChangelog);
+  const [hideEndpoints, setHideEndpoints] = useState<boolean>(loadHideEndpoints);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.HIDE_ENDPOINTS, hideEndpoints ? "true" : "false");
+  }, [hideEndpoints]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
@@ -355,6 +372,10 @@ export default function Dashboard() {
       (m) =>
         (providerFilter === "all" || m.provider === providerFilter) &&
         (categoryFilter === "all" || m.category === categoryFilter) &&
+        (!hideEndpoints ||
+          m.category === "chat" ||
+          m.category === "code" ||
+          m.category === "vision") &&
         (m.id.toLowerCase().includes(search.toLowerCase()) ||
           m.displayName.toLowerCase().includes(search.toLowerCase()) ||
           m.ownedBy.toLowerCase().includes(search.toLowerCase()))
@@ -428,12 +449,14 @@ export default function Dashboard() {
       switch (p) {
         case "nvidia": return "bg-green-50 text-green-700 border-green-200";
         case "opencode": return "bg-purple-50 text-purple-700 border-purple-200";
+        case "openrouter": return "bg-blue-50 text-blue-700 border-blue-200";
         default: return "bg-gray-100 text-gray-600 border-gray-200";
       }
     }
     switch (p) {
       case "nvidia": return "bg-green-900/40 text-green-300 border-green-700/50";
       case "opencode": return "bg-purple-900/40 text-purple-300 border-purple-700/50";
+      case "openrouter": return "bg-blue-900/40 text-blue-300 border-blue-700/50";
       default: return "bg-gray-800 text-gray-400 border-gray-700";
     }
   };
@@ -463,6 +486,7 @@ export default function Dashboard() {
     total: models.length,
     nvidia: models.filter((m) => m.provider === "nvidia").length,
     opencode: models.filter((m) => m.provider === "opencode").length,
+    openrouter: models.filter((m) => m.provider === "openrouter").length,
     working: [...results.values()].filter((r) => r.status === "working").length,
     slow: [...results.values()].filter((r) => r.status === "slow").length,
     error: [...results.values()].filter((r) => r.status === "error" || r.status === "timeout").length,
@@ -486,7 +510,7 @@ export default function Dashboard() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Open Source Model Tracker</h1>
             <p className={`text-sm ${textMuted} mt-1`}>
-              Check which free AI models are live on NVIDIA NIM and OpenCode
+              Check which free AI models are live on NVIDIA NIM, OpenCode, and OpenRouter
             </p>
             {lastRefresh && (
               <p className={`text-xs ${textMuted} mt-1`}>
@@ -686,11 +710,12 @@ export default function Dashboard() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-3 mb-6">
           {[
             { label: "Total", value: counts.total, color: theme === "dark" ? "text-white" : "text-gray-900" },
             { label: "NVIDIA", value: counts.nvidia, color: "text-green-400" },
             { label: "OpenCode", value: counts.opencode, color: "text-purple-400" },
+            { label: "OpenRouter", value: counts.openrouter, color: "text-blue-400" },
             { label: "Working", value: counts.working, color: "text-emerald-400" },
             { label: "Slow", value: counts.slow, color: "text-yellow-400" },
             { label: "Error", value: counts.error, color: "text-red-400" },
@@ -714,7 +739,7 @@ export default function Dashboard() {
             className={`flex-1 ${inputBg} border ${border} rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 ${text}`}
           />
           <div className="flex gap-2">
-            {["all", "nvidia", "opencode"].map((p) => (
+            {["all", "nvidia", "opencode", "openrouter"].map((p) => (
               <button
                 key={p}
                 onClick={() => setProviderFilter(p)}
@@ -724,7 +749,7 @@ export default function Dashboard() {
                     : `${inputBg} ${border} ${textMuted} hover:border-gray-500`
                 }`}
               >
-                {p === "all" ? "All" : p === "nvidia" ? "NVIDIA" : "OpenCode"}
+                {p === "all" ? "All" : p === "nvidia" ? "NVIDIA" : p === "opencode" ? "OpenCode" : "OpenRouter"}
               </button>
             ))}
           </div>
@@ -744,6 +769,19 @@ export default function Dashboard() {
               {c.label}
             </button>
           ))}
+        </div>
+
+        {/* Hide unusable endpoints */}
+        <div className="mb-6">
+          <label className={`inline-flex items-center gap-2 text-sm ${textMuted} cursor-pointer select-none`}>
+            <input
+              type="checkbox"
+              checked={hideEndpoints}
+              onChange={(e) => setHideEndpoints(e.target.checked)}
+              className="rounded"
+            />
+            Hide non-chat endpoints (embeddings, audio, image/classifiers)
+          </label>
         </div>
 
         {/* Loading */}
@@ -815,7 +853,7 @@ export default function Dashboard() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <a
-                              href={m.provider === "nvidia" ? nvidiaModelUrl(m.id) : undefined}
+                              href={m.provider === "nvidia" ? nvidiaModelUrl(m.id) : m.provider === "openrouter" ? openrouterModelUrl(m.id) : undefined}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium text-sm text-blue-400 hover:text-blue-300 underline-offset-2 hover:underline"
@@ -942,7 +980,7 @@ export default function Dashboard() {
                           className="rounded"
                         />
                         <a
-                          href={m.provider === "nvidia" ? nvidiaModelUrl(m.id) : undefined}
+                          href={m.provider === "nvidia" ? nvidiaModelUrl(m.id) : m.provider === "openrouter" ? openrouterModelUrl(m.id) : undefined}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-medium text-sm text-blue-400 hover:underline"

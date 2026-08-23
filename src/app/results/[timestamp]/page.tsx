@@ -112,6 +112,8 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${
                       r.provider === "nvidia"
                         ? "bg-green-900/40 text-green-300 border-green-700/50"
+                        : r.provider === "openrouter"
+                        ? "bg-blue-900/40 text-blue-300 border-blue-700/50"
                         : "bg-purple-900/40 text-purple-300 border-purple-700/50"
                     }`}>
                       {r.provider}

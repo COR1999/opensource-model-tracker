@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { testModel, fetchNvidiaModels, fetchOpenCodeModels, ModelInfo } from "@/lib/models";
+import { testModel, fetchNvidiaModels, fetchOpenCodeModels, fetchOpenRouterModels, ModelInfo } from "@/lib/models";
 import { isAuthorized } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
@@ -34,13 +34,15 @@ export async function POST(req: NextRequest) {
 
   const apiKey = process.env.NVIDIA_API_KEY || "";
 
-  const [nvidiaModels, openCodeModels] = await Promise.allSettled([
+  const [nvidiaModels, openCodeModels, openRouterModels] = await Promise.allSettled([
     fetchNvidiaModels(apiKey),
     fetchOpenCodeModels(),
+    fetchOpenRouterModels(),
   ]);
   const all = [
     ...(nvidiaModels.status === "fulfilled" ? nvidiaModels.value : []),
     ...(openCodeModels.status === "fulfilled" ? openCodeModels.value : []),
+    ...(openRouterModels.status === "fulfilled" ? openRouterModels.value : []),
   ];
   const models: ModelInfo[] = all.filter((m) => modelIds.includes(m.id));
 

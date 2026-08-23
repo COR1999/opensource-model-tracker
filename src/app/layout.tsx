@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Open Source Model Tracker",
-  description: "Track which free AI models are available across NVIDIA and OpenCode",
+  description: "Track which free AI models are available across NVIDIA, OpenCode, and OpenRouter",
 };
 
 export default function RootLayout({
