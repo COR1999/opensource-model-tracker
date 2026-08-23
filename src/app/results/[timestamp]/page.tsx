@@ -3,6 +3,7 @@
 import { use } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { providerBadge, statusColor } from "@/lib/display";
 
 interface Result {
   modelId: string;
@@ -13,17 +14,6 @@ interface Result {
   supportsFunctionCalling: boolean;
   error?: string;
 }
-
-const statusColor = (s: string) => {
-  switch (s) {
-    case "working": return "text-emerald-400";
-    case "slow": return "text-yellow-400";
-    case "error": return "text-red-400";
-    case "timeout": return "text-orange-400";
-    case "removed": return "text-gray-500";
-    default: return "text-gray-400";
-  }
-};
 
 export default function ResultsPage({ params }: { params: Promise<{ timestamp: string }> }) {
   const { timestamp } = use(params);
@@ -109,13 +99,7 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
               .map((r) => (
                 <tr key={r.modelId} className="border-b border-gray-800/50 hover:bg-gray-900/30">
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                      r.provider === "nvidia"
-                        ? "bg-green-900/40 text-green-300 border-green-700/50"
-                        : r.provider === "openrouter"
-                        ? "bg-blue-900/40 text-blue-300 border-blue-700/50"
-                        : "bg-purple-900/40 text-purple-300 border-purple-700/50"
-                    }`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${providerBadge(r.provider, "dark")}`}>
                       {r.provider}
                     </span>
                   </td>
@@ -124,7 +108,7 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
                     <div className="text-xs text-gray-500 font-mono">{r.modelId}</div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`font-medium text-sm ${statusColor(r.status)}`}>
+                    <span className={`font-medium text-sm ${statusColor(r.status, "dark")}`}>
                       {r.status}
                     </span>
                     {r.error && (

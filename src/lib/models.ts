@@ -225,17 +225,6 @@ export function isKnownSlow(modelId: string): boolean {
   return KNOWN_SLOW.has(modelId);
 }
 
-// T3 Code model slugs from opencode.json cache
-// T3 slugs: nvidia/org/model -> API id: org/model
-// T3 slugs: opencode/model -> API id: opencode/model (unchanged)
-export function normalizeT3Slug(slug: string): string {
-  if (slug.startsWith("nvidia/")) {
-    // nvidia/nvidia/llama-3.3-70b-instruct -> nvidia/llama-3.3-70b-instruct
-    return slug.replace(/^nvidia\//, "");
-  }
-  return slug;
-}
-
 // Manually maintained list of T3-available model API IDs
 // Derived from opencode.json cache — these are the models T3 actually exposes
 export const T3_AVAILABLE_MODELS = new Set([
@@ -350,7 +339,6 @@ export const T3_AVAILABLE_MODELS = new Set([
   "meta/llama-3.1-8b-instruct",
   "meta/llama-3.2-1b-instruct",
   "meta/llama-3.2-3b-instruct",
-  "meta/llama-3.1-8b-instruct",
   "meta/llama-4-maverick-17b-128e-instruct",
   "mistralai/mistral-nemotron",
   "mistralai/mistral-medium-3.5-128b",

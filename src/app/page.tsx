@@ -13,17 +13,33 @@ import {
   isKnownSlow,
   isT3Available,
 } from "@/lib/models";
+import {
+  statusColor,
+  statusBg,
+  providerBadge,
+  categoryBadge,
+  computeUptimePercent,
+  type Theme,
+} from "@/lib/display";
+import {
+  STORAGE_KEYS,
+  type ChangelogEntry,
+  loadKnownModels,
+  saveKnownModels,
+  loadChangelog,
+  saveChangelog,
+  loadUptime,
+  saveUptime,
+  appendUptime,
+  loadLastResults,
+  saveLastResults,
+  loadHideEndpoints,
+  loadTheme,
+} from "@/lib/storage";
+import Spinner from "@/components/Spinner";
+import UptimeSparkline from "@/components/UptimeSparkline";
 
 type SortKey = "displayName" | "provider" | "status" | "responseTimeMs" | "category";
-
-const STORAGE_KEYS = {
-  KNOWN_MODELS: "model-tracker-known-models",
-  UPTIME: "model-tracker-uptime",
-  LAST_RESULTS: "model-tracker-last-results",
-  CHANGELOG: "model-tracker-changelog",
-  THEME: "model-tracker-theme",
-  HIDE_ENDPOINTS: "model-tracker-hide-endpoints",
-} as const;
 
 const CATEGORY_OPTIONS: { value: ModelCategory | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -34,152 +50,6 @@ const CATEGORY_OPTIONS: { value: ModelCategory | "all"; label: string }[] = [
   { value: "audio", label: "Audio" },
   { value: "other", label: "Other" },
 ];
-
-interface ChangelogEntry {
-  timestamp: number;
-  type: "added" | "removed";
-  modelId: string;
-  displayName: string;
-}
-
-function loadKnownModels(): Set<string> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.KNOWN_MODELS);
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
-// Default true: embeddings/TTS/image/classifier endpoints are noise unless you
-// specifically want them; opting out persists.
-function loadHideEndpoints(): boolean {
-  try {
-    return localStorage.getItem(STORAGE_KEYS.HIDE_ENDPOINTS) !== "false";
-  } catch {
-    return true;
-  }
-}
-
-function saveKnownModels(ids: string[]) {
-  localStorage.setItem(STORAGE_KEYS.KNOWN_MODELS, JSON.stringify(ids));
-}
-
-function loadChangelog(): ChangelogEntry[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.CHANGELOG);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveChangelog(entries: ChangelogEntry[]) {
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  const trimmed = entries.filter((e) => e.timestamp > thirtyDaysAgo);
-  localStorage.setItem(STORAGE_KEYS.CHANGELOG, JSON.stringify(trimmed));
-}
-
-function loadUptime(): Record<string, UptimeRecord[]> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.UPTIME);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveUptime(data: Record<string, UptimeRecord[]>) {
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const trimmed: Record<string, UptimeRecord[]> = {};
-  for (const [k, v] of Object.entries(data)) {
-    trimmed[k] = v.filter((r) => r.timestamp > sevenDaysAgo);
-  }
-  localStorage.setItem(STORAGE_KEYS.UPTIME, JSON.stringify(trimmed));
-}
-
-function appendUptime(
-  prev: Record<string, UptimeRecord[]>,
-  modelId: string,
-  result: TestResult
-): Record<string, UptimeRecord[]> {
-  const next = { ...prev };
-  const existing = next[modelId] || [];
-  next[modelId] = [
-    ...existing,
-    { timestamp: Date.now(), status: result.status, responseTimeMs: result.responseTimeMs },
-  ];
-  return next;
-}
-
-function computeUptimePercent(records: UptimeRecord[]): number {
-  if (records.length === 0) return 0;
-  const working = records.filter((r) => r.status === "working" || r.status === "slow").length;
-  return Math.round((working / records.length) * 100);
-}
-
-// One bucket per calendar day, oldest first; ratio is healthy checks / total
-function dailyBuckets(records: UptimeRecord[]): { ratio: number; count: number }[] {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const buckets = Array.from({ length: 7 }, () => ({ healthy: 0, total: 0 }));
-  for (const r of records) {
-    const day = new Date(r.timestamp);
-    day.setHours(0, 0, 0, 0);
-    const idx = 6 - Math.floor((today.getTime() - day.getTime()) / 86400000);
-    if (idx < 0 || idx > 6) continue;
-    buckets[idx].total++;
-    if (r.status === "working" || r.status === "slow") buckets[idx].healthy++;
-  }
-  return buckets.map((b) => ({ ratio: b.total ? b.healthy / b.total : 0, count: b.total }));
-}
-
-function UptimeSparkline({ records, theme }: { records: UptimeRecord[]; theme: "dark" | "light" }) {
-  const buckets = dailyBuckets(records);
-  const emptyCls = theme === "dark" ? "bg-gray-700" : "bg-gray-200";
-  return (
-    <div className="flex items-end gap-[2px]" aria-hidden="true">
-      {buckets.map((b, i) => {
-        const cls =
-          b.count === 0
-            ? emptyCls
-            : b.ratio >= 0.9
-              ? "bg-emerald-400"
-              : b.ratio >= 0.5
-                ? "bg-yellow-400"
-                : "bg-red-400";
-        const title =
-          b.count === 0
-            ? "no checks"
-            : `${Math.round(b.ratio * 100)}% up · ${b.count} check${b.count > 1 ? "s" : ""}`;
-        return <div key={i} className={`w-1 h-3.5 rounded-sm ${cls}`} title={title} />;
-      })}
-    </div>
-  );
-}
-
-function loadLastResults(): Map<string, TestResult> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.LAST_RESULTS);
-    if (!raw) return new Map();
-    const arr: TestResult[] = JSON.parse(raw);
-    return new Map(arr.map((r) => [r.modelId, r]));
-  } catch {
-    return new Map();
-  }
-}
-
-function saveLastResults(results: Map<string, TestResult>) {
-  localStorage.setItem(STORAGE_KEYS.LAST_RESULTS, JSON.stringify([...results.values()]));
-}
-
-function loadTheme(): "dark" | "light" {
-  try {
-    return (localStorage.getItem(STORAGE_KEYS.THEME) as "dark" | "light") || "dark";
-  } catch {
-    return "dark";
-  }
-}
 
 const BATCH_SIZE = 10;
 
@@ -200,7 +70,7 @@ export default function Dashboard() {
   const [uptime, setUptime] = useState<Record<string, UptimeRecord[]>>(loadUptime);
   const [shareTooltip, setShareTooltip] = useState(false);
   const [testProgress, setTestProgress] = useState({ done: 0, total: 0 });
-  const [theme, setTheme] = useState<"dark" | "light">(loadTheme);
+  const [theme, setTheme] = useState<Theme>(loadTheme);
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const [showCompare, setShowCompare] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
@@ -487,76 +357,6 @@ export default function Dashboard() {
     else { setSortKey(key); setSortAsc(true); }
   };
 
-  const statusColor = (s: string) => {
-    switch (s) {
-      case "working": return theme === "dark" ? "text-emerald-400" : "text-emerald-600";
-      case "slow": return theme === "dark" ? "text-yellow-400" : "text-yellow-600";
-      case "error": return theme === "dark" ? "text-red-400" : "text-red-600";
-      case "timeout": return theme === "dark" ? "text-orange-400" : "text-orange-600";
-      case "removed": return theme === "dark" ? "text-gray-500" : "text-gray-400";
-      default: return theme === "dark" ? "text-gray-400" : "text-gray-500";
-    }
-  };
-
-  const statusBg = (s: string) => {
-    if (theme === "light") {
-      switch (s) {
-        case "working": return "bg-emerald-50";
-        case "slow": return "bg-yellow-50";
-        case "error": return "bg-red-50";
-        case "timeout": return "bg-orange-50";
-        case "removed": return "bg-gray-50";
-        default: return "";
-      }
-    }
-    switch (s) {
-      case "working": return "bg-emerald-400/10";
-      case "slow": return "bg-yellow-400/10";
-      case "error": return "bg-red-400/10";
-      case "timeout": return "bg-orange-400/10";
-      case "removed": return "bg-gray-500/10";
-      default: return "";
-    }
-  };
-
-  const providerBadge = (p: string) => {
-    if (theme === "light") {
-      switch (p) {
-        case "nvidia": return "bg-green-50 text-green-700 border-green-200";
-        case "opencode": return "bg-purple-50 text-purple-700 border-purple-200";
-        case "openrouter": return "bg-blue-50 text-blue-700 border-blue-200";
-        default: return "bg-gray-100 text-gray-600 border-gray-200";
-      }
-    }
-    switch (p) {
-      case "nvidia": return "bg-green-900/40 text-green-300 border-green-700/50";
-      case "opencode": return "bg-purple-900/40 text-purple-300 border-purple-700/50";
-      case "openrouter": return "bg-blue-900/40 text-blue-300 border-blue-700/50";
-      default: return "bg-gray-800 text-gray-400 border-gray-700";
-    }
-  };
-
-  const categoryBadge = (c: ModelCategory) => {
-    if (theme === "light") {
-      switch (c) {
-        case "chat": return "bg-blue-50 text-blue-700";
-        case "code": return "bg-orange-50 text-orange-700";
-        case "vision": return "bg-pink-50 text-pink-700";
-        case "embedding": return "bg-cyan-50 text-cyan-700";
-        case "audio": return "bg-violet-50 text-violet-700";
-        default: return "bg-gray-100 text-gray-600";
-      }
-    }
-    switch (c) {
-      case "chat": return "bg-blue-900/40 text-blue-300";
-      case "code": return "bg-orange-900/40 text-orange-300";
-      case "vision": return "bg-pink-900/40 text-pink-300";
-      case "embedding": return "bg-cyan-900/40 text-cyan-300";
-      case "audio": return "bg-violet-900/40 text-violet-300";
-      default: return "bg-gray-800 text-gray-400";
-    }
-  };
-
   const counts = {
     total: models.length,
     nvidia: models.filter((m) => m.provider === "nvidia").length,
@@ -608,13 +408,13 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className={`px-3 py-2 rounded-lg text-sm border transition-colors ${cardBg} ${border} ${textMuted} hover:${text}`}
+              className={`px-3 py-2 rounded-lg text-sm border transition-colors ${cardBg} ${border} ${textMuted} ${theme === "dark" ? "hover:text-gray-100" : "hover:text-gray-700"}`}
             >
               {theme === "dark" ? "Light" : "Dark"}
             </button>
             <button
               onClick={() => { setShowChangelog(!showChangelog); setShowCompare(false); }}
-              className={`px-3 py-2 rounded-lg text-sm border transition-colors ${cardBg} ${border} ${textMuted} hover:${text}`}
+              className={`px-3 py-2 rounded-lg text-sm border transition-colors ${cardBg} ${border} ${textMuted} ${theme === "dark" ? "hover:text-gray-100" : "hover:text-gray-700"}`}
             >
               Changelog ({changelog.length})
             </button>
@@ -633,10 +433,7 @@ export default function Dashboard() {
             >
               {testingAll ? (
                 <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                  <Spinner className="h-4 w-4" />
                   Testing {testProgress.done}/{testProgress.total}
                 </span>
               ) : (
@@ -654,7 +451,7 @@ export default function Dashboard() {
               <button
                 onClick={shareResults}
                 disabled={results.size === 0}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm border ${cardBg} ${border} disabled:opacity-50 disabled:cursor-not-allowed ${textMuted} hover:${text}`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm border ${cardBg} ${border} disabled:opacity-50 disabled:cursor-not-allowed ${textMuted} ${theme === "dark" ? "hover:text-gray-100" : "hover:text-gray-700"}`}
               >
                 Share
               </button>
@@ -710,7 +507,7 @@ export default function Dashboard() {
                     <td className={`px-3 py-2 ${textMuted}`}>Provider</td>
                     {compared.map((m) => (
                       <td key={m.id} className="px-3 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full border ${providerBadge(m.provider)}`}>{m.provider}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full border ${providerBadge(m.provider, theme)}`}>{m.provider}</span>
                       </td>
                     ))}
                   </tr>
@@ -718,7 +515,7 @@ export default function Dashboard() {
                     <td className={`px-3 py-2 ${textMuted}`}>Category</td>
                     {compared.map((m) => (
                       <td key={m.id} className="px-3 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category)}`}>{m.category}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category, theme)}`}>{m.category}</span>
                       </td>
                     ))}
                   </tr>
@@ -735,7 +532,7 @@ export default function Dashboard() {
                     {compared.map((m) => {
                       const r = results.get(m.id);
                       return (
-                        <td key={m.id} className={`px-3 py-2 font-medium ${statusColor(r?.status || "error")}`}>
+                        <td key={m.id} className={`px-3 py-2 font-medium ${statusColor(r?.status || "error", theme)}`}>
                           {r?.status || "not tested"}
                         </td>
                       );
@@ -917,10 +714,7 @@ export default function Dashboard() {
         {/* Loading */}
         {loadingModels ? (
           <div className={`text-center py-20 ${textMuted}`}>
-            <svg className="animate-spin h-8 w-8 mx-auto mb-4" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
+            <Spinner className="h-8 w-8 mx-auto mb-4" />
             Loading models...
           </div>
         ) : (
@@ -944,7 +738,7 @@ export default function Dashboard() {
                     ].map((col) => (
                       <th
                         key={col.label}
-                        className={`text-left px-4 py-3 ${col.key ? "cursor-pointer hover:" + text + " select-none" : ""}`}
+                        className={`text-left px-4 py-3 ${col.key ? `cursor-pointer select-none ${theme === "dark" ? "hover:text-gray-100" : "hover:text-gray-700"}` : ""}`}
                         onClick={() => col.key && toggleSort(col.key)}
                       >
                         {col.label}
@@ -965,7 +759,7 @@ export default function Dashboard() {
                     return (
                       <tr
                         key={m.id}
-                        className={`border-b ${border}/50 hover:${theme === "dark" ? "bg-gray-900/30" : "bg-gray-50"} ${r ? statusBg(r.status) : ""}`}
+                        className={`border-b ${border}/50 ${theme === "dark" ? "hover:bg-gray-900/30" : "hover:bg-gray-50"} ${r ? statusBg(r.status, theme) : ""}`}
                       >
                         <td className="px-3 py-3">
                           <input
@@ -976,7 +770,7 @@ export default function Dashboard() {
                           />
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full border ${providerBadge(m.provider)}`}>
+                          <span className={`text-xs px-2 py-0.5 rounded-full border ${providerBadge(m.provider, theme)}`}>
                             {m.provider}
                           </span>
                         </td>
@@ -1016,7 +810,7 @@ export default function Dashboard() {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category)}`}>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category, theme)}`}>
                             {m.category}
                           </span>
                         </td>
@@ -1030,7 +824,7 @@ export default function Dashboard() {
                         <td className="px-4 py-3">
                           {r ? (
                             <div>
-                              <span className={`font-medium text-sm ${statusColor(r.status)}`}>
+                              <span className={`font-medium text-sm ${statusColor(r.status, theme)}`}>
                                 {r.status}
                               </span>
                               {r.error && (
@@ -1077,13 +871,10 @@ export default function Dashboard() {
                           <button
                             onClick={() => testOne(m)}
                             disabled={isTesting}
-                            className={`px-3 py-1 ${cardBg} hover:${theme === "dark" ? "bg-gray-700" : "bg-gray-100"} disabled:opacity-50 disabled:cursor-not-allowed rounded text-xs transition-colors border ${border}`}
+                            className={`px-3 py-1 ${cardBg} ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} disabled:opacity-50 disabled:cursor-not-allowed rounded text-xs transition-colors border ${border}`}
                           >
                             {isTesting ? (
-                              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                              </svg>
+                              <Spinner className="h-3 w-3" />
                             ) : (
                               "Test"
                             )}
@@ -1114,7 +905,7 @@ export default function Dashboard() {
                 return (
                   <div
                     key={m.id}
-                    className={`${cardBg} rounded-lg border ${border} p-4 ${r ? statusBg(r.status) : ""}`}
+                    className={`${cardBg} rounded-lg border ${border} p-4 ${r ? statusBg(r.status, theme) : ""}`}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -1171,14 +962,14 @@ export default function Dashboard() {
                       </div>
                     )}
                     <div className="flex flex-wrap gap-2 text-xs">
-                      <span className={`px-2 py-0.5 rounded-full border ${providerBadge(m.provider)}`}>{m.provider}</span>
-                      <span className={`px-2 py-0.5 rounded-full ${categoryBadge(m.category)}`}>{m.category}</span>
+                      <span className={`px-2 py-0.5 rounded-full border ${providerBadge(m.provider, theme)}`}>{m.provider}</span>
+                      <span className={`px-2 py-0.5 rounded-full ${categoryBadge(m.category, theme)}`}>{m.category}</span>
                       <span className={t3Avail ? "text-emerald-400" : `${textMuted}`}>
                         T3: {t3Avail ? "Yes" : "No"}
                       </span>
                       {r && (
                         <>
-                          <span className={statusColor(r.status)}>{r.status}</span>
+                          <span className={statusColor(r.status, theme)}>{r.status}</span>
                           <span className="font-mono">{r.responseTimeMs}ms</span>
                           {r.supportsFunctionCalling && <span className="text-emerald-400">tools</span>}
                           {uptimePercent > 0 && <span className={textMuted}>{uptimePercent}% uptime</span>}
