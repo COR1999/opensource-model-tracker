@@ -5,6 +5,7 @@ import {
   ModelInfo,
   TestResult,
   ModelCategory,
+  Provider,
   UptimeRecord,
   nvidiaModelUrl,
   openrouterModelUrl,
@@ -115,6 +116,46 @@ function computeUptimePercent(records: UptimeRecord[]): number {
   if (records.length === 0) return 0;
   const working = records.filter((r) => r.status === "working" || r.status === "slow").length;
   return Math.round((working / records.length) * 100);
+}
+
+// One bucket per calendar day, oldest first; ratio is healthy checks / total
+function dailyBuckets(records: UptimeRecord[]): { ratio: number; count: number }[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const buckets = Array.from({ length: 7 }, () => ({ healthy: 0, total: 0 }));
+  for (const r of records) {
+    const day = new Date(r.timestamp);
+    day.setHours(0, 0, 0, 0);
+    const idx = 6 - Math.floor((today.getTime() - day.getTime()) / 86400000);
+    if (idx < 0 || idx > 6) continue;
+    buckets[idx].total++;
+    if (r.status === "working" || r.status === "slow") buckets[idx].healthy++;
+  }
+  return buckets.map((b) => ({ ratio: b.total ? b.healthy / b.total : 0, count: b.total }));
+}
+
+function UptimeSparkline({ records, theme }: { records: UptimeRecord[]; theme: "dark" | "light" }) {
+  const buckets = dailyBuckets(records);
+  const emptyCls = theme === "dark" ? "bg-gray-700" : "bg-gray-200";
+  return (
+    <div className="flex items-end gap-[2px]" aria-hidden="true">
+      {buckets.map((b, i) => {
+        const cls =
+          b.count === 0
+            ? emptyCls
+            : b.ratio >= 0.9
+              ? "bg-emerald-400"
+              : b.ratio >= 0.5
+                ? "bg-yellow-400"
+                : "bg-red-400";
+        const title =
+          b.count === 0
+            ? "no checks"
+            : `${Math.round(b.ratio * 100)}% up · ${b.count} check${b.count > 1 ? "s" : ""}`;
+        return <div key={i} className={`w-1 h-3.5 rounded-sm ${cls}`} title={title} />;
+      })}
+    </div>
+  );
 }
 
 function loadLastResults(): Map<string, TestResult> {
@@ -494,6 +535,18 @@ export default function Dashboard() {
     new: newModels.size,
   };
 
+  const PROVIDERS: Provider[] = ["nvidia", "opencode", "openrouter"];
+  const providerHealth = PROVIDERS.map((p) => {
+    const pr = [...results.values()].filter((r) => r.provider === p);
+    const working = pr.filter((r) => r.status === "working").length;
+    const slow = pr.filter((r) => r.status === "slow").length;
+    const down = pr.filter((r) => r.status === "error" || r.status === "timeout").length;
+    const tested = working + slow + down;
+    const times = pr.filter((r) => r.status === "working").map((r) => r.responseTimeMs);
+    const avgMs = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0;
+    return { provider: p, total: models.filter((m) => m.provider === p).length, tested, working, slow, down, avgMs };
+  });
+
   const compared = models.filter((m) => compareIds.has(m.id));
   const bg = theme === "dark" ? "bg-gray-950" : "bg-gray-50";
   const cardBg = theme === "dark" ? "bg-gray-900" : "bg-white";
@@ -729,6 +782,32 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Provider health */}
+        <div className="grid sm:grid-cols-3 gap-3 mb-6">
+          {providerHealth.map((h) => {
+            const ok = h.tested > 0 && h.down === 0;
+            const partial = h.tested > 0 && h.working + h.slow > 0;
+            const dot = h.tested === 0 ? "bg-gray-500" : ok ? "bg-emerald-400" : partial ? "bg-yellow-400" : "bg-red-400";
+            const accent = h.tested === 0 ? textMuted : ok ? "text-emerald-400" : partial ? "text-yellow-400" : "text-red-400";
+            return (
+              <div key={h.provider} className={`${cardBg} rounded-lg p-3 border ${border}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`inline-block w-2 h-2 rounded-full ${dot}`} />
+                  <span className="font-medium text-sm capitalize">{h.provider}</span>
+                  <span className={`ml-auto text-xs ${accent}`}>
+                    {h.tested === 0 ? "not tested" : `${h.working + h.slow}/${h.tested} up`}
+                  </span>
+                </div>
+                <div className={`text-xs ${textMuted}`}>
+                  {h.tested === 0
+                    ? `${h.total} models · run Test All to check`
+                    : `${h.working} working · ${h.slow} slow · ${h.down} down${h.avgMs ? ` · avg ${h.avgMs}ms` : ""}`}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <input
@@ -912,9 +991,12 @@ export default function Dashboard() {
                         </td>
                         <td className="px-4 py-3 text-xs">
                           {uptimePercent > 0 ? (
-                            <span className={uptimePercent >= 90 ? "text-emerald-400" : uptimePercent >= 50 ? "text-yellow-400" : "text-red-400"}>
-                              {uptimePercent}%
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <UptimeSparkline records={uptime[m.id] || []} theme={theme} />
+                              <span className={uptimePercent >= 90 ? "text-emerald-400" : uptimePercent >= 50 ? "text-yellow-400" : "text-red-400"}>
+                                {uptimePercent}%
+                              </span>
+                            </div>
                           ) : (
                             <span className={textMuted}>-</span>
                           )}
@@ -1007,6 +1089,12 @@ export default function Dashboard() {
                       </button>
                     </div>
                     <div className={`text-xs ${textMuted} font-mono mb-2`}>{m.id}</div>
+                    {uptimePercent > 0 && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <UptimeSparkline records={uptime[m.id] || []} theme={theme} />
+                        <span className={`text-xs ${textMuted}`}>{uptimePercent}% uptime (7d)</span>
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-2 text-xs">
                       <span className={`px-2 py-0.5 rounded-full border ${providerBadge(m.provider)}`}>{m.provider}</span>
                       <span className={`px-2 py-0.5 rounded-full ${categoryBadge(m.category)}`}>{m.category}</span>
