@@ -62,7 +62,11 @@ const BATCH_SIZE = 10;
 
 export default function Dashboard() {
   const [models, setModels] = useState<ModelInfo[]>([]);
-  const [results, setResults] = useState<Map<string, TestResult>>(loadLastResults);
+  // Persisted UI state loads in the mount effect below, never in state
+  // initializers: localStorage exists only on the client, so initializer
+  // reads produce SSR markup that disagrees with the client's first render
+  // (the same hydration-mismatch class as URL-seeded filter state).
+  const [results, setResults] = useState<Map<string, TestResult>>(new Map());
   const [search, setSearch] = useState("");
   const [providerFilter, setProviderFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<ModelCategory | "all">("all");
@@ -76,15 +80,15 @@ export default function Dashboard() {
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [newModels, setNewModels] = useState<Set<string>>(new Set());
-  const [uptime, setUptime] = useState<Record<string, UptimeRecord[]>>(loadUptime);
+  const [uptime, setUptime] = useState<Record<string, UptimeRecord[]>>({});
   const [shareTooltip, setShareTooltip] = useState(false);
   const [testProgress, setTestProgress] = useState({ done: 0, total: 0 });
-  const [theme, setTheme] = useState<Theme>(loadTheme);
+  const [theme, setTheme] = useState<Theme>("dark");
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const [showCompare, setShowCompare] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
-  const [changelog, setChangelog] = useState<ChangelogEntry[]>(loadChangelog);
-  const [hideEndpoints, setHideEndpoints] = useState<boolean>(loadHideEndpoints);
+  const [changelog, setChangelog] = useState<ChangelogEntry[]>([]);
+  const [hideEndpoints, setHideEndpoints] = useState<boolean>(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedList, setCopiedList] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -106,6 +110,16 @@ export default function Dashboard() {
     const q = params.get("q");
     if (q) setSearch(q);
     if (params.get("working") === "1") setWorkingOnly(true);
+  }, []);
+
+  useEffect(() => {
+    setResults(loadLastResults());
+    setUptime(loadUptime());
+    setChangelog(loadChangelog());
+    setHideEndpoints(loadHideEndpoints());
+    // html class was already corrected pre-paint by the bootstrap script in
+    // layout.tsx; this only syncs React's copy of the value
+    setTheme(loadTheme());
   }, []);
 
   useEffect(() => {

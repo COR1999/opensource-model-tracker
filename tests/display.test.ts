@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   accents,
+  styles,
   statusColor,
   statusBg,
   providerBadge,
@@ -9,6 +10,27 @@ import {
   dailyBuckets,
 } from "@/lib/display";
 import type { UptimeRecord } from "@/lib/models";
+
+describe("styles", () => {
+  it("exposes every token for both themes", () => {
+    const tokens = ["bg", "cardBg", "border", "text", "textMuted", "inputBg"] as const;
+    for (const theme of ["dark", "light"] as const) {
+      const s = styles(theme);
+      for (const t of tokens) expect(s[t]).toMatch(/^(bg|border|text)-/);
+    }
+  });
+
+  it("keeps card background constant across themes' input surfaces", () => {
+    // inputBg and cardBg are intentionally identical values
+    for (const theme of ["dark", "light"] as const) {
+      expect(styles(theme).inputBg).toBe(styles(theme).cardBg);
+    }
+  });
+
+  it("differs between themes", () => {
+    expect(styles("dark").cardBg).not.toBe(styles("light").cardBg);
+  });
+});
 
 describe("accents", () => {
   it("exposes all four accent roles for both themes", () => {
