@@ -108,7 +108,7 @@ const CATEGORY_MAP: Record<string, ModelCategory> = {
   "cohere/north-mini-code": "code",
 };
 
-function inferCategory(rawId: string): ModelCategory {
+export function inferCategory(rawId: string): ModelCategory {
   // OpenRouter free ids carry a ":free" suffix that would hide category hints
   const id = rawId.replace(/:free$/, "");
   // Providers namespace the same model differently ("z-ai/glm-5.2" vs

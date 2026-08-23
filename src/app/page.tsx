@@ -14,6 +14,7 @@ import {
   isKnownSlow,
   isT3Available,
 } from "@/lib/models";
+import { encodeSnapshot } from "@/lib/share";
 import {
   statusColor,
   statusBg,
@@ -288,14 +289,7 @@ export default function Dashboard() {
   };
 
   const shareResults = () => {
-    const data = { ts: Date.now(), results: [...results.values()] };
-    const bytes = new TextEncoder().encode(JSON.stringify(data));
-    let binary = "";
-    for (const b of bytes) binary += String.fromCharCode(b);
-    const encoded = btoa(binary)
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
+    const encoded = encodeSnapshot({ ts: Date.now(), results: [...results.values()] });
     const url = `${window.location.origin}/results/${encoded}`;
     navigator.clipboard.writeText(url).then(() => {
       setShareTooltip(true);

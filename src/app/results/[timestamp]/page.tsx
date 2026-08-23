@@ -4,6 +4,7 @@ import { use } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { providerBadge, statusColor } from "@/lib/display";
+import { decodeSnapshot } from "@/lib/share";
 
 interface Result {
   modelId: string;
@@ -22,17 +23,9 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      let b64 = timestamp.replace(/-/g, "+").replace(/_/g, "/");
-      b64 += "=".repeat((4 - (b64.length % 4)) % 4);
-      const binary = atob(b64);
-      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-      const data = JSON.parse(new TextDecoder().decode(bytes));
-      setResults(Array.isArray(data.results) ? data.results : []);
-      setSnapshotTs(typeof data.ts === "number" ? data.ts : null);
-    } catch {
-      setResults([]);
-    }
+    const { ts, results: decoded } = decodeSnapshot(timestamp);
+    setSnapshotTs(ts);
+    setResults(decoded);
     setLoading(false);
   }, [timestamp]);
 
