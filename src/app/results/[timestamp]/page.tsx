@@ -40,20 +40,24 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-8 text-center text-gray-500">
-        Loading results...
+      <div className="min-h-screen bg-gray-950 text-gray-100">
+        <div className="max-w-5xl mx-auto px-4 py-8 text-center text-gray-500">
+          Loading results...
+        </div>
       </div>
     );
   }
 
   if (results.length === 0) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-8 text-center text-gray-500">
-        <h1 className="text-xl font-bold text-white mb-2">Invalid or Expired Link</h1>
-        <p>This results link is invalid or the data has been corrupted.</p>
-        <Link href="/" className="text-blue-400 hover:underline mt-4 inline-block">
-          Go to Model Tracker
-        </Link>
+      <div className="min-h-screen bg-gray-950 text-gray-100">
+        <div className="max-w-5xl mx-auto px-4 py-8 text-center text-gray-400">
+          <h1 className="text-xl font-bold text-gray-100 mb-2">Invalid or Expired Link</h1>
+          <p>This results link is invalid or the data has been corrupted.</p>
+          <Link href="/" className="text-blue-400 hover:underline mt-4 inline-block">
+            Go to Model Tracker
+          </Link>
+        </div>
       </div>
     );
   }
@@ -64,7 +68,8 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
   const removed = results.filter((r) => r.status === "removed").length;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-950 text-gray-100">
+      <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Shared Test Results</h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -135,6 +140,7 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
         <Link href="/" className="text-blue-400 hover:underline text-sm">
           Open Model Tracker
         </Link>
+      </div>
       </div>
     </div>
   );

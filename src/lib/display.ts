@@ -2,6 +2,25 @@ import type { ModelCategory, UptimeRecord } from "./models";
 
 export type Theme = "dark" | "light";
 
+// Semantic accent colors used outside status cells (stat cards, badges,
+// links); every value must stay legible on the theme's card background.
+export function accents(theme: Theme): { ok: string; warn: string; bad: string; info: string } {
+  if (theme === "light") {
+    return {
+      ok: "text-emerald-600",
+      warn: "text-yellow-600",
+      bad: "text-red-600",
+      info: "text-cyan-600",
+    };
+  }
+  return {
+    ok: "text-emerald-400",
+    warn: "text-yellow-400",
+    bad: "text-red-400",
+    info: "text-cyan-400",
+  };
+}
+
 export function statusColor(status: string, theme: Theme): string {
   const dark = theme === "dark";
   switch (status) {

@@ -84,12 +84,41 @@ const CATEGORY_MAP: Record<string, ModelCategory> = {
   // Audio
   "nvidia/fastpitch-hifigan-tts": "audio",
   "nvidia/riva-tts": "audio",
+
+  // Chat / Code models seen on OpenRouter and Zen whose ids carry no
+  // inferable keyword; keyed by org/model so one entry serves every provider
+  "z-ai/glm-5.2": "chat",
+  "dots-studio/dots-3-note-preview": "chat",
+  "liquid/lfm-2.5-2.6b": "chat",
+  "thinkingmachines/inkling-small": "chat",
+  "stepfun-ai/step-3.5-flash": "chat",
+  "stepfun-ai/step-3.7-flash": "chat",
+  "sarvamai/sarvam-m": "chat",
+  "upstage/solar-10.7b-instruct": "chat",
+  "google/gemma-4-26b-a4b-it": "chat",
+  "nvidia/nemotron-nano-9b-v2": "chat",
+  "nvidia/nemotron-3-ultra-550b-a55b": "chat",
+  "nvidia/nemotron-3-nano-30b-a3b": "chat",
+  "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": "chat",
+  "minimaxai/minimax-m2.7": "chat",
+  "qwen/qwen3-next-80b-a3b-instruct": "chat",
+  "qwen/qwen3.5-122b-a10b": "chat",
+  "qwen/qwen3.5-397b-a17b": "chat",
+  "poolside/laguna-s-2.1": "code",
+  "cohere/north-mini-code": "code",
 };
 
 function inferCategory(rawId: string): ModelCategory {
   // OpenRouter free ids carry a ":free" suffix that would hide category hints
   const id = rawId.replace(/:free$/, "");
-  if (CATEGORY_MAP[id]) return CATEGORY_MAP[id];
+  // Providers namespace the same model differently ("z-ai/glm-5.2" vs
+  // "nvidia/z-ai/glm-5.2"); fall back to progressively shorter suffixes so a
+  // mapping for one provider also classifies the others.
+  const parts = id.split("/");
+  const candidates = [id, parts.slice(-2).join("/"), parts[parts.length - 1]];
+  for (const key of candidates) {
+    if (CATEGORY_MAP[key]) return CATEGORY_MAP[key];
+  }
   const lower = id.toLowerCase();
   if (lower.includes("embed")) return "embedding";
   if (lower.includes("vision") || lower.includes("neva")) return "vision";
@@ -215,6 +244,65 @@ export function nvidiaModelUrl(modelId: string): string {
 
 export function openrouterModelUrl(modelId: string): string {
   return `https://openrouter.ai/${modelId.replace(/^openrouter\//, "")}`;
+}
+
+// Zen has no public per-model page; point at the gateway docs instead
+export function opencodeModelUrl(): string {
+  return "https://opencode.ai/docs/zen";
+}
+
+// Aggregated discovery across all three providers; a failing provider is
+// reported per-key instead of failing the whole listing.
+export async function fetchAllProviderModels(apiKey: string): Promise<{
+  models: ModelInfo[];
+  errors: Record<Provider, string | null>;
+}> {
+  const [nvidia, opencode, openrouter] = await Promise.allSettled([
+    fetchNvidiaModels(apiKey),
+    fetchOpenCodeModels(),
+    fetchOpenRouterModels(),
+  ]);
+  const pick = (r: PromiseSettledResult<ModelInfo[]>) =>
+    r.status === "fulfilled" ? r.value : [];
+  const reason = (r: PromiseSettledResult<ModelInfo[]>) =>
+    r.status === "rejected" ? r.reason?.message || "Unknown error" : null;
+  return {
+    models: [...pick(nvidia), ...pick(opencode), ...pick(openrouter)],
+    errors: {
+      nvidia: reason(nvidia),
+      opencode: reason(opencode),
+      openrouter: reason(openrouter),
+    },
+  };
+}
+
+export async function runModelTests(
+  apiKey: string,
+  models: ModelInfo[],
+  concurrency = 10
+): Promise<TestResult[]> {
+  const results: TestResult[] = [];
+  for (let i = 0; i < models.length; i += concurrency) {
+    const batch = models.slice(i, i + concurrency);
+    const settled = await Promise.allSettled(batch.map((m) => testModel(apiKey, m)));
+    for (let j = 0; j < settled.length; j++) {
+      const r = settled[j];
+      if (r.status === "fulfilled") {
+        results.push(r.value);
+      } else {
+        results.push({
+          modelId: batch[j].id,
+          provider: batch[j].provider,
+          status: "error",
+          httpCode: 0,
+          responseTimeMs: 0,
+          supportsFunctionCalling: false,
+          error: r.reason?.message || "Test failed",
+        });
+      }
+    }
+  }
+  return results;
 }
 
 export function isT3Breaking(modelId: string): boolean {

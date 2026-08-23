@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ModelInfo,
   TestResult,
@@ -9,6 +9,7 @@ import {
   UptimeRecord,
   nvidiaModelUrl,
   openrouterModelUrl,
+  opencodeModelUrl,
   isT3Breaking,
   isKnownSlow,
   isT3Available,
@@ -19,6 +20,7 @@ import {
   providerBadge,
   categoryBadge,
   computeUptimePercent,
+  accents,
   type Theme,
 } from "@/lib/display";
 import {
@@ -79,6 +81,26 @@ export default function Dashboard() {
   const [workingOnly, setWorkingOnly] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedList, setCopiedList] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const modelUrl = (m: ModelInfo): string =>
+    m.provider === "nvidia"
+      ? nvidiaModelUrl(m.id)
+      : m.provider === "openrouter"
+        ? openrouterModelUrl(m.id)
+        : opencodeModelUrl();
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.HIDE_ENDPOINTS, hideEndpoints ? "true" : "false");
@@ -357,6 +379,8 @@ export default function Dashboard() {
     else { setSortKey(key); setSortAsc(true); }
   };
 
+  const accent = accents(theme);
+
   const counts = {
     total: models.length,
     nvidia: models.filter((m) => m.provider === "nvidia").length,
@@ -474,7 +498,7 @@ export default function Dashboard() {
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {[...changelog].reverse().map((e, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm">
-                    <span className={e.type === "added" ? "text-emerald-400" : "text-red-400"}>
+                    <span className={e.type === "added" ? accent.ok : accent.bad}>
                       {e.type === "added" ? "+" : "-"}
                     </span>
                     <span className="font-mono text-xs">{e.displayName}</span>
@@ -523,7 +547,7 @@ export default function Dashboard() {
                     <td className={`px-3 py-2 ${textMuted}`}>In T3 Code</td>
                     {compared.map((m) => (
                       <td key={m.id} className="px-3 py-2 text-xs">
-                        {isT3Available(m.id) ? <span className="text-emerald-400">Yes</span> : <span className={textMuted}>No</span>}
+                        {isT3Available(m.id) ? <span className={accent.ok}>Yes</span> : <span className={textMuted}>No</span>}
                       </td>
                     ))}
                   </tr>
@@ -607,11 +631,11 @@ export default function Dashboard() {
             { label: "NVIDIA", value: counts.nvidia, color: "text-green-400" },
             { label: "OpenCode", value: counts.opencode, color: "text-purple-400" },
             { label: "OpenRouter", value: counts.openrouter, color: "text-blue-400" },
-            { label: "Working", value: counts.working, color: "text-emerald-400" },
-            { label: "Slow", value: counts.slow, color: "text-yellow-400" },
-            { label: "Error", value: counts.error, color: "text-red-400" },
+            { label: "Working", value: counts.working, color: accent.ok },
+            { label: "Slow", value: counts.slow, color: accent.warn },
+            { label: "Error", value: counts.error, color: accent.bad },
             { label: "Removed", value: counts.removed, color: "text-gray-500" },
-            { label: "New", value: counts.new, color: "text-cyan-400" },
+            { label: "New", value: counts.new, color: accent.info },
           ].map((s) => (
             <div key={s.label} className={`${cardBg} rounded-lg p-3 text-center border ${border}`}>
               <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
@@ -626,13 +650,13 @@ export default function Dashboard() {
             const ok = h.tested > 0 && h.down === 0;
             const partial = h.tested > 0 && h.working + h.slow > 0;
             const dot = h.tested === 0 ? "bg-gray-500" : ok ? "bg-emerald-400" : partial ? "bg-yellow-400" : "bg-red-400";
-            const accent = h.tested === 0 ? textMuted : ok ? "text-emerald-400" : partial ? "text-yellow-400" : "text-red-400";
+            const accentColor = h.tested === 0 ? textMuted : ok ? accent.ok : partial ? accent.warn : accent.bad;
             return (
               <div key={h.provider} className={`${cardBg} rounded-lg p-3 border ${border}`}>
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`inline-block w-2 h-2 rounded-full ${dot}`} />
                   <span className="font-medium text-sm capitalize">{h.provider}</span>
-                  <span className={`ml-auto text-xs ${accent}`}>
+                  <span className={`ml-auto text-xs ${accentColor}`}>
                     {h.tested === 0 ? "not tested" : `${h.working + h.slow}/${h.tested} up`}
                   </span>
                 </div>
@@ -650,7 +674,8 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <input
             type="text"
-            placeholder="Search models..."
+            placeholder="Search models... (press / to focus)"
+            ref={searchRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className={`flex-1 ${inputBg} border ${border} rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 ${text}`}
@@ -777,7 +802,7 @@ export default function Dashboard() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <a
-                              href={m.provider === "nvidia" ? nvidiaModelUrl(m.id) : m.provider === "openrouter" ? openrouterModelUrl(m.id) : undefined}
+                              href={modelUrl(m)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium text-sm text-blue-400 hover:text-blue-300 underline-offset-2 hover:underline"
@@ -802,7 +827,7 @@ export default function Dashboard() {
                               title={`Copy ${m.id}`}
                               aria-label={`Copy model ID ${m.id}`}
                               className={`text-[10px] px-1 rounded transition-colors ${
-                                copiedId === m.id ? "text-emerald-400" : `${textMuted} hover:underline`
+                                copiedId === m.id ? accent.ok : `${textMuted} hover:underline`
                               }`}
                             >
                               {copiedId === m.id ? "copied" : "copy"}
@@ -816,7 +841,7 @@ export default function Dashboard() {
                         </td>
                         <td className="px-4 py-3 text-xs">
                           {t3Avail ? (
-                            <span className="text-emerald-400" title="Available in T3 Code">Yes</span>
+                            <span className={accent.ok} title="Available in T3 Code">Yes</span>
                           ) : (
                             <span className={textMuted}>No</span>
                           )}
@@ -839,7 +864,7 @@ export default function Dashboard() {
                         </td>
                         <td className="px-4 py-3 font-mono text-xs">
                           {r ? (
-                            <span className={r.responseTimeMs > 5000 ? "text-yellow-400" : ""}>
+                            <span className={r.responseTimeMs > 5000 ? accent.warn : ""}>
                               {r.responseTimeMs}ms
                             </span>
                           ) : (
@@ -850,7 +875,7 @@ export default function Dashboard() {
                           {uptimePercent > 0 ? (
                             <div className="flex items-center gap-2">
                               <UptimeSparkline records={uptime[m.id] || []} theme={theme} />
-                              <span className={uptimePercent >= 90 ? "text-emerald-400" : uptimePercent >= 50 ? "text-yellow-400" : "text-red-400"}>
+                              <span className={uptimePercent >= 90 ? accent.ok : uptimePercent >= 50 ? accent.warn : accent.bad}>
                                 {uptimePercent}%
                               </span>
                             </div>
@@ -860,7 +885,7 @@ export default function Dashboard() {
                         </td>
                         <td className="px-4 py-3 text-xs">
                           {r?.supportsFunctionCalling ? (
-                            <span className="text-emerald-400">Yes</span>
+                            <span className={accent.ok}>Yes</span>
                           ) : r ? (
                             <span className={textMuted}>No</span>
                           ) : (
@@ -916,7 +941,7 @@ export default function Dashboard() {
                           className="rounded"
                         />
                         <a
-                          href={m.provider === "nvidia" ? nvidiaModelUrl(m.id) : m.provider === "openrouter" ? openrouterModelUrl(m.id) : undefined}
+                          href={modelUrl(m)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-medium text-sm text-blue-400 hover:underline"
@@ -940,7 +965,7 @@ export default function Dashboard() {
                           title={`Copy ${m.id}`}
                           aria-label={`Copy model ID ${m.id}`}
                           className={`px-2 py-1 rounded text-xs border ${border} ${
-                            copiedId === m.id ? "text-emerald-400" : textMuted
+                            copiedId === m.id ? accent.ok : textMuted
                           }`}
                         >
                           {copiedId === m.id ? "copied" : "copy id"}
@@ -964,14 +989,14 @@ export default function Dashboard() {
                     <div className="flex flex-wrap gap-2 text-xs">
                       <span className={`px-2 py-0.5 rounded-full border ${providerBadge(m.provider, theme)}`}>{m.provider}</span>
                       <span className={`px-2 py-0.5 rounded-full ${categoryBadge(m.category, theme)}`}>{m.category}</span>
-                      <span className={t3Avail ? "text-emerald-400" : `${textMuted}`}>
+                      <span className={t3Avail ? accent.ok : `${textMuted}`}>
                         T3: {t3Avail ? "Yes" : "No"}
                       </span>
                       {r && (
                         <>
                           <span className={statusColor(r.status, theme)}>{r.status}</span>
                           <span className="font-mono">{r.responseTimeMs}ms</span>
-                          {r.supportsFunctionCalling && <span className="text-emerald-400">tools</span>}
+                          {r.supportsFunctionCalling && <span className={accent.ok}>tools</span>}
                           {uptimePercent > 0 && <span className={textMuted}>{uptimePercent}% uptime</span>}
                         </>
                       )}
