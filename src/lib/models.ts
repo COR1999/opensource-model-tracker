@@ -12,6 +12,8 @@ export interface ModelInfo {
   provider: Provider;
   ownedBy: string;
   category: ModelCategory;
+  // Max context window in tokens; only OpenRouter's discovery API exposes it
+  contextLength?: number;
 }
 
 export interface TestResult {
@@ -185,7 +187,7 @@ export async function fetchOpenRouterModels(): Promise<ModelInfo[]> {
     const data = await res.json();
     const models: ModelInfo[] = (data.data || [])
       .filter((m: { id?: string }) => typeof m.id === "string" && m.id.endsWith(":free"))
-      .map((m: { id: string; name?: string }) => ({
+      .map((m: { id: string; name?: string; context_length?: number }) => ({
         id: `openrouter/${m.id}`,
         displayName:
           typeof m.name === "string" && m.name.trim()
@@ -194,6 +196,9 @@ export async function fetchOpenRouterModels(): Promise<ModelInfo[]> {
         provider: "openrouter" as Provider,
         ownedBy: m.id.split("/")[0],
         category: inferCategory(m.id),
+        ...(typeof m.context_length === "number" && m.context_length > 0
+          ? { contextLength: m.context_length }
+          : {}),
       }));
     return models.length > 0 ? models : FALLBACK_OPENROUTER_MODELS;
   } catch {

@@ -62,10 +62,12 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [providerFilter, setProviderFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<ModelCategory | "all">("all");
+  const [workingOnly, setWorkingOnly] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("provider");
   const [sortAsc, setSortAsc] = useState(true);
   const [loadingModels, setLoadingModels] = useState(true);
   const [testingAll, setTestingAll] = useState(false);
+  const [testingVisible, setTestingVisible] = useState(false);
   const [testingSingle, setTestingSingle] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,10 +81,39 @@ export default function Dashboard() {
   const [showChangelog, setShowChangelog] = useState(false);
   const [changelog, setChangelog] = useState<ChangelogEntry[]>(loadChangelog);
   const [hideEndpoints, setHideEndpoints] = useState<boolean>(loadHideEndpoints);
-  const [workingOnly, setWorkingOnly] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedList, setCopiedList] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Filters seed from the URL (?provider=&category=&q=&working=1) so views are
+  // shareable. Applied in a post-mount effect, never in state initializers:
+  // reading window there makes the SSR markup disagree with the client's first
+  // render and React's hydration recovery leaves stale classes behind.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const provider = params.get("provider");
+    if (provider === "nvidia" || provider === "opencode" || provider === "openrouter") {
+      setProviderFilter(provider);
+    }
+    const category = params.get("category");
+    if (category && ["chat", "code", "vision", "embedding", "audio", "other"].includes(category)) {
+      setCategoryFilter(category as ModelCategory);
+    }
+    const q = params.get("q");
+    if (q) setSearch(q);
+    if (params.get("working") === "1") setWorkingOnly(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (providerFilter !== "all") params.set("provider", providerFilter);
+    if (categoryFilter !== "all") params.set("category", categoryFilter);
+    if (search) params.set("q", search);
+    if (workingOnly) params.set("working", "1");
+    const qs = params.toString();
+    window.history.replaceState(null, "", qs ? `/?${qs}` : "/");
+  }, [providerFilter, categoryFilter, search, workingOnly]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -212,26 +243,9 @@ export default function Dashboard() {
     setTestingSingle(null);
   };
 
-  const testAll = async () => {
-    setTestingAll(true);
-    // Skip known-slow models during test-all
-    const testable = models.filter((m) => !isKnownSlow(m.id));
-    const skipped = models.filter((m) => isKnownSlow(m.id));
+  const runBatches = async (testable: ModelInfo[]) => {
     setTestProgress({ done: 0, total: testable.length });
     const allResults = new Map<string, TestResult>();
-
-    // Mark skipped as slow
-    for (const m of skipped) {
-      allResults.set(m.id, {
-        modelId: m.id,
-        provider: m.provider,
-        status: "slow",
-        httpCode: 0,
-        responseTimeMs: 99999,
-        supportsFunctionCalling: false,
-        error: "Skipped (known slow)",
-      });
-    }
 
     for (let i = 0; i < testable.length; i += BATCH_SIZE) {
       const batch = testable.slice(i, i + BATCH_SIZE);
@@ -267,16 +281,56 @@ export default function Dashboard() {
       setResults(new Map(allResults));
       saveLastResults(new Map(allResults));
     }
+    return allResults;
+  };
 
+  const finishTesting = async (allResults: Map<string, TestResult>) => {
     let updatedUptime = uptime;
     for (const [id, result] of allResults) {
       updatedUptime = appendUptime(updatedUptime, id, result);
     }
     saveUptime(updatedUptime);
     setUptime(loadUptime());
+  };
+
+  const testAll = async () => {
+    setTestingAll(true);
+    // Skip known-slow models during test-all
+    const testable = models.filter((m) => !isKnownSlow(m.id));
+    const skipped = models.filter((m) => isKnownSlow(m.id));
+    const allResults = new Map<string, TestResult>();
+
+    // Mark skipped as slow
+    for (const m of skipped) {
+      allResults.set(m.id, {
+        modelId: m.id,
+        provider: m.provider,
+        status: "slow",
+        httpCode: 0,
+        responseTimeMs: 99999,
+        supportsFunctionCalling: false,
+        error: "Skipped (known slow)",
+      });
+    }
+
+    const batched = await runBatches(testable);
+    for (const [id, result] of batched) allResults.set(id, result);
+    await finishTesting(allResults);
 
     setTestProgress({ done: testable.length, total: testable.length });
     setTestingAll(false);
+  };
+
+  // Tests only what the current filters leave on screen — chat/code/vision by
+  // default, so this stays cheap; capped batches keep each request under the
+  // server's per-request limit.
+  const testVisible = async () => {
+    setTestingVisible(true);
+    const scoped = filtered.filter((m) => !isKnownSlow(m.id));
+    const batched = await runBatches(scoped);
+    await finishTesting(batched);
+    setTestProgress({ done: scoped.length, total: scoped.length });
+    setTestingVisible(false);
   };
 
   const toggleCompare = (id: string) => {
@@ -456,6 +510,20 @@ export default function Dashboard() {
                 </span>
               ) : (
                 "Test All"
+              )}
+            </button>
+            <button
+              onClick={testVisible}
+              disabled={testingVisible || testingAll || filtered.length === 0}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm border ${cardBg} ${border} disabled:opacity-50 disabled:cursor-not-allowed ${textMuted}`}
+            >
+              {testingVisible ? (
+                <span className="flex items-center gap-2">
+                  <Spinner className="h-4 w-4" />
+                  {testProgress.done}/{testProgress.total}
+                </span>
+              ) : (
+                `Test Visible (${filtered.length})`
               )}
             </button>
             <button
@@ -748,6 +816,7 @@ export default function Dashboard() {
                       { key: "provider" as SortKey, label: "Provider" },
                       { key: "displayName" as SortKey, label: "Model" },
                       { key: "category" as SortKey, label: "Category" },
+                      { key: null, label: "Context" },
                       { key: null, label: "T3" },
                       { key: "status" as SortKey, label: "Status" },
                       { key: "responseTimeMs" as SortKey, label: "Response" },
@@ -832,6 +901,13 @@ export default function Dashboard() {
                           <span className={`text-xs px-2 py-0.5 rounded-full ${categoryBadge(m.category, theme)}`}>
                             {m.category}
                           </span>
+                        </td>
+                        <td className={`px-4 py-3 font-mono text-xs ${textMuted}`} title={m.contextLength ? `${m.contextLength.toLocaleString()} token context` : undefined}>
+                          {m.contextLength
+                            ? m.contextLength >= 1000
+                              ? `${Math.round(m.contextLength / 1000)}k`
+                              : m.contextLength
+                            : "-"}
                         </td>
                         <td className="px-4 py-3 text-xs">
                           {t3Avail ? (
