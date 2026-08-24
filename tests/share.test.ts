@@ -61,4 +61,33 @@ describe("share codec", () => {
     expect(decoded.ts).toBeNull();
     expect(decoded.results).toEqual(sample);
   });
+
+  it("flags well-formed payloads as valid and garbage as invalid", () => {
+    expect(decodeSnapshot(encodeSnapshot({ ts: 1, results: sample })).valid).toBe(true);
+    expect(decodeSnapshot("!!!").valid).toBe(false);
+    // JSON, but the wrong shape: foreign input, not an empty snapshot
+    const wrongShape = btoa(JSON.stringify({ hello: "world" }))
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+    expect(decodeSnapshot(wrongShape).valid).toBe(false);
+  });
+
+  it("keeps a well-formed empty payload distinct from a corrupt link", () => {
+    const decoded = decodeSnapshot(encodeSnapshot({ ts: 1, results: [] }));
+    expect(decoded.valid).toBe(true);
+    expect(decoded.results).toEqual([]);
+  });
+
+  it("caps result count and error length, reporting omissions", () => {
+    const many: TestResult[] = Array.from({ length: 200 }, (_, i) => ({
+      ...sample[0],
+      modelId: `prov/model-${i}`,
+      error: "x".repeat(500),
+    }));
+    const decoded = decodeSnapshot(encodeSnapshot({ ts: 1, results: many }));
+    expect(decoded.results.length).toBe(150);
+    expect(decoded.omitted).toBe(50);
+    expect(decoded.results.every((r) => (r.error ?? "").length === 140)).toBe(true);
+    expect(decoded.valid).toBe(true);
+  });
 });
