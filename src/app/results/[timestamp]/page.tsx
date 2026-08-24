@@ -4,33 +4,23 @@ import { use } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { providerBadge, statusColor } from "@/lib/display";
-import { decodeSnapshot } from "@/lib/share";
-
-interface Result {
-  modelId: string;
-  provider: string;
-  status: string;
-  httpCode: number;
-  responseTimeMs: number;
-  supportsFunctionCalling: boolean;
-  error?: string;
-}
+import { decodeSnapshot, type Snapshot } from "@/lib/share";
 
 export default function ResultsPage({ params }: { params: Promise<{ timestamp: string }> }) {
   const { timestamp } = use(params);
-  const [results, setResults] = useState<Result[]>([]);
-  const [snapshotTs, setSnapshotTs] = useState<number | null>(null);
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { ts, results: decoded } = decodeSnapshot(timestamp);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- snapshot payload lives in the URL, not any store; decode after mount to keep SSR output deterministic
-    setSnapshotTs(ts);
-    setResults(decoded);
+    setSnapshot(decodeSnapshot(timestamp));
     setLoading(false);
   }, [timestamp]);
 
-  const date = snapshotTs !== null ? new Date(snapshotTs) : null;
+  const date = snapshot && snapshot.ts !== null ? new Date(snapshot.ts) : null;
+  const results = snapshot?.results ?? [];
+  const omitted = snapshot?.omitted ?? 0;
+  const valid = snapshot?.valid ?? false;
 
   if (loading) {
     return (
@@ -42,12 +32,26 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
     );
   }
 
-  if (results.length === 0) {
+  if (!valid) {
     return (
       <div className="min-h-screen bg-gray-950 text-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-8 text-center text-gray-400">
           <h1 className="text-xl font-bold text-gray-100 mb-2">Invalid or Expired Link</h1>
           <p>This results link is invalid or the data has been corrupted.</p>
+          <Link href="/" className="text-blue-400 hover:underline mt-4 inline-block">
+            Go to Model Tracker
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (results.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-gray-100">
+        <div className="max-w-5xl mx-auto px-4 py-8 text-center text-gray-400">
+          <h1 className="text-xl font-bold text-gray-100 mb-2">Empty Snapshot</h1>
+          <p>This link decoded successfully but contains no results.</p>
           <Link href="/" className="text-blue-400 hover:underline mt-4 inline-block">
             Go to Model Tracker
           </Link>
@@ -76,6 +80,11 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
           <span className="text-gray-500">{removed} removed</span>
           <span className="text-gray-400">{results.length} total</span>
         </div>
+        {omitted > 0 && (
+          <p className="text-xs text-amber-400 mt-2">
+            +{omitted} more result{omitted === 1 ? "" : "s"} omitted to keep the link within URL length limits.
+          </p>
+        )}
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-gray-800">

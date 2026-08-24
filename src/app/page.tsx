@@ -204,9 +204,11 @@ export default function Dashboard() {
             });
           }
           if (newEntries.length > 0) {
-            const updated = [...changelog, ...newEntries];
-            setChangelog(updated);
-            saveChangelog(updated);
+            setChangelog((prev) => {
+              const updated = [...prev, ...newEntries];
+              saveChangelog(updated);
+              return updated;
+            });
           }
         }
         saveKnownModels(currentIds);
@@ -217,7 +219,9 @@ export default function Dashboard() {
       setError("Failed to fetch models");
     }
     setLoadingModels(false);
-  }, [changelog]);
+    // No state in deps: changelog is read via its functional updater above,
+    // so the callback identity stays stable across refresh cycles.
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial catalog fetch on mount; refreshes are timer-driven, not render-driven
@@ -226,15 +230,20 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [loadModels]);
 
-  const updateResults = (newResults: Map<string, TestResult>) => {
-    setResults(newResults);
-    saveLastResults(newResults);
-    let updated = uptime;
-    for (const [id, result] of newResults) {
-      updated = appendUptime(updated, id, result);
-    }
-    saveUptime(updated);
-    setUptime(loadUptime());
+  const recordSingleResult = (modelId: string, result: TestResult) => {
+    setResults((prev) => {
+      const next = new Map(prev);
+      next.set(modelId, result);
+      saveLastResults(next);
+      return next;
+    });
+    // Append only this model's uptime entry: folding the whole saved map back
+    // in would re-append every historical result on every single retest.
+    setUptime((prev) => {
+      const updated = appendUptime(prev, modelId, result);
+      saveUptime(updated);
+      return updated;
+    });
   };
 
   const testOne = async (model: ModelInfo) => {
@@ -246,10 +255,9 @@ export default function Dashboard() {
         body: JSON.stringify({ model }),
       });
       const result: TestResult = await res.json();
-      const next = new Map(results).set(model.id, result);
-      updateResults(next);
+      recordSingleResult(model.id, result);
     } catch {
-      const next = new Map(results).set(model.id, {
+      recordSingleResult(model.id, {
         modelId: model.id,
         provider: model.provider,
         status: "error",
@@ -258,7 +266,6 @@ export default function Dashboard() {
         supportsFunctionCalling: false,
         error: "Request failed",
       });
-      updateResults(next);
     }
     setTestingSingle(null);
   };
@@ -305,12 +312,14 @@ export default function Dashboard() {
   };
 
   const finishTesting = async (allResults: Map<string, TestResult>) => {
-    let updatedUptime = uptime;
-    for (const [id, result] of allResults) {
-      updatedUptime = appendUptime(updatedUptime, id, result);
-    }
-    saveUptime(updatedUptime);
-    setUptime(loadUptime());
+    setUptime((prev) => {
+      let updated = prev;
+      for (const [id, result] of allResults) {
+        updated = appendUptime(updated, id, result);
+      }
+      saveUptime(updated);
+      return updated;
+    });
   };
 
   const testAll = async () => {
@@ -584,6 +593,7 @@ export default function Dashboard() {
           <input
             type="text"
             placeholder="Search models... (press / to focus)"
+            aria-label="Search models"
             ref={searchRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -673,11 +683,21 @@ export default function Dashboard() {
                     ].map((col) => (
                       <th
                         key={col.label}
-                        className={`text-left px-4 py-3 ${col.key ? `cursor-pointer select-none ${theme === "dark" ? "hover:text-gray-100" : "hover:text-gray-700"}` : ""}`}
-                        onClick={() => col.key && toggleSort(col.key)}
+                        className="text-left px-4 py-3"
+                        aria-sort={col.key === sortKey ? (sortAsc ? "ascending" : "descending") : undefined}
                       >
-                        {col.label}
-                        {col.key === sortKey && (sortAsc ? " \u25B2" : " \u25BC")}
+                        {col.key ? (
+                          <button
+                            type="button"
+                            onClick={() => col.key && toggleSort(col.key)}
+                            className={`cursor-pointer select-none ${theme === "dark" ? "hover:text-gray-100" : "hover:text-gray-700"}`}
+                          >
+                            {col.label}
+                            {col.key === sortKey && (sortAsc ? " \u25B2" : " \u25BC")}
+                          </button>
+                        ) : (
+                          col.label
+                        )}
                       </th>
                     ))}
                   </tr>
