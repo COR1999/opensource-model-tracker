@@ -22,50 +22,86 @@ const sample: TestResult[] = [
   },
 ];
 
+function makeResults(n: number, withError = true): TestResult[] {
+  return Array.from({ length: n }, (_, i) => ({
+    modelId: `openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning-${i}:free`,
+    provider: (["nvidia", "opencode", "openrouter"] as const)[i % 3],
+    status: (["working", "slow", "error", "timeout", "removed"] as const)[i % 5],
+    httpCode: 200,
+    responseTimeMs: 1000 + i,
+    supportsFunctionCalling: i % 2 === 0,
+    ...(withError
+      ? { error: `upstream failure ${i}: connect reset before headers were received` }
+      : {}),
+  }));
+}
+
 describe("share codec", () => {
   it("round-trips a snapshot", () => {
-    const ts = 1755000000000;
-    const decoded = decodeSnapshot(encodeSnapshot({ ts, results: sample }));
-    expect(decoded.ts).toBe(ts);
-    expect(decoded.results).toEqual(sample);
+    const encoded = encodeSnapshot({ ts: 1755000000000, results: sample });
+    const back = decodeSnapshot(encoded);
+    expect(back.valid).toBe(true);
+    expect(back.ts).toBe(1755000000000);
+    expect(back.results).toEqual(sample);
   });
 
-  it("produces URL-safe output (no + / =)", () => {
+  it("produces URL-path-safe output", () => {
     const encoded = encodeSnapshot({ ts: Date.now(), results: sample });
-    expect(encoded).not.toMatch(/[+/=]/);
+    expect(encoded).not.toMatch(/[+/=?#&\s]/);
+    expect(encodeURIComponent(encoded)).toBe(encoded);
   });
 
   it("handles unicode payloads", () => {
-    const withUnicode: TestResult[] = [
-      { ...sample[0], error: "模型不可用 — café ✓" },
+    const unicode: TestResult[] = [
+      { ...sample[0], modelId: "nvidia/模型-测试-🚀", error: "错误: 超时 — ünïcodé" },
     ];
-    const decoded = decodeSnapshot(encodeSnapshot({ ts: 1, results: withUnicode }));
-    expect(decoded.results[0].error).toBe("模型不可用 — café ✓");
+    const encoded = encodeSnapshot({ ts: 1, results: unicode });
+    const back = decodeSnapshot(encoded);
+    expect(back.results[0].modelId).toBe("nvidia/模型-测试-🚀");
+    expect(back.results[0].error).toBe("错误: 超时 — ünïcodé");
   });
 
-  it("returns an empty snapshot for garbage input instead of throwing", () => {
-    for (const bad of ["", "!!!", "not base64 at all", "eyJpbnZhbGlk"]) {
-      const decoded = decodeSnapshot(bad);
-      expect(decoded.ts).toBeNull();
-      expect(decoded.results).toEqual([]);
+  it("reports valid:false for garbage input instead of throwing", () => {
+    for (const bad of ["!!!not-base64!!!", "", "zzzz"]) {
+      const back = decodeSnapshot(bad);
+      expect(back.valid).toBe(false);
+      expect(back.results).toEqual([]);
+      expect(back.ts).toBeNull();
     }
   });
 
-  it("tolerates missing ts field", () => {
-    const encoded = encodeSnapshot({ ts: 5, results: [] }).length; // sanity
-    expect(encoded).toBeGreaterThan(0);
-    const raw = btoa(JSON.stringify({ results: sample }))
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_");
-    const decoded = decodeSnapshot(raw);
-    expect(decoded.ts).toBeNull();
-    expect(decoded.results).toEqual(sample);
+  it("distinguishes an empty run from an unreadable link", () => {
+    const encoded = encodeSnapshot({ ts: 42, results: [] });
+    const back = decodeSnapshot(encoded);
+    expect(back.valid).toBe(true);
+    expect(back.ts).toBe(42);
+    expect(back.results).toEqual([]);
+  });
+
+  it("still decodes legacy pre-v2 links", () => {
+    const json = JSON.stringify({ ts: 1755000000000, results: sample });
+    const legacy = btoa(json).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const back = decodeSnapshot(legacy);
+    expect(back.valid).toBe(true);
+    expect(back.ts).toBe(1755000000000);
+    expect(back.results).toEqual(sample);
+  });
+
+  it("normalises unknown provider/status values from a hostile payload", () => {
+    const json = JSON.stringify({
+      ts: 1,
+      results: [{ modelId: "x/y", provider: "evil", status: "pwned", httpCode: "?" }],
+    });
+    const legacy = btoa(json).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const back = decodeSnapshot(legacy);
+    expect(back.results[0].provider).toBe("nvidia");
+    expect(back.results[0].status).toBe("error");
+    expect(back.results[0].httpCode).toBe(0);
   });
 
   it("flags well-formed payloads as valid and garbage as invalid", () => {
     expect(decodeSnapshot(encodeSnapshot({ ts: 1, results: sample })).valid).toBe(true);
     expect(decodeSnapshot("!!!").valid).toBe(false);
-    // JSON, but the wrong shape: foreign input, not an empty snapshot
     const wrongShape = btoa(JSON.stringify({ hello: "world" }))
       .replace(/\+/g, "-")
       .replace(/\//g, "_");

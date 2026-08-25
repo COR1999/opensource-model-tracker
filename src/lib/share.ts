@@ -28,7 +28,23 @@ export function encodeSnapshot(data: { ts: number; results: TestResult[] }): str
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-// Tolerant inverse of encodeSnapshot. Corrupted or foreign input yields a
+const VALID_PROVIDERS = new Set(["nvidia", "opencode", "openrouter"]);
+const VALID_STATUSES = new Set(["working", "slow", "error", "timeout", "removed"]);
+
+function normalizeResult(raw: unknown): TestResult | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  if (typeof r.modelId !== "string" || !r.modelId) return null;
+  return {
+    modelId: r.modelId,
+    provider: VALID_PROVIDERS.has(r.provider as string) ? (r.provider as "nvidia" | "opencode" | "openrouter") : "nvidia",
+    status: VALID_STATUSES.has(r.status as string) ? (r.status as TestResult["status"]) : "error",
+    httpCode: typeof r.httpCode === "number" ? r.httpCode : 0,
+    responseTimeMs: typeof r.responseTimeMs === "number" ? r.responseTimeMs : 0,
+    supportsFunctionCalling: r.supportsFunctionCalling === true,
+    ...(typeof r.error === "string" && r.error ? { error: r.error } : {}),
+  };
+}
 // snapshot flagged invalid rather than throwing, so a bad link renders the
 // friendly invalid-state instead of crashing the page; a well-formed but
 // empty payload stays valid so it can be shown as an empty result set.
@@ -42,9 +58,13 @@ export function decodeSnapshot(encoded: string): Snapshot {
     if (!data || typeof data !== "object" || !Array.isArray(data.results)) {
       return { ts: null, results: [], omitted: 0, valid: false };
     }
+    const raw: unknown[] = Array.isArray(data.results) ? data.results : [];
+    const results = raw
+      .map((r) => normalizeResult(r))
+      .filter((r): r is TestResult => r !== null);
     return {
       ts: typeof data.ts === "number" ? data.ts : null,
-      results: data.results as TestResult[],
+      results,
       omitted: typeof data.omitted === "number" ? data.omitted : 0,
       valid: true,
     };

@@ -38,12 +38,21 @@ export const T3_KNOWN_BREAKING = new Set([
   "openai/gpt-oss-20b",
 ]);
 
-// Models known to be consistently slow (>8s) — skip during test-all to save time
+// Models known to be consistently slow (>8s) — skipped during test-all and by
+// the cron so a full pass fits Vercel's 60s cap.
+//
+// Entries are matched via lookupCandidates, so a bare "org/model" key also
+// covers that model's OpenRouter listing. OpenCode Zen *renames* models rather
+// than namespacing them ("deepseek-v4-flash-free" for what NVIDIA calls
+// "deepseek-ai/deepseek-v4-flash-0731"), so those need their own bare-name
+// entry — no string rule can bridge a rename.
 export const KNOWN_SLOW = new Set([
   "openai/gpt-oss-120b",
   "google/gemma-4-31b-it",
   "deepseek-ai/deepseek-v4-flash-0731",
   "minimaxai/minimax-m3",
+  // OpenCode Zen aliases for the above
+  "deepseek-v4-flash",
 ]);
 
 // Manual category mapping for known NVIDIA models
@@ -67,7 +76,7 @@ const CATEGORY_MAP: Record<string, ModelCategory> = {
   "deepseek-ai/deepseek-v3-0324": "chat",
   "openai/gpt-oss-120b": "chat",
   "openai/gpt-oss-20b": "chat",
-  "poolside/laguna-xs-2.1": "chat",
+  "poolside/laguna-xs-2.1": "code",
 
   // Code
   "deepseek-ai/deepseek-coder-6.7b-instruct": "code",
@@ -108,19 +117,61 @@ const CATEGORY_MAP: Record<string, ModelCategory> = {
   "qwen/qwen3.5-397b-a17b": "chat",
   "poolside/laguna-s-2.1": "code",
   "cohere/north-mini-code": "code",
+
+  // OpenCode Zen renames models instead of namespacing them, so its ids
+  // normalise to a bare name with no org. Keyed bare so lookupCandidates'
+  // last candidate resolves them.
+  "big-pickle": "chat",
+  "mimo-v2.5": "code",
+  "hy3": "chat",
+  "x-preview-f": "chat",
+  "muse-spark-1.2-contributor": "chat",
+  "laguna-s-2.1": "code",
+  "laguna-xs-2.1": "code",
+  "nemotron-3-ultra": "chat",
+  "nemotron-3.5-lightning": "chat",
+  "deepseek-v4-flash": "chat",
+  // OpenRouter lists this without the size suffix NVIDIA uses
+  "nvidia/nemotron-3.5-lightning": "chat",
 };
 
-export function inferCategory(rawId: string): ModelCategory {
-  // OpenRouter free ids carry a ":free" suffix that would hide category hints
-  const id = rawId.replace(/:free$/, "");
-  // Providers namespace the same model differently ("z-ai/glm-5.2" vs
-  // "nvidia/z-ai/glm-5.2"); fall back to progressively shorter suffixes so a
-  // mapping for one provider also classifies the others.
+// Tracker ids are provider-namespaced ("openrouter/z-ai/glm-5.2:free") while
+// every curated lookup table is keyed by the bare upstream id. Normalising in
+// one place keeps category inference, known-slow and T3-breaking lookups
+// agreeing with each other; they previously disagreed, so a model listed as
+// slow under its NVIDIA id was still tested under its OpenRouter id.
+// Only "opencode/" and "openrouter/" are namespaces this tracker prepends.
+// A leading "nvidia/" is part of the upstream id itself (the owning org, as in
+// "nvidia/nemotron-3-super-120b-a12b") and must survive normalisation, or
+// every NVIDIA-owned entry in CATEGORY_MAP stops matching.
+export function normalizeModelId(rawId: string): string {
+  return rawId
+    .replace(/^(opencode|openrouter)\//, "")
+    .replace(/:free$/, "") // OpenRouter free-tier marker
+    .replace(/-free$/, ""); // OpenCode Zen free-tier marker
+}
+
+/**
+ * Candidate keys for a curated lookup, longest first: the normalised id, then
+ * progressively shorter path suffixes, so a mapping entered for one provider
+ * also matches the same model listed by another.
+ */
+function lookupCandidates(rawId: string): string[] {
+  const id = normalizeModelId(rawId);
   const parts = id.split("/");
-  const candidates = [id, parts.slice(-2).join("/"), parts[parts.length - 1]];
-  for (const key of candidates) {
+  const candidates = [id];
+  if (parts.length > 2) candidates.push(parts.slice(-2).join("/"));
+  candidates.push(parts[parts.length - 1]);
+  return candidates;
+}
+
+export function inferCategory(rawId: string): ModelCategory {
+  const id = normalizeModelId(rawId);
+  for (const key of lookupCandidates(rawId)) {
     if (CATEGORY_MAP[key]) return CATEGORY_MAP[key];
   }
+  // Keyword fallback runs on the normalised id: matching "code" against the
+  // raw id classified every "opencode/..." model as a coding model.
   const lower = id.toLowerCase();
   if (lower.includes("embed")) return "embedding";
   if (lower.includes("vision") || lower.includes("neva")) return "vision";
@@ -259,6 +310,19 @@ export function opencodeModelUrl(): string {
   return "https://opencode.ai/docs/zen";
 }
 
+// Single dispatch point for the per-provider link builders, so callers do not
+// each re-implement the provider ternary.
+export function modelUrl(model: Pick<ModelInfo, "id" | "provider">): string {
+  switch (model.provider) {
+    case "nvidia":
+      return nvidiaModelUrl(model.id);
+    case "openrouter":
+      return openrouterModelUrl(model.id);
+    default:
+      return opencodeModelUrl();
+  }
+}
+
 // Aggregated discovery across all three providers; a failing provider is
 // reported per-key instead of failing the whole listing.
 export async function fetchAllProviderModels(apiKey: string): Promise<{
@@ -313,12 +377,15 @@ export async function runModelTests(
   return results;
 }
 
+// Both sets are keyed by bare upstream ids, so a tracker id must be normalised
+// before lookup or the same model escapes the list under a different provider's
+// namespace - which is exactly what blew the cron's 60s budget.
 export function isT3Breaking(modelId: string): boolean {
-  return T3_KNOWN_BREAKING.has(modelId);
+  return lookupCandidates(modelId).some((key) => T3_KNOWN_BREAKING.has(key));
 }
 
 export function isKnownSlow(modelId: string): boolean {
-  return KNOWN_SLOW.has(modelId);
+  return lookupCandidates(modelId).some((key) => KNOWN_SLOW.has(key));
 }
 
 // Manually maintained list of T3-available model API IDs

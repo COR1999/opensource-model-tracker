@@ -60,13 +60,11 @@ async function persistSnapshot(
       signal: AbortSignal.timeout(15000),
     });
     if (!put.ok) {
-      const body = await put.text();
-      return { persisted: false, detail: `GitHub PUT ${put.status}: ${body.slice(0, 200)}` };
+      return { persisted: false, detail: `GitHub API error (${put.status})` };
     }
     return { persisted: true, detail: sha ? `updated ${path}` : `created ${path}` };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Unknown error";
-    return { persisted: false, detail: msg };
+  } catch {
+    return { persisted: false, detail: "GitHub API request failed" };
   }
 }
 
@@ -74,11 +72,14 @@ export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  // Fail closed: this endpoint spends the server API key testing every model,
-  // so it must never be reachable without auth. If CRON_SECRET is unset, deny
+  // Fail closed: this endpoint tests every model with the server API key, so
+  // it must never be reachable without auth. If CRON_SECRET is unset, deny
   // rather than silently skipping the check.
   if (!cronSecret) {
-    return NextResponse.json({ error: "CRON_SECRET is not configured" }, { status: 503 });
+    return NextResponse.json(
+      { error: "CRON_SECRET is not configured" },
+      { status: 503 }
+    );
   }
   if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

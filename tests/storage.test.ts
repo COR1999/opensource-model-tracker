@@ -11,6 +11,10 @@ import {
   saveLastResults,
   loadHideEndpoints,
   loadTheme,
+  saveUptime,
+  saveTheme,
+  loadDensity,
+  saveDensity,
 } from "@/lib/storage";
 import type { TestResult } from "@/lib/models";
 
@@ -127,11 +131,66 @@ describe("flags and theme", () => {
     expect(loadHideEndpoints()).toBe(false);
   });
 
-  it("theme defaults dark, persists light, rejects garbage values", () => {
+  it("theme defaults dark, persists light, and coerces garbage to dark", () => {
     expect(loadTheme()).toBe("dark");
     globalThis.localStorage.setItem(STORAGE_KEYS.THEME, "light");
     expect(loadTheme()).toBe("light");
+    // Previously passed straight through, so a corrupted value reached the UI
+    // as an unknown Theme and every themed helper fell to its default branch.
     globalThis.localStorage.setItem(STORAGE_KEYS.THEME, "neon");
-    expect(loadTheme()).toBe("neon"); // passed through; bootstrap script only matches known values
+    expect(loadTheme()).toBe("dark");
+  });
+
+  it("density defaults comfortable and persists compact", () => {
+    expect(loadDensity()).toBe("comfortable");
+    expect(saveDensity("compact")).toBe(true);
+    expect(loadDensity()).toBe("compact");
+    globalThis.localStorage.setItem(STORAGE_KEYS.DENSITY, "wat");
+    expect(loadDensity()).toBe("comfortable");
+  });
+});
+
+describe("write failures", () => {
+  it("reports failure instead of throwing when storage rejects a write", () => {
+    const original = globalThis.localStorage.setItem;
+    globalThis.localStorage.setItem = () => {
+      throw new DOMException("QuotaExceededError");
+    };
+    try {
+      // A full disk must never abort a test run midway; the write reports
+      // false and the caller keeps its in-memory state.
+      expect(saveKnownModels(["a"])).toBe(false);
+      expect(saveUptime({ a: [{ timestamp: Date.now(), status: "working", responseTimeMs: 1 }] })).toBe(false);
+      expect(saveTheme("light")).toBe(false);
+    } finally {
+      globalThis.localStorage.setItem = original;
+    }
+  });
+
+  it("reads degrade to defaults when storage access throws", () => {
+    const original = globalThis.localStorage.getItem;
+    globalThis.localStorage.getItem = () => {
+      throw new DOMException("SecurityError");
+    };
+    try {
+      expect(loadTheme()).toBe("dark");
+      expect(loadHideEndpoints()).toBe(true);
+      expect(loadKnownModels().size).toBe(0);
+      expect(loadUptime()).toEqual({});
+    } finally {
+      globalThis.localStorage.getItem = original;
+    }
+  });
+});
+
+describe("uptime retention", () => {
+  it("drops keys emptied by retention so the payload cannot grow unbounded", () => {
+    const old = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    saveUptime({
+      stale: [{ timestamp: old, status: "working", responseTimeMs: 5 }],
+      fresh: [{ timestamp: Date.now(), status: "working", responseTimeMs: 5 }],
+    });
+    const back = loadUptime();
+    expect(Object.keys(back)).toEqual(["fresh"]);
   });
 });
