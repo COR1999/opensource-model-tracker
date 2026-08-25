@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   CHANGELOG: "model-tracker-changelog",
   THEME: "model-tracker-theme",
   HIDE_ENDPOINTS: "model-tracker-hide-endpoints",
+  DENSITY: "model-tracker-density",
 } as const;
 
 export interface ChangelogEntry {
@@ -17,50 +18,87 @@ export interface ChangelogEntry {
   displayName: string;
 }
 
-export function loadKnownModels(): Set<string> {
+const DAY_MS = 24 * 60 * 60 * 1000;
+export const UPTIME_RETENTION_DAYS = 7;
+export const CHANGELOG_RETENTION_DAYS = 30;
+
+// Writes are best-effort. localStorage throws on quota exhaustion and in
+// Safari private mode, and an unguarded write would abort a test run midway;
+// losing a cached snapshot is always preferable to losing the run.
+function write(key: string, value: string): boolean {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.KNOWN_MODELS);
-    return raw ? new Set(JSON.parse(raw)) : new Set();
+    localStorage.setItem(key, value);
+    return true;
   } catch {
-    return new Set();
+    return false;
   }
 }
 
-export function saveKnownModels(ids: string[]) {
-  localStorage.setItem(STORAGE_KEYS.KNOWN_MODELS, JSON.stringify(ids));
+function read(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function parse<T>(raw: string | null, fallback: T): T {
+  if (!raw) return fallback;
+  try {
+    const parsed = JSON.parse(raw);
+    return (parsed ?? fallback) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+export function loadKnownModels(): Set<string> {
+  const ids = parse<unknown>(read(STORAGE_KEYS.KNOWN_MODELS), []);
+  return new Set(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : []);
+}
+
+export function saveKnownModels(ids: string[]): boolean {
+  return write(STORAGE_KEYS.KNOWN_MODELS, JSON.stringify(ids));
 }
 
 export function loadChangelog(): ChangelogEntry[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.CHANGELOG);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  const entries = parse<unknown>(read(STORAGE_KEYS.CHANGELOG), []);
+  if (!Array.isArray(entries)) return [];
+  return entries.filter(
+    (e): e is ChangelogEntry =>
+      !!e &&
+      typeof e === "object" &&
+      typeof (e as ChangelogEntry).timestamp === "number" &&
+      typeof (e as ChangelogEntry).modelId === "string"
+  );
 }
 
-export function saveChangelog(entries: ChangelogEntry[]) {
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  const trimmed = entries.filter((e) => e.timestamp > thirtyDaysAgo);
-  localStorage.setItem(STORAGE_KEYS.CHANGELOG, JSON.stringify(trimmed));
+export function saveChangelog(entries: ChangelogEntry[]): boolean {
+  const cutoff = Date.now() - CHANGELOG_RETENTION_DAYS * DAY_MS;
+  const trimmed = entries.filter((e) => e.timestamp > cutoff);
+  return write(STORAGE_KEYS.CHANGELOG, JSON.stringify(trimmed));
 }
 
 export function loadUptime(): Record<string, UptimeRecord[]> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.UPTIME);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
+  const data = parse<Record<string, UptimeRecord[]>>(read(STORAGE_KEYS.UPTIME), {});
+  if (!data || typeof data !== "object" || Array.isArray(data)) return {};
+  const out: Record<string, UptimeRecord[]> = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (Array.isArray(v)) out[k] = v.filter((r) => r && typeof r.timestamp === "number");
   }
+  return out;
 }
 
-export function saveUptime(data: Record<string, UptimeRecord[]>) {
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+export function saveUptime(data: Record<string, UptimeRecord[]>): boolean {
+  const cutoff = Date.now() - UPTIME_RETENTION_DAYS * DAY_MS;
   const trimmed: Record<string, UptimeRecord[]> = {};
   for (const [k, v] of Object.entries(data)) {
-    trimmed[k] = v.filter((r) => r.timestamp > sevenDaysAgo);
+    const kept = v.filter((r) => r.timestamp > cutoff);
+    // Drop keys that retention emptied so the payload cannot grow without
+    // bound as models come and go from the catalog.
+    if (kept.length > 0) trimmed[k] = kept;
   }
-  localStorage.setItem(STORAGE_KEYS.UPTIME, JSON.stringify(trimmed));
+  return write(STORAGE_KEYS.UPTIME, JSON.stringify(trimmed));
 }
 
 export function appendUptime(
@@ -78,34 +116,43 @@ export function appendUptime(
 }
 
 export function loadLastResults(): Map<string, TestResult> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.LAST_RESULTS);
-    if (!raw) return new Map();
-    const arr: TestResult[] = JSON.parse(raw);
-    return new Map(arr.map((r) => [r.modelId, r]));
-  } catch {
-    return new Map();
-  }
+  const arr = parse<unknown>(read(STORAGE_KEYS.LAST_RESULTS), []);
+  if (!Array.isArray(arr)) return new Map();
+  return new Map(
+    arr
+      .filter((r): r is TestResult => !!r && typeof r === "object" && typeof r.modelId === "string")
+      .map((r) => [r.modelId, r])
+  );
 }
 
-export function saveLastResults(results: Map<string, TestResult>) {
-  localStorage.setItem(STORAGE_KEYS.LAST_RESULTS, JSON.stringify([...results.values()]));
+export function saveLastResults(results: Map<string, TestResult>): boolean {
+  return write(STORAGE_KEYS.LAST_RESULTS, JSON.stringify([...results.values()]));
 }
 
 // Default true: embeddings/TTS/image/classifier endpoints are noise unless you
 // specifically want them; opting out persists.
 export function loadHideEndpoints(): boolean {
-  try {
-    return localStorage.getItem(STORAGE_KEYS.HIDE_ENDPOINTS) !== "false";
-  } catch {
-    return true;
-  }
+  return read(STORAGE_KEYS.HIDE_ENDPOINTS) !== "false";
+}
+
+export function saveHideEndpoints(hide: boolean): boolean {
+  return write(STORAGE_KEYS.HIDE_ENDPOINTS, hide ? "true" : "false");
 }
 
 export function loadTheme(): Theme {
-  try {
-    return (localStorage.getItem(STORAGE_KEYS.THEME) as Theme) || "dark";
-  } catch {
-    return "dark";
-  }
+  return read(STORAGE_KEYS.THEME) === "light" ? "light" : "dark";
+}
+
+export function saveTheme(theme: Theme): boolean {
+  return write(STORAGE_KEYS.THEME, theme);
+}
+
+export type Density = "comfortable" | "compact";
+
+export function loadDensity(): Density {
+  return read(STORAGE_KEYS.DENSITY) === "compact" ? "compact" : "comfortable";
+}
+
+export function saveDensity(density: Density): boolean {
+  return write(STORAGE_KEYS.DENSITY, density);
 }
