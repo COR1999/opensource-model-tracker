@@ -556,7 +556,7 @@ export default function Dashboard() {
 
         {/* Compare Panel */}
         {showCompare && compared.length > 0 && (
-          <ComparePanel models={compared} results={results} uptime={uptime} theme={theme} />
+          <ComparePanel models={compared} results={results} uptime={uptime} theme={theme} onRemove={(id) => toggleCompare(id)} />
         )}
 
         {/* Error */}
@@ -586,7 +586,7 @@ export default function Dashboard() {
         <StatsGrid counts={counts} theme={theme} />
 
         {/* Provider health */}
-        <ProviderHealthStrip health={providerHealth} theme={theme} />
+        <ProviderHealthStrip health={providerHealth} theme={theme} activeProvider={providerFilter} onSelectProvider={(p) => setProviderFilter(p)} />
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -811,7 +811,7 @@ export default function Dashboard() {
                         <td className="px-4 py-3 text-xs">
                           {uptimePercent > 0 ? (
                             <div className="flex items-center gap-2">
-                              <UptimeSparkline records={uptime[m.id] || []} theme={theme} />
+                              <UptimeSparkline records={uptime[m.id] || []} theme={theme} percent={uptimePercent} />
                               <span className={uptimePercent >= 90 ? accent.ok : uptimePercent >= 50 ? accent.warn : accent.bad}>
                                 {uptimePercent}%
                               </span>
@@ -919,7 +919,7 @@ export default function Dashboard() {
                     <div className={`text-xs ${textMuted} font-mono mb-2`}>{m.id}</div>
                     {uptimePercent > 0 && (
                       <div className="flex items-center gap-2 mb-2">
-                        <UptimeSparkline records={uptime[m.id] || []} theme={theme} />
+                        <UptimeSparkline records={uptime[m.id] || []} theme={theme} percent={uptimePercent} />
                         <span className={`text-xs ${textMuted}`}>{uptimePercent}% uptime (7d)</span>
                       </div>
                     )}

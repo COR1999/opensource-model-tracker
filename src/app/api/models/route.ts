@@ -41,8 +41,10 @@ export async function GET() {
         },
       }
     );
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: msg }, { status: 502 });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to fetch model catalog" },
+      { status: 502 }
+    );
   }
 }

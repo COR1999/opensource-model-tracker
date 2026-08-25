@@ -47,6 +47,6 @@ CI runs all of the above plus a production build on every push and PR (.github/w
 
 ## Tech Stack
 
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - TypeScript
 - Tailwind CSS v4
