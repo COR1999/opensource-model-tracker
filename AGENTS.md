@@ -32,4 +32,27 @@ evidence a lesson earned its place.
 - **opencode-explicit-env-apikey-blocks-credential-store** (2026-08) — An explicit `apiKey: {env:X}` in opencode config blocks the credential-store fallback
 - **stacked-pr-base-deletion-cascade** (2026-08) — Don't delete a stacked PR's base branch before the whole stack merges
 - **vitest-fork-timeout-windows** (2026-08) — On Windows, vitest's default forks pool can hang; run with --no-file-parallelism
+- **stash-with-untracked-files** (2026-08) — `git stash` separates tracked and untracked; use --include-untracked to keep them together
+- **pre-existing-errors-look-like-yours** (2026-08) — Untracked files from prior sessions cause tsc errors that appear to be yours
+- **old-stash-vs-new-component-apis** (2026-08) — A stash with an old consumer file + updated components fails to compile; use the newer file
+- **skill-follow-through** (2026-08) — Load planned skills before coding, not after momentum builds; deferred skills get skipped
 <!-- workbench:end -->
+
+## Task setup checklist
+
+Before starting any non-trivial task (multi-file changes, PRs, audits, refactors):
+
+1. **List applicable skills.** For each skill in `available_skills`, ask: does this task match its trigger? If yes, note it.
+2. **Load them immediately.** Do the loading before writing the first line of code. Do not defer to "after the commit."
+3. **Cite in the commit body.** When a lesson changes what you do, name it: `lesson: <slug>`.
+
+## Report back
+
+After completing a task, report:
+
+- **Skills loaded:** Which skills were loaded and used.
+- **Skills skipped:** Which were applicable but not loaded, and why.
+- **Lessons cited:** Which lessons changed the approach.
+- **Sweep result:** If a sweep was run, the coverage statement.
+
+This is the only durable record that a skill earned its place. An uncited skill is indistinguishable from one that was never loaded.
