@@ -9,6 +9,7 @@ import {
   saveKnownModels,
   type ChangelogEntry,
 } from "@/lib/storage";
+import { loadSubscriptions, dispatchAlerts, type AlertPayload } from "@/lib/subscriptions";
 
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -108,6 +109,33 @@ export function useModelCatalog() {
             saveChangelog(next);
             return next;
           });
+
+          // Dispatch webhook alerts for catalog changes
+          const subs = loadSubscriptions();
+          if (subs.length > 0) {
+            const nowTs = Date.now();
+            for (const id of added) {
+              const m = fetched.find((x) => x.id === id);
+              const payload: AlertPayload = {
+                type: "new_model",
+                timestamp: nowTs,
+                modelId: id,
+                displayName: m?.displayName ?? id,
+                provider: m?.provider ?? "unknown",
+              };
+              dispatchAlerts(payload, subs);
+            }
+            for (const id of removed) {
+              const payload: AlertPayload = {
+                type: "removed_model",
+                timestamp: nowTs,
+                modelId: id,
+                displayName: id.split("/").pop() || id,
+                provider: "unknown",
+              };
+              dispatchAlerts(payload, subs);
+            }
+          }
         }
       }
       saveKnownModels(currentIds);
