@@ -22,20 +22,6 @@ const sample: TestResult[] = [
   },
 ];
 
-function makeResults(n: number, withError = true): TestResult[] {
-  return Array.from({ length: n }, (_, i) => ({
-    modelId: `openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning-${i}:free`,
-    provider: (["nvidia", "opencode", "openrouter"] as const)[i % 3],
-    status: (["working", "slow", "error", "timeout", "removed"] as const)[i % 5],
-    httpCode: 200,
-    responseTimeMs: 1000 + i,
-    supportsFunctionCalling: i % 2 === 0,
-    ...(withError
-      ? { error: `upstream failure ${i}: connect reset before headers were received` }
-      : {}),
-  }));
-}
-
 describe("share codec", () => {
   it("round-trips a snapshot", () => {
     const encoded = encodeSnapshot({ ts: 1755000000000, results: sample });
