@@ -6,18 +6,6 @@ const REPO_OWNER = "COR1999";
 const REPO_NAME = "opensource-model-tracker";
 const SNAPSHOTS_PATH = "data/snapshots";
 
-interface SnapshotSummary {
-  date: string;
-  timestamp: number;
-  durationMs: number;
-  discoveredTotal: number;
-  testedTotal: number;
-  working: number;
-  slow: number;
-  down: number;
-  removed: number;
-}
-
 /**
  * GET /api/results
  *
