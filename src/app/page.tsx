@@ -26,6 +26,7 @@ import ComparePanel from "@/components/ComparePanel";
 import Toast, { type ToastMessage } from "@/components/Toast";
 import EmptyState from "@/components/EmptyState";
 import TableSkeleton from "@/components/TableSkeleton";
+import AlertSettings from "@/components/AlertSettings";
 
 const DEFAULT_FILTERS: Filters = {
   search: "",
@@ -47,6 +48,7 @@ export default function Dashboard() {
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const [showCompare, setShowCompare] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
   const [toastMsg, setToastMsg] = useState<ToastMessage | null>(null);
   const [now, setNow] = useState(() => new Date());
   const searchRef = useRef<HTMLInputElement>(null);
@@ -330,10 +332,16 @@ export default function Dashboard() {
         </button>
       )}
       <button
-        onClick={() => { setShowChangelog(!showChangelog); setShowCompare(false); }}
+        onClick={() => { setShowChangelog(!showChangelog); setShowCompare(false); setShowAlerts(false); }}
         className={`px-3 py-2 rounded-lg text-sm border transition-colors ${styles(theme).cardBg} ${styles(theme).border} ${styles(theme).textMuted}`}
       >
         Changelog ({catalog.changelog.length})
+      </button>
+      <button
+        onClick={() => { setShowAlerts(!showAlerts); setShowChangelog(false); setShowCompare(false); }}
+        className={`px-3 py-2 rounded-lg text-sm border transition-colors ${showAlerts ? "bg-blue-600 text-white border-blue-600" : `${styles(theme).cardBg} ${styles(theme).border} ${styles(theme).textMuted}`}`}
+      >
+        Alerts
       </button>
     </>
   );
@@ -356,6 +364,8 @@ export default function Dashboard() {
         />
 
         {showChangelog && <ChangelogPanel entries={catalog.changelog} theme={theme} />}
+
+        {showAlerts && <AlertSettings theme={theme} />}
 
         {showCompare && compared.length > 0 && (
           <ComparePanel
