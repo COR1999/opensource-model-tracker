@@ -73,13 +73,13 @@ export default function Dashboard() {
   }, []);
 
   // URL seeding: ?provider=&category=&q=&working=1
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- seeding from URL after mount is deliberate: reading it during render breaks SSR prerender
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const provider = params.get("provider");
     const category = params.get("category");
     const q = params.get("q");
     const working = params.get("working") === "1";
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- seeding from URL after mount is deliberate: reading it during render breaks SSR prerender
     setFilters((prev) => ({
       ...prev,
       provider: provider && ["nvidia", "opencode", "openrouter"].includes(provider) ? provider : prev.provider,
