@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
 import { isKnownSlow, isT3Available, isT3Breaking, modelUrl } from "@/lib/models";
 import {
@@ -75,14 +76,20 @@ export default function ModelCardList({
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <Link
+                    href={`/model/${encodeURIComponent(m.id)}`}
+                    className={`rounded text-sm font-medium text-blue-400 underline-offset-2 hover:underline`}
+                  >
+                    {m.displayName}
+                  </Link>
                   <a
                     href={modelUrl(m)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`rounded text-sm font-medium text-blue-400 underline-offset-2 hover:underline`}
+                    className={`${textSubtle} hover:text-blue-400 transition-colors text-[10px]`}
+                    title={`View on ${m.provider === "nvidia" ? "build.nvidia.com" : m.provider === "openrouter" ? "openrouter.ai" : "opencode.ai"}`}
                   >
-                    {m.displayName}
-                    <span className="sr-only"> (opens in a new tab)</span>
+                    ↗<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                   {newModels.has(m.id) && (
                     <span className="rounded-full border border-cyan-700/50 bg-cyan-900/60 px-1.5 py-0.5 text-[10px] font-medium text-cyan-300">
