@@ -93,7 +93,6 @@ export default function ResponseTrendChart({
         role="img"
         aria-label={`Response time trend: ${stats.filter(Boolean).length} of 7 days with data`}
       >
-        {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((frac) => (
           <line
             key={frac}
