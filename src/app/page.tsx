@@ -50,6 +50,7 @@ export default function Dashboard() {
   const [toastMsg, setToastMsg] = useState<ToastMessage | null>(null);
   const [now, setNow] = useState(() => new Date());
   const searchRef = useRef<HTMLInputElement>(null);
+  const lastAutoTested = useRef<Set<string>>(new Set());
 
   const showToast = useCallback((text: string, tone: ToastMessage["tone"]) => {
     setToastMsg({ id: Date.now(), text, tone });
@@ -118,6 +119,19 @@ export default function Dashboard() {
     const interval = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-test newly detected models so the "NEW" badge is immediately actionable.
+  useEffect(() => {
+    if (catalog.newModels.size === 0 || testing.progress !== null) return;
+    const newIds = [...catalog.newModels].filter((id) => !lastAutoTested.current.has(id));
+    if (newIds.length === 0) return;
+    const newModels = catalog.models.filter(
+      (m) => newIds.includes(m.id) && !isKnownSlow(m.id),
+    );
+    if (newModels.length === 0) return;
+    lastAutoTested.current = new Set([...lastAutoTested.current, ...newIds]);
+    testing.testMany(newModels, "Auto-test new models");
+  }, [catalog.newModels, catalog.models, testing]);
 
   // Persist theme + density
   useEffect(() => {
