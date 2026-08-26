@@ -1,27 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/types";
-import { modelUrl } from "@/lib/providers";
 import { encodeSnapshot } from "@/lib/share";
 import { CATEGORY_OPTIONS } from "@/lib/curated";
-import { isKnownSlow, isT3Breaking, isT3Available } from "@/lib/categories";
-import { styles, accents, type Theme } from "@/lib/display";
+import { isKnownSlow } from "@/lib/categories";
+import { styles, type Theme } from "@/lib/display";
 import {
-  loadKnownModels,
-  saveKnownModels,
-  loadChangelog,
-  saveChangelog,
-  loadUptime,
-  saveUptime,
-  appendUptime,
-  loadLastResults,
-  saveLastResults,
   loadHideEndpoints,
   loadTheme,
   loadDensity,
   saveDensity,
-  type ChangelogEntry,
   type Density,
 } from "@/lib/storage";
 import { useModelCatalog } from "@/hooks/useModelCatalog";
@@ -35,7 +23,6 @@ import ModelTable from "@/components/ModelTable";
 import ModelCardList from "@/components/ModelCardList";
 import ChangelogPanel from "@/components/ChangelogPanel";
 import ComparePanel from "@/components/ComparePanel";
-import ShareDialog from "@/components/ShareDialog";
 import Toast, { type ToastMessage } from "@/components/Toast";
 import EmptyState from "@/components/EmptyState";
 import TableSkeleton from "@/components/TableSkeleton";
@@ -86,6 +73,7 @@ export default function Dashboard() {
   }, []);
 
   // URL seeding: ?provider=&category=&q=&working=1
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- seeding from URL after mount is deliberate: reading it during render breaks SSR prerender
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const provider = params.get("provider");
@@ -241,7 +229,7 @@ export default function Dashboard() {
     navigator.clipboard.writeText(url).then(() => {
       showToast("Share link copied!", "success");
     });
-  }, [testing.results]);
+  }, [testing.results, showToast]);
 
   const copyId = useCallback(async (id: string) => {
     try {
@@ -250,7 +238,7 @@ export default function Dashboard() {
     } catch {
       // clipboard unavailable (insecure context)
     }
-  }, []);
+  }, [showToast]);
 
   const copyWorkingIds = useCallback(async () => {
     if (usableIds.length === 0) return;
@@ -260,7 +248,7 @@ export default function Dashboard() {
     } catch {
       // clipboard unavailable
     }
-  }, [usableIds]);
+  }, [usableIds, showToast]);
 
   const handleToggleTheme = useCallback(() => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
@@ -350,8 +338,7 @@ export default function Dashboard() {
     </>
   );
 
-  const accent = accents(theme);
-  const { bg, text, textMuted } = styles(theme);
+  const { bg, text } = styles(theme);
 
   return (
     <div className={`min-h-screen ${bg} ${text} transition-colors`}>

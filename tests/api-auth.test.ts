@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { isAuthorized } from "@/lib/api-auth";
 
 function fakeRequest(headers: Record<string, string>): { headers: { get: (name: string) => string | null } } {
