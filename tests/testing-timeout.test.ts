@@ -132,6 +132,50 @@ describe("testModel rate-limit retry", () => {
       globalThis.fetch = original;
     }
   });
+
+  it("keeps rate-limited after two consecutive 429s", async () => {
+    const { testModel } = await import("@/lib/testing");
+    let calls = 0;
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      return new Response("rate limited", { status: 429 });
+    }) as typeof fetch;
+
+    try {
+      const result = await testModel("", {
+        id: "opencode/big-pickle",
+        displayName: "Big Pickle",
+        provider: "opencode",
+        ownedBy: "opencode",
+        category: "chat",
+      });
+      // initial probe + one retry — both 429
+      expect(calls).toBe(2);
+      expect(result.status).toBe("rate-limited");
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it("errors when OPENROUTER_API_KEY is missing for free OpenRouter models", async () => {
+    const { testModel } = await import("@/lib/testing");
+    const prev = process.env.OPENROUTER_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
+    try {
+      const result = await testModel("", {
+        id: "openrouter/z-ai/glm-5.2:free",
+        displayName: "GLM 5.2",
+        provider: "openrouter",
+        ownedBy: "z-ai",
+        category: "chat",
+      });
+      expect(result.status).toBe("error");
+      expect(result.error).toMatch(/OPENROUTER_API_KEY/i);
+    } finally {
+      if (prev !== undefined) process.env.OPENROUTER_API_KEY = prev;
+    }
+  });
 });
 
 describe("display + share + curated free lineup", () => {
