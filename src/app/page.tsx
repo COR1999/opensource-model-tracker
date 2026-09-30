@@ -40,7 +40,8 @@ export default function Dashboard() {
   // localStorage exists only on the client, so initializer reads produce SSR
   // markup that disagrees with the client's first render.
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [sortKey, setSortKey] = useState<SortKey>("provider");
+  // Live benchmark score (BenchLM/OpenRouter); best models first by default.
+  const [sortKey, setSortKey] = useState<SortKey>("benchmarkScore");
   const [sortAsc, setSortAsc] = useState(true);
   const [theme, setTheme] = useState<Theme>("dark");
   const [density, setDensity] = useState<Density>("comfortable");
@@ -149,6 +150,7 @@ export default function Dashboard() {
             (filters.status === "working" &&
               (testing.results.get(m.id)?.status === "working" || testing.results.get(m.id)?.status === "slow")) ||
             (filters.status === "slow" && testing.results.get(m.id)?.status === "slow") ||
+            (filters.status === "rate-limited" && testing.results.get(m.id)?.status === "rate-limited") ||
             (filters.status === "error" &&
               (testing.results.get(m.id)?.status === "error" || testing.results.get(m.id)?.status === "timeout")) ||
             (filters.status === "untested" && !testing.results.has(m.id))) &&
@@ -172,8 +174,17 @@ export default function Dashboard() {
           case "category":
             cmp = a.category.localeCompare(b.category);
             break;
+          case "benchmarkScore":
+            // Higher is better. BenchLM overall first; models BenchLM has not
+            // scored fall back to OpenRouter AA coding, then agentic.
+            cmp =
+              (b.benchmarkScore ?? -1) - (a.benchmarkScore ?? -1) ||
+              (b.codingScore ?? -1) - (a.codingScore ?? -1) ||
+              (b.agenticScore ?? -1) - (a.agenticScore ?? -1) ||
+              (b.intelligenceScore ?? -1) - (a.intelligenceScore ?? -1);
+            break;
           case "status": {
-            const order = { working: 0, slow: 1, error: 2, timeout: 3, removed: 4 };
+            const order = { working: 0, slow: 1, "rate-limited": 2, error: 3, timeout: 4, removed: 5 };
             cmp = (order[ra?.status ?? "error"] ?? 5) - (order[rb?.status ?? "error"] ?? 5);
             break;
           }
@@ -183,6 +194,13 @@ export default function Dashboard() {
           case "contextLength":
             cmp = (a.contextLength ?? 0) - (b.contextLength ?? 0);
             break;
+        }
+        // Unlisted models (no benchmark score) sort after scored ones even
+        // when the user flips the order.
+        if (sortKey === "benchmarkScore") {
+          const aHas = typeof a.benchmarkScore === "number";
+          const bHas = typeof b.benchmarkScore === "number";
+          if (aHas !== bHas) return aHas ? -1 : 1;
         }
         return sortAsc ? cmp : -cmp;
       });
@@ -275,6 +293,7 @@ export default function Dashboard() {
       working: [...testing.results.values()].filter((r) => r.status === "working").length,
       slow: [...testing.results.values()].filter((r) => r.status === "slow").length,
       error: [...testing.results.values()].filter((r) => r.status === "error" || r.status === "timeout").length,
+      rateLimited: [...testing.results.values()].filter((r) => r.status === "rate-limited").length,
       removed: [...testing.results.values()].filter((r) => r.status === "removed").length,
       new: catalog.newModels.size,
     }),
@@ -338,7 +357,7 @@ export default function Dashboard() {
     </>
   );
 
-  const { bg, text } = styles(theme);
+  const { bg, text, textMuted } = styles(theme);
 
   return (
     <div className={`min-h-screen ${bg} ${text} transition-colors`}>
@@ -462,6 +481,28 @@ export default function Dashboard() {
             </div>
           </>
         )}
+
+        <p className={`mt-6 text-xs ${textMuted}`}>
+          Benchmark scores refresh live from{" "}
+          <a
+            href="https://benchlm.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:opacity-80"
+          >
+            BenchLM.ai
+          </a>{" "}
+          (CC BY-NC 4.0) and, when available, the{" "}
+          <a
+            href="https://openrouter.ai/rankings"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:opacity-80"
+          >
+            OpenRouter Data API
+          </a>
+          . Models without a public score sort to the bottom.
+        </p>
       </div>
 
       {toastMsg && <Toast message={toastMsg} theme={theme} onDismiss={() => setToastMsg(null)} />}

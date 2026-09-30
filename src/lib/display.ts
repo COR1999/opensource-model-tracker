@@ -77,6 +77,7 @@ export function statusColor(status: string, theme: Theme): string {
   switch (status) {
     case "working": return dark ? "text-emerald-400" : "text-emerald-700";
     case "slow": return dark ? "text-amber-400" : "text-amber-700";
+    case "rate-limited": return dark ? "text-violet-400" : "text-violet-700";
     case "error": return dark ? "text-red-400" : "text-red-700";
     case "timeout": return dark ? "text-orange-400" : "text-orange-700";
     case "removed": return dark ? "text-gray-400" : "text-gray-600";
@@ -89,6 +90,7 @@ export function statusBg(status: string, theme: Theme): string {
     switch (status) {
       case "working": return "bg-emerald-50";
       case "slow": return "bg-amber-50";
+      case "rate-limited": return "bg-violet-50";
       case "error": return "bg-red-50";
       case "timeout": return "bg-orange-50";
       case "removed": return "bg-gray-50";
@@ -98,6 +100,7 @@ export function statusBg(status: string, theme: Theme): string {
   switch (status) {
     case "working": return "bg-emerald-400/10";
     case "slow": return "bg-amber-400/10";
+    case "rate-limited": return "bg-violet-400/10";
     case "error": return "bg-red-400/10";
     case "timeout": return "bg-orange-400/10";
     case "removed": return "bg-gray-500/10";
@@ -110,6 +113,7 @@ export function statusDot(status: string): string {
   switch (status) {
     case "working": return "bg-emerald-500";
     case "slow": return "bg-amber-500";
+    case "rate-limited": return "bg-violet-500";
     case "error": return "bg-red-500";
     case "timeout": return "bg-orange-500";
     case "removed": return "bg-gray-500";
@@ -125,6 +129,7 @@ export function statusLabel(status: string): string {
   switch (status) {
     case "working": return "Working";
     case "slow": return "Slow";
+    case "rate-limited": return "Rate limited";
     case "error": return "Error";
     case "timeout": return "Timeout";
     case "removed": return "Removed";

@@ -96,6 +96,7 @@ export async function GET(req: Request) {
 
   const working = results.filter((r) => r.status === "working").length;
   const slow = results.filter((r) => r.status === "slow").length;
+  const rateLimited = results.filter((r) => r.status === "rate-limited").length;
   const down = results.filter((r) => r.status === "error" || r.status === "timeout").length;
   const removed = results.filter((r) => r.status === "removed").length;
 
@@ -107,6 +108,7 @@ export async function GET(req: Request) {
     testedTotal: results.length,
     working,
     slow,
+    rateLimited,
     down,
     removed,
     results,

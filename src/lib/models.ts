@@ -34,6 +34,23 @@ export {
   fetchAllProviderModels,
 } from "./providers";
 export {
+  rankingKey,
+  lookupBenchmark,
+  annotateAndSortModels,
+  rankModels,
+  getBenchmarkIndex,
+  type BenchmarkEntry,
+  type BenchmarkIndex,
+  type BenchmarkSource,
+} from "./rankings";
+export {
   testModel,
   runModelTests,
+  isFreeTierModel,
+  testTimeoutMs,
+  toolsTimeoutMs,
+  statusFromHttpFailure,
+  FREE_TEST_TIMEOUT_MS,
+  PAID_TEST_TIMEOUT_MS,
+  SLOW_THRESHOLD_MS,
 } from "./testing";

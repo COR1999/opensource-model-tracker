@@ -10,6 +10,7 @@ export interface ProviderHealth {
   tested: number;
   working: number;
   slow: number;
+  rateLimited: number;
   down: number;
   avgMs: number;
   /** Discovery failed for this provider on the last catalog refresh. */
@@ -24,10 +25,10 @@ export function computeProviderHealth(
   const totals: Record<Provider, number> = { nvidia: 0, opencode: 0, openrouter: 0 };
   for (const m of models) totals[m.provider]++;
 
-  const acc: Record<Provider, { working: number; slow: number; down: number; ms: number[] }> = {
-    nvidia: { working: 0, slow: 0, down: 0, ms: [] },
-    opencode: { working: 0, slow: 0, down: 0, ms: [] },
-    openrouter: { working: 0, slow: 0, down: 0, ms: [] },
+  const acc: Record<Provider, { working: number; slow: number; rateLimited: number; down: number; ms: number[] }> = {
+    nvidia: { working: 0, slow: 0, rateLimited: 0, down: 0, ms: [] },
+    opencode: { working: 0, slow: 0, rateLimited: 0, down: 0, ms: [] },
+    openrouter: { working: 0, slow: 0, rateLimited: 0, down: 0, ms: [] },
   };
   for (const r of results.values()) {
     const bucket = acc[r.provider];
@@ -40,6 +41,8 @@ export function computeProviderHealth(
       // Slow responses are still successful responses; excluding them made the
       // average look better the worse a provider actually performed.
       bucket.ms.push(r.responseTimeMs);
+    } else if (r.status === "rate-limited") {
+      bucket.rateLimited++;
     } else if (r.status === "error" || r.status === "timeout") {
       bucket.down++;
     }
@@ -50,9 +53,10 @@ export function computeProviderHealth(
     return {
       provider: p,
       total: totals[p],
-      tested: a.working + a.slow + a.down,
+      tested: a.working + a.slow + a.rateLimited + a.down,
       working: a.working,
       slow: a.slow,
+      rateLimited: a.rateLimited,
       down: a.down,
       avgMs: a.ms.length ? Math.round(a.ms.reduce((x, y) => x + y, 0) / a.ms.length) : 0,
       error: providerErrors[p],
@@ -136,7 +140,9 @@ export default function ProviderHealthStrip({
                 ? h.error
                 : h.tested === 0
                   ? `${h.total} model${h.total === 1 ? "" : "s"} · run a test to check`
-                  : `${h.working} working · ${h.slow} slow · ${h.down} down${
+                  : `${h.working} working · ${h.slow} slow${
+                      h.rateLimited ? ` · ${h.rateLimited} limited` : ""
+                    } · ${h.down} down${
                       h.avgMs ? ` · avg ${formatDuration(h.avgMs)}` : ""
                     }`}
             </p>

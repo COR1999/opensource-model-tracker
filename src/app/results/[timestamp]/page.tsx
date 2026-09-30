@@ -63,6 +63,7 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
   const working = results.filter((r) => r.status === "working").length;
   const slow = results.filter((r) => r.status === "slow").length;
   const errors = results.filter((r) => r.status === "error" || r.status === "timeout").length;
+  const rateLimited = results.filter((r) => r.status === "rate-limited").length;
   const removed = results.filter((r) => r.status === "removed").length;
 
   return (
@@ -76,6 +77,7 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
         <div className="flex gap-4 mt-3 text-sm">
           <span className="text-emerald-400">{working} working</span>
           <span className="text-yellow-400">{slow} slow</span>
+          <span className="text-violet-400">{rateLimited} rate limited</span>
           <span className="text-red-400">{errors} error</span>
           <span className="text-gray-500">{removed} removed</span>
           <span className="text-gray-400">{results.length} total</span>
@@ -101,7 +103,14 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
           <tbody>
             {results
               .sort((a, b) => {
-                const order: Record<string, number> = { working: 0, slow: 1, error: 2, timeout: 3, removed: 4 };
+                const order: Record<string, number> = {
+                  working: 0,
+                  slow: 1,
+                  "rate-limited": 2,
+                  error: 3,
+                  timeout: 4,
+                  removed: 5,
+                };
                 return (order[a.status] ?? 5) - (order[b.status] ?? 5);
               })
               .map((r) => (
