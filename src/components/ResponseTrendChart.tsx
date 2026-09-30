@@ -12,10 +12,13 @@ interface DayStats {
  * Computes per-day average response time from raw uptime records.
  * Only includes records with a positive response time (working/slow).
  */
-function computeDailyStats(records: UptimeRecord[]): (DayStats | null)[] {
+export function computeDailyStats(records: UptimeRecord[]): (DayStats | null)[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const buckets: { totalMs: number; count: number }[] = Array.from({ length: 7 }, () => ({ totalMs: 0, count: 0 }));
+  const buckets: { totalMs: number; count: number }[] = Array.from({ length: 7 }, () => ({
+    totalMs: 0,
+    count: 0,
+  }));
 
   for (const r of records) {
     if (r.responseTimeMs <= 0) continue;
@@ -28,7 +31,7 @@ function computeDailyStats(records: UptimeRecord[]): (DayStats | null)[] {
   }
 
   return buckets.map((b) =>
-    b.count > 0 ? { avgMs: Math.round(b.totalMs / b.count), count: b.count } : null,
+    b.count > 0 ? { avgMs: Math.round(b.totalMs / b.count), count: b.count } : null
   );
 }
 
@@ -64,7 +67,6 @@ export default function ResponseTrendChart({
     return { x, y, value: v, hasData: stats[i] !== null };
   });
 
-  // Build path — skip segments where there's no data
   let pathD = "";
   let started = false;
   for (const p of points) {
@@ -84,6 +86,11 @@ export default function ResponseTrendChart({
   const lineClass = theme === "dark" ? "stroke-blue-500" : "stroke-blue-600";
   const dotClass = theme === "dark" ? "fill-blue-400" : "fill-blue-600";
   const gridClass = theme === "dark" ? "stroke-gray-800" : "stroke-gray-200";
+
+  const withData = values.filter((v) => v > 0);
+  const avg = withData.length
+    ? Math.round(withData.reduce((a, b) => a + b, 0) / withData.length)
+    : 0;
 
   return (
     <div>
@@ -105,20 +112,21 @@ export default function ResponseTrendChart({
           />
         ))}
 
-        {/* Line */}
         {pathD && (
-          <path d={pathD} fill="none" className={lineClass} strokeWidth="1.5" strokeLinejoin="round" />
+          <path
+            d={pathD}
+            fill="none"
+            className={lineClass}
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
         )}
 
-        {/* Dots */}
         {points.map(
           (p, i) =>
-            p.hasData && (
-              <circle key={i} cx={p.x} cy={p.y} r="2.5" className={dotClass} />
-            ),
+            p.hasData && <circle key={i} cx={p.x} cy={p.y} r="2.5" className={dotClass} />
         )}
 
-        {/* Day labels */}
         {points.map((p, i) => (
           <text
             key={i}
@@ -133,10 +141,11 @@ export default function ResponseTrendChart({
         ))}
       </svg>
 
-      {/* Summary */}
       <div className="mt-1.5 flex items-center gap-3 text-xs">
-        <span className={`tabular-nums ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
-          avg {formatDuration(Math.round(values.reduce((a, b) => a + b, 0) / Math.max(values.filter((v) => v > 0).length, 1)))}
+        <span
+          className={`tabular-nums ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+        >
+          avg {formatDuration(avg)}
         </span>
         <span className={`tabular-nums ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}>
           max {formatDuration(max)}
