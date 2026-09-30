@@ -24,7 +24,7 @@ import {
   formatDuration,
   type Theme,
 } from "@/lib/display";
-import { loadLastResults, loadUptime, loadTheme, saveLastResults } from "@/lib/storage";
+import { loadLastResults, loadUptime, loadTheme, saveLastResults, loadShortlist, toggleShortlist } from "@/lib/storage";
 import ResponseTrendChart from "@/components/ResponseTrendChart";
 import Spinner from "@/components/Spinner";
 
@@ -45,11 +45,22 @@ export default function ModelDetailPage({
   const [uptimeRecords, setUptimeRecords] = useState<UptimeRecord[]>([]);
   const [testing, setTesting] = useState(false);
   const [freeTierGone, setFreeTierGone] = useState(false);
+  const [shortlisted, setShortlisted] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is browser-only
     setTheme(loadTheme());
-  }, []);
+    setShortlisted(loadShortlist().has(modelId));
+  }, [modelId]);
+
+  const handleToggleShortlist = useCallback(() => {
+    setShortlisted((prev) => {
+      const next = toggleShortlist(new Set(loadShortlist()), modelId);
+      // Use the persisted set so concurrent toggles stay consistent.
+      void prev;
+      return next.has(modelId);
+    });
+  }, [modelId]);
 
   useEffect(() => {
     const results = loadLastResults();
@@ -257,6 +268,17 @@ export default function ModelDetailPage({
               ) : (
                 "Test now"
               )}
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleShortlist}
+              aria-pressed={shortlisted}
+              aria-label={shortlisted ? "Remove from shortlist" : "Add to shortlist"}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${cardBg} ${border} ${
+                shortlisted ? "text-amber-400" : `${textMuted} hover:text-amber-400`
+              }`}
+            >
+              {shortlisted ? "★ Shortlisted" : "☆ Shortlist"}
             </button>
             <a
               href={model ? modelUrl(model) : "#"}
