@@ -101,6 +101,14 @@ export default function ModelCardList({
                       slow
                     </span>
                   )}
+                  {typeof m.benchmarkScore === "number" && (
+                    <span
+                      title={m.benchmarkRank ? `BenchLM rank #${m.benchmarkRank}` : "Benchmark score"}
+                      className={`rounded-full border px-1.5 py-0.5 font-mono text-[10px] font-medium ${border} ${textMuted}`}
+                    >
+                      {m.benchmarkScore.toFixed(1)}
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-1 flex items-start gap-1.5">

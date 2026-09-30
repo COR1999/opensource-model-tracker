@@ -25,40 +25,85 @@ export const KNOWN_SLOW = new Set([
 
 // OpenCode Zen free tier — gateway lists paid models too; keep only
 // "-free"-suffixed ids plus big-pickle (the unsuffixed free agent model)
+// Order is a static fallback: live catalogs are re-sorted by BenchLM /
+// OpenRouter benchmark scores in rankings.ts whenever those APIs respond.
 export const FALLBACK_OPENCODE_MODELS: ModelInfo[] = [
-  { id: "opencode/big-pickle", displayName: "Big Pickle", provider: "opencode", ownedBy: "opencode", category: "chat" },
-  { id: "opencode/deepseek-v4-flash-free", displayName: "DeepSeek V4 Flash", provider: "opencode", ownedBy: "opencode", category: "chat" },
-  { id: "opencode/x-preview-f-free", displayName: "X Preview F", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // BenchLM #32, 64.61 — strongest free option overall; coding + agentic
   { id: "opencode/muse-spark-1.2-contributor-free", displayName: "Muse Spark 1.2 Contributor", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // Current Zen free contributor tier (docs list 1.3; 1.2 free still resolved on gateway)
+  { id: "opencode/muse-spark-1.3-contributor-free", displayName: "Muse Spark 1.3 Contributor", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // No BenchLM overall score, but SWE-bench Verified 79%, LiveCodeBench 91.6%,
+  // Terminal-Bench 2.1 82.7%; sibling V4.1 Flash scores 55.33. Slow in test-all.
+  { id: "opencode/deepseek-v4-flash-free", displayName: "DeepSeek V4 Flash", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // BenchLM #79, 51.83 (Pro variant); AA Intelligence 26. Coding-leaning.
   { id: "opencode/mimo-v2.5-free", displayName: "MiMo V2.5", provider: "opencode", ownedBy: "opencode", category: "code" },
+  // Zen limited-time free; Xiaomi V2.6 Flash is BenchLM #36 (63.63) on paid rows
+  { id: "opencode/mimo-v2.6-flash-free", displayName: "MiMo V2.6 Flash", provider: "opencode", ownedBy: "opencode", category: "code" },
+  // BenchLM #80, 51.15
   { id: "opencode/hy3-free", displayName: "Hy3", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // BenchLM #114, 42.99 — strong SWE-bench 71.9% / LiveCodeBench 89%, 1M ctx
   { id: "opencode/nemotron-3-ultra-free", displayName: "Nemotron 3 Ultra", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // BenchLM #202, 18.92 (NVFP4 variant)
   { id: "opencode/nemotron-3.5-lightning-free", displayName: "Nemotron 3.5 Lightning", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // Zen limited-time free; InclusionAI Ling 3.0 Flash family (BenchLM #118 ~42)
+  { id: "opencode/ling-3.0-flash-fin-free", displayName: "Ling 3.0 Flash Fin", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // Unlisted; code-specialized poolside model
   { id: "opencode/laguna-s-2.1-free", displayName: "Laguna S 2.1", provider: "opencode", ownedBy: "opencode", category: "code" },
+  // Stealth model: free on OpenCode Zen only, identity unpublished.
+  // No BenchLM / Artificial Analysis / OpenRouter row exists as of 2026-09-30,
+  // so live rankings leave it unscored. Sister stealth model Space Bunny Alpha
+  // is the closest public analogue (OpenRouter stealth/, free, 1M ctx).
+  { id: "opencode/big-pickle", displayName: "Big Pickle", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // Zen stealth free; OpenRouter twin stealth/space-bunny-alpha ranked #1 by usage
+  { id: "opencode/space-bunny-free", displayName: "Space Bunny Free", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // Zen limited-time free preview; no public benchmark row
+  { id: "opencode/longcat-2.5-preview-free", displayName: "LongCat 2.5 Preview", provider: "opencode", ownedBy: "opencode", category: "chat" },
+  // Unlisted; no public benchmark evidence
+  { id: "opencode/x-preview-f-free", displayName: "X Preview F", provider: "opencode", ownedBy: "opencode", category: "chat" },
 ];
 
 // Mirrors the live OpenRouter :free catalog (verified 2026-08-23) so the
 // dashboard still renders fully - including context lengths - when the
 // discovery API is unreachable. Refresh when OpenRouter changes its lineup.
+// Order is a static fallback: live catalogs are re-sorted by BenchLM /
+// OpenRouter benchmark scores in rankings.ts whenever those APIs respond.
 export const FALLBACK_OPENROUTER_MODELS: ModelInfo[] = [
+  // BenchLM #40, 62.6 — best open-weight in this list; SWE 78.4%, LCB 91.5%
   { id: "openrouter/dots-studio/dots-3-note-preview:free", displayName: "Dots.3 Note Preview", provider: "openrouter", ownedBy: "dots-studio", category: "chat", contextLength: 512000 },
-  { id: "openrouter/liquid/lfm-2.5-2.6b:free", displayName: "LFM 2.5 2.6B", provider: "openrouter", ownedBy: "liquid", category: "chat", contextLength: 65536 },
-  { id: "openrouter/nvidia/nemotron-3.5-lightning:free", displayName: "Nemotron 3.5 Lightning", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 1000000 },
-  { id: "openrouter/thinkingmachines/inkling-small:free", displayName: "Inkling Small", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat", contextLength: 262144 },
-  { id: "openrouter/poolside/laguna-s-2.1:free", displayName: "Laguna S 2.1", provider: "openrouter", ownedBy: "poolside", category: "code", contextLength: 262144 },
-  { id: "openrouter/thinkingmachines/inkling:free", displayName: "Inkling", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat", contextLength: 262144 },
-  { id: "openrouter/poolside/laguna-xs-2.1:free", displayName: "Laguna XS 2.1", provider: "openrouter", ownedBy: "poolside", category: "code", contextLength: 262144 },
-  { id: "openrouter/cohere/north-mini-code:free", displayName: "North Mini Code", provider: "openrouter", ownedBy: "cohere", category: "code", contextLength: 256000 },
+  // BenchLM #41, 62.44 — math/agentic elite (AIME26 99.2%, τ² 99.1%)
   { id: "openrouter/z-ai/glm-5.2:free", displayName: "GLM 5.2", provider: "openrouter", ownedBy: "z-ai", category: "chat", contextLength: 256000 },
-  { id: "openrouter/nvidia/nemotron-3.5-content-safety:free", displayName: "Nemotron 3.5 Content Safety", provider: "openrouter", ownedBy: "nvidia", category: "other", contextLength: 128000 },
-  { id: "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free", displayName: "Nemotron 3 Ultra 550B", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 1000000 },
-  { id: "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", displayName: "Nemotron 3 Nano Omni 30B Reasoning", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 256000 },
+  // BenchLM #57, 55.48 — best SWE-bench Verified (80.2%) in the free set
+  { id: "openrouter/thinkingmachines/inkling-small:free", displayName: "Inkling Small", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat", contextLength: 262144 },
+  // BenchLM #68, 54.09 — SWE-bench Verified 77.6%
+  { id: "openrouter/thinkingmachines/inkling:free", displayName: "Inkling", provider: "openrouter", ownedBy: "thinkingmachines", category: "chat", contextLength: 262144 },
+  // BenchLM #100, 46.16
   { id: "openrouter/google/gemma-4-26b-a4b-it:free", displayName: "Gemma 4 26B A4B IT", provider: "openrouter", ownedBy: "google", category: "chat", contextLength: 262144 },
+  // BenchLM #107, 44.67 — known slow (skipped in test-all / cron)
   { id: "openrouter/google/gemma-4-31b-it:free", displayName: "Gemma 4 31B IT", provider: "openrouter", ownedBy: "google", category: "chat", contextLength: 262144 },
+  // BenchLM #114, 42.99 — SWE 71.9%, LiveCodeBench 89%, 1M ctx; #8 by OpenRouter usage
+  { id: "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free", displayName: "Nemotron 3 Ultra 550B", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 1000000 },
+  // BenchLM #155, 32.82 — tiny 2.6B; BFCL v4 56.9% (tool calling relative to peers)
+  { id: "openrouter/liquid/lfm-2.5-2.6b:free", displayName: "LFM 2.5 2.6B", provider: "openrouter", ownedBy: "liquid", category: "chat", contextLength: 65536 },
+  // BenchLM #171, 30.7
+  { id: "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", displayName: "Nemotron 3 Nano Omni 30B Reasoning", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 256000 },
+  // BenchLM #202, 18.92 (NVFP4 variant)
+  { id: "openrouter/nvidia/nemotron-3.5-lightning:free", displayName: "Nemotron 3.5 Lightning", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 1000000 },
+  // Unlisted on BenchLM; AA Intelligence 10, #41/142 open-weights of similar size class
+  { id: "openrouter/cohere/north-mini-code:free", displayName: "North Mini Code", provider: "openrouter", ownedBy: "cohere", category: "code", contextLength: 256000 },
+  // Unlisted; code-specialized poolside model
+  { id: "openrouter/poolside/laguna-s-2.1:free", displayName: "Laguna S 2.1", provider: "openrouter", ownedBy: "poolside", category: "code", contextLength: 262144 },
+  // Unlisted; smaller code-specialized poolside model
+  { id: "openrouter/poolside/laguna-xs-2.1:free", displayName: "Laguna XS 2.1", provider: "openrouter", ownedBy: "poolside", category: "code", contextLength: 262144 },
+  // Unlisted on BenchLM (page says "coming soon"); 120B MoE, non-reasoning
   { id: "openrouter/nvidia/nemotron-3-super-120b-a12b:free", displayName: "Nemotron 3 Super 120B", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 262144 },
+  // BenchLM rows exist but no overall score; AA Coding Index only 14.4%
   { id: "openrouter/nvidia/nemotron-3-nano-30b-a3b:free", displayName: "Nemotron 3 Nano 30B", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 256000 },
-  { id: "openrouter/nvidia/nemotron-nano-12b-v2-vl:free", displayName: "Nemotron Nano 12B V2 VL", provider: "openrouter", ownedBy: "nvidia", category: "vision", contextLength: 128000 },
+  // Unlisted; small chat model, no strong benchmark evidence
   { id: "openrouter/nvidia/nemotron-nano-9b-v2:free", displayName: "Nemotron Nano 9B V2", provider: "openrouter", ownedBy: "nvidia", category: "chat", contextLength: 128000 },
+  // Unlisted; vision-specialized
+  { id: "openrouter/nvidia/nemotron-nano-12b-v2-vl:free", displayName: "Nemotron Nano 12B V2 VL", provider: "openrouter", ownedBy: "nvidia", category: "vision", contextLength: 128000 },
+  // Unlisted; specialized safety classifier, not general purpose
+  { id: "openrouter/nvidia/nemotron-3.5-content-safety:free", displayName: "Nemotron 3.5 Content Safety", provider: "openrouter", ownedBy: "nvidia", category: "other", contextLength: 128000 },
 ];
 
 // Manually maintained list of T3-available model API IDs
@@ -273,14 +318,19 @@ export const CATEGORY_MAP: Record<string, ModelCategory> = {
   // last candidate resolves them.
   "big-pickle": "chat",
   "mimo-v2.5": "code",
+  "mimo-v2.6-flash": "code",
   "hy3": "chat",
   "x-preview-f": "chat",
   "muse-spark-1.2-contributor": "chat",
+  "muse-spark-1.3-contributor": "chat",
   "laguna-s-2.1": "code",
   "laguna-xs-2.1": "code",
   "nemotron-3-ultra": "chat",
   "nemotron-3.5-lightning": "chat",
   "deepseek-v4-flash": "chat",
+  "space-bunny": "chat",
+  "longcat-2.5-preview": "chat",
+  "ling-3.0-flash-fin": "chat",
   // OpenRouter lists this without the size suffix NVIDIA uses
   "nvidia/nemotron-3.5-lightning": "chat",
 };

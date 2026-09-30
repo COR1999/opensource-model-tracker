@@ -97,6 +97,45 @@ export default function ComparePanel({
 
             <tr className={`border-b ${border}`}>
               <th scope="row" className={rowLabel}>
+                Benchmark
+              </th>
+              {models.map((m) => (
+                <td key={m.id} className="px-3 py-2 font-mono text-sm tabular-nums">
+                  {typeof m.benchmarkScore === "number" ? (
+                    <span>
+                      {m.benchmarkScore.toFixed(1)}
+                      {typeof m.codingScore === "number" && (
+                        <span className={`ml-1 text-xs ${textSubtle}`}>code {m.codingScore.toFixed(0)}</span>
+                      )}
+                      {typeof m.agenticScore === "number" && (
+                        <span className={`ml-1 text-xs ${textSubtle}`}>agent {m.agenticScore.toFixed(0)}</span>
+                      )}
+                      {typeof m.knowledgeScore === "number" && (
+                        <span className={`ml-1 text-xs ${textSubtle}`}>know {m.knowledgeScore.toFixed(0)}</span>
+                      )}
+                    </span>
+                  ) : typeof m.codingScore === "number" || typeof m.intelligenceScore === "number" ? (
+                    <span className="font-sans text-xs">
+                      {typeof m.codingScore === "number" && (
+                        <span>code {m.codingScore.toFixed(0)} </span>
+                      )}
+                      {typeof m.agenticScore === "number" && (
+                        <span>agent {m.agenticScore.toFixed(0)} </span>
+                      )}
+                      {typeof m.intelligenceScore === "number" && (
+                        <span>intel {m.intelligenceScore.toFixed(0)}</span>
+                      )}
+                      <span className={`ml-1 ${textSubtle}`}>AA</span>
+                    </span>
+                  ) : (
+                    <span className={textSubtle}>—</span>
+                  )}
+                </td>
+              ))}
+            </tr>
+
+            <tr className={`border-b ${border}`}>
+              <th scope="row" className={rowLabel}>
                 Context
               </th>
               {models.map((m) => (

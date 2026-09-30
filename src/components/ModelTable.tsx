@@ -21,7 +21,14 @@ import {
 import Spinner from "./Spinner";
 import UptimeSparkline from "./UptimeSparkline";
 
-export type SortKey = "displayName" | "provider" | "status" | "responseTimeMs" | "category" | "contextLength";
+export type SortKey =
+  | "displayName"
+  | "provider"
+  | "status"
+  | "responseTimeMs"
+  | "category"
+  | "contextLength"
+  | "benchmarkScore";
 
 export interface TableColumn {
   key: SortKey | null;
@@ -32,6 +39,7 @@ export interface TableColumn {
 }
 
 const COLUMNS: TableColumn[] = [
+  { key: "benchmarkScore", label: "Score", align: "right" },
   { key: "provider", label: "Provider" },
   { key: "displayName", label: "Model" },
   { key: "category", label: "Category", hide: "hidden xl:table-cell" },
@@ -87,8 +95,9 @@ export default function ModelTable({
     <div className={`scroll-thin overflow-x-auto rounded-xl border ${border}`}>
       <table className="w-full min-w-[52rem] border-collapse text-left">
         <caption className="sr-only">
-          Tracked models with provider, category, status and response time. Column headers sort the
-          table.
+          Tracked models with provider, category, benchmark score, status and response time.
+          Column headers sort the table. Benchmark scores from BenchLM.ai and OpenRouter
+          (live, may lag provider catalog changes).
         </caption>
         <thead className={`sticky top-0 z-10 ${raisedBg} backdrop-blur`}>
           <tr className={`border-b ${border}`}>
@@ -159,6 +168,21 @@ export default function ModelTable({
                     aria-label={`Compare ${m.displayName}`}
                     className="h-4 w-4 rounded accent-blue-600"
                   />
+                </td>
+
+                <td className={`px-4 ${d.cellY} text-right font-mono text-xs tabular-nums`} title={m.benchmarkRank ? `BenchLM rank #${m.benchmarkRank}` : undefined}>
+                  {typeof m.benchmarkScore === "number" ? (
+                    <span className={text}>
+                      {m.benchmarkScore.toFixed(1)}
+                      {typeof m.codingScore === "number" && (
+                        <span className={`ml-1 ${textSubtle}`} title={`Coding ${m.codingScore.toFixed(1)}`}>
+                          c{m.codingScore.toFixed(0)}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className={textSubtle}>—</span>
+                  )}
                 </td>
 
                 <td className={`px-4 ${d.cellY}`}>
