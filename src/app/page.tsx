@@ -25,6 +25,7 @@ import ModelTable from "@/components/ModelTable";
 import ModelCardList from "@/components/ModelCardList";
 import ChangelogPanel from "@/components/ChangelogPanel";
 import ComparePanel from "@/components/ComparePanel";
+import AlertSettings from "@/components/AlertSettings";
 import Toast, { type ToastMessage } from "@/components/Toast";
 import EmptyState from "@/components/EmptyState";
 import TableSkeleton from "@/components/TableSkeleton";
@@ -51,10 +52,12 @@ export default function Dashboard() {
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const [showCompare, setShowCompare] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
   const [toastMsg, setToastMsg] = useState<ToastMessage | null>(null);
   const [now, setNow] = useState(() => new Date());
   const [shortlist, setShortlist] = useState<Set<string>>(new Set());
   const searchRef = useRef<HTMLInputElement>(null);
+  const lastAutoTested = useRef<Set<string>>(new Set());
 
   const showToast = useCallback((text: string, tone: ToastMessage["tone"]) => {
     setToastMsg({ id: Date.now(), text, tone });
@@ -81,6 +84,19 @@ export default function Dashboard() {
   const handleToggleShortlist = useCallback((id: string) => {
     setShortlist((prev) => toggleShortlist(prev, id));
   }, []);
+
+  // Auto-test newly detected models so the "NEW" badge is immediately actionable.
+  useEffect(() => {
+    if (catalog.newModels.size === 0 || testing.progress !== null) return;
+    const newIds = [...catalog.newModels].filter((id) => !lastAutoTested.current.has(id));
+    if (newIds.length === 0) return;
+    const newModels = catalog.models.filter(
+      (m) => newIds.includes(m.id) && !isKnownSlow(m.id)
+    );
+    if (newModels.length === 0) return;
+    lastAutoTested.current = new Set([...lastAutoTested.current, ...newIds]);
+    testing.testMany(newModels, "Auto-test new models");
+  }, [catalog.newModels, catalog.models, testing]);
 
   const pick = useMemo(
     () => recommendModel(catalog.models, testing.results),
@@ -357,17 +373,23 @@ export default function Dashboard() {
       </button>
       {compareIds.size > 0 && (
         <button
-          onClick={() => { setShowCompare(!showCompare); setShowChangelog(false); }}
+          onClick={() => { setShowCompare(!showCompare); setShowChangelog(false); setShowAlerts(false); }}
           className="px-4 py-2 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-500 transition-colors"
         >
           Compare ({compareIds.size})
         </button>
       )}
       <button
-        onClick={() => { setShowChangelog(!showChangelog); setShowCompare(false); }}
+        onClick={() => { setShowChangelog(!showChangelog); setShowCompare(false); setShowAlerts(false); }}
         className={`px-3 py-2 rounded-lg text-sm border transition-colors ${styles(theme).cardBg} ${styles(theme).border} ${styles(theme).textMuted}`}
       >
         Changelog ({catalog.changelog.length})
+      </button>
+      <button
+        onClick={() => { setShowAlerts(!showAlerts); setShowChangelog(false); setShowCompare(false); }}
+        className={`px-3 py-2 rounded-lg text-sm border transition-colors ${showAlerts ? "bg-blue-600 text-white border-blue-600" : `${styles(theme).cardBg} ${styles(theme).border} ${styles(theme).textMuted}`}`}
+      >
+        Alerts
       </button>
     </>
   );
@@ -390,6 +412,8 @@ export default function Dashboard() {
         />
 
         {showChangelog && <ChangelogPanel entries={catalog.changelog} theme={theme} />}
+
+        {showAlerts && <AlertSettings theme={theme} />}
 
         {showCompare && compared.length > 0 && (
           <ComparePanel

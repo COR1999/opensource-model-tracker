@@ -10,6 +10,7 @@ import {
   saveKnownModels,
   type ChangelogEntry,
 } from "@/lib/storage";
+import { loadSubscriptions, dispatchAlerts, type AlertPayload } from "@/lib/subscriptions";
 
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -108,6 +109,27 @@ export function useModelCatalog() {
             saveChangelog(next);
             return next;
           });
+
+          // Best-effort webhook alerts; never block catalog refresh on failure.
+          const subs = loadSubscriptions();
+          if (subs.length > 0) {
+            const nowTs = Date.now();
+            for (const c of changes) {
+              const payload: AlertPayload = {
+                type:
+                  c.type === "added"
+                    ? "new_model"
+                    : c.type === "free-tier-gone"
+                      ? "removed_model"
+                      : "removed_model",
+                timestamp: nowTs,
+                modelId: c.modelId,
+                displayName: c.displayName,
+                provider: fetched.find((m) => m.id === c.modelId)?.provider ?? "unknown",
+              };
+              void dispatchAlerts(payload, subs);
+            }
+          }
         }
         void removedIds;
       }
