@@ -1,7 +1,7 @@
 "use client";
 
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
-import { isKnownSlow, isT3Available, isT3Breaking, modelUrl } from "@/lib/models";
+import { isKnownSlow, isT3Available, isT3Breaking, modelUrl, bestForChips } from "@/lib/models";
 import {
   categoryBadge,
   computeUptimePercent,
@@ -68,6 +68,9 @@ export default function ModelTable({
   copiedId,
   testingSingle,
   newModels,
+  freeTierGone,
+  shortlist,
+  onToggleShortlist,
   busy,
 }: {
   models: ModelInfo[];
@@ -85,6 +88,9 @@ export default function ModelTable({
   copiedId: string | null;
   testingSingle: string | null;
   newModels: Set<string>;
+  freeTierGone?: Set<string>;
+  shortlist?: Set<string>;
+  onToggleShortlist?: (id: string) => void;
   busy: boolean;
 }) {
   const { cardBg, border, text, textMuted, textSubtle, hoverBg, raisedBg } = styles(theme);
@@ -217,6 +223,14 @@ export default function ModelTable({
                         T3 ⚠
                       </span>
                     )}
+                    {freeTierGone?.has(m.id) && (
+                      <span
+                        title="Free tier appears revoked — model no longer resolves on its free endpoint"
+                        className="rounded-full border border-orange-700/50 bg-orange-900/60 px-1.5 py-0.5 text-[10px] font-medium text-orange-300"
+                      >
+                        free gone
+                      </span>
+                    )}
                     {skipped && (
                       <span
                         title="Skipped by Test All — consistently slower than the request budget"
@@ -225,8 +239,29 @@ export default function ModelTable({
                         slow
                       </span>
                     )}
+                    {bestForChips(m, r)
+                      .filter((c) => c.kind !== "unranked")
+                      .map((c) => (
+                        <span
+                          key={c.kind}
+                          className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${border} ${textMuted}`}
+                        >
+                          {c.label}
+                        </span>
+                      ))}
                   </div>
                   <div className="mt-0.5 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onToggleShortlist?.(m.id)}
+                      aria-label={`${shortlist?.has(m.id) ? "Remove" : "Add"} ${m.displayName} ${shortlist?.has(m.id) ? "from" : "to"} shortlist`}
+                      aria-pressed={shortlist?.has(m.id) ?? false}
+                      className={`rounded px-1 text-sm transition-colors ${
+                        shortlist?.has(m.id) ? "text-amber-400" : `${textSubtle} hover:text-amber-400`
+                      }`}
+                    >
+                      {shortlist?.has(m.id) ? "★" : "☆"}
+                    </button>
                     <span className={`font-mono text-xs ${textSubtle}`}>{m.id}</span>
                     <button
                       type="button"
