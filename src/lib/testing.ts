@@ -1,5 +1,6 @@
 import type { ModelInfo, TestResult } from "./types";
 import { NVIDIA_BASE, OPENCODE_BASE, OPENROUTER_BASE } from "./providers";
+import { shouldRetryRateLimit, rateLimitRetryDelayMs } from "./rate-limit";
 
 // Paid catalog probes stay on the original budget so a full pass still fits
 // Vercel's 60s cron cap. Free tiers queue and throttle far more aggressively
@@ -70,47 +71,21 @@ const TOOLS_PAYLOAD = [
   },
 ];
 
-export async function testModel(
-  apiKey: string,
-  model: ModelInfo
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function probeOnce(
+  model: ModelInfo,
+  start: number,
+  baseUrl: string,
+  upstreamId: string,
+  headers: Record<string, string>
 ): Promise<TestResult> {
-  const start = Date.now();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), testTimeoutMs(model));
 
   try {
-    const baseUrl =
-      model.provider === "opencode" ? OPENCODE_BASE
-      : model.provider === "openrouter" ? OPENROUTER_BASE
-      : NVIDIA_BASE;
-
-    // Tracker ids are provider-namespaced; upstream APIs expect them bare
-    const upstreamId = model.id.replace(/^(opencode|openrouter)\//, "");
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (model.provider === "nvidia" && apiKey) {
-      headers["Authorization"] = `Bearer ${apiKey}`;
-    }
-    if (model.provider === "openrouter") {
-      const openrouterKey = process.env.OPENROUTER_API_KEY || "";
-      if (!openrouterKey) {
-        clearTimeout(timeout);
-        return {
-          modelId: model.id,
-          provider: model.provider,
-          status: "error",
-          httpCode: 0,
-          responseTimeMs: Date.now() - start,
-          supportsFunctionCalling: false,
-          error: "OPENROUTER_API_KEY not configured on server - free models still require auth",
-        };
-      }
-      headers["Authorization"] = `Bearer ${openrouterKey}`;
-    }
-
-    // Step 1: Test without tools — just check if model responds
     const res = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers,
@@ -155,10 +130,8 @@ export async function testModel(
       };
     }
 
-    // Parse (and thus validate) the response even though the body is unused
     await res.json();
 
-    // Step 2: Probe function calling separately (best-effort, don't fail the test)
     let hasTools = false;
     try {
       const toolRes = await fetch(`${baseUrl}/chat/completions`, {
@@ -176,7 +149,6 @@ export async function testModel(
         const toolData = await toolRes.json();
         hasTools = !!toolData.choices?.[0]?.message?.tool_calls?.length;
       }
-      // If tools probe fails with 400, model just doesn't support tools — that's fine
     } catch {
       // Tools probe failed — model doesn't support function calling
     }
@@ -193,9 +165,6 @@ export async function testModel(
     clearTimeout(timeout);
     const elapsed = Date.now() - start;
     const msg = err instanceof Error ? err.message : "Unknown error";
-    // controller.abort() throws AbortError; AbortSignal.timeout() throws
-    // TimeoutError — both mean the model didn't answer in time. Message
-    // sniffing misses TimeoutError ("The operation timed out").
     const isTimeout =
       err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError");
     return {
@@ -208,6 +177,53 @@ export async function testModel(
       error: msg,
     };
   }
+}
+
+export async function testModel(
+  apiKey: string,
+  model: ModelInfo
+): Promise<TestResult> {
+  const start = Date.now();
+
+  const baseUrl =
+    model.provider === "opencode" ? OPENCODE_BASE
+    : model.provider === "openrouter" ? OPENROUTER_BASE
+    : NVIDIA_BASE;
+
+  const upstreamId = model.id.replace(/^(opencode|openrouter)\//, "");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (model.provider === "nvidia" && apiKey) {
+    headers["Authorization"] = `Bearer ${apiKey}`;
+  }
+  if (model.provider === "openrouter") {
+    const openrouterKey = process.env.OPENROUTER_API_KEY || "";
+    if (!openrouterKey) {
+      return {
+        modelId: model.id,
+        provider: model.provider,
+        status: "error",
+        httpCode: 0,
+        responseTimeMs: Date.now() - start,
+        supportsFunctionCalling: false,
+        error: "OPENROUTER_API_KEY not configured on server - free models still require auth",
+      };
+    }
+    headers["Authorization"] = `Bearer ${openrouterKey}`;
+  }
+
+  // One retry on 429: free gateways throttle under Test All far more often
+  // than they hard-fail, and a single backoff cuts false "rate-limited" noise.
+  let attempt = 1;
+  let result = await probeOnce(model, start, baseUrl, upstreamId, headers);
+  while (result.status === "rate-limited" && shouldRetryRateLimit(attempt)) {
+    attempt += 1;
+    await sleep(rateLimitRetryDelayMs());
+    result = await probeOnce(model, start, baseUrl, upstreamId, headers);
+  }
+  return result;
 }
 
 export async function runModelTests(

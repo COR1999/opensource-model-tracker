@@ -3,6 +3,8 @@ import {
   fetchAllProviderModels,
   runModelTests,
   isKnownSlow,
+  parseRemoteUptime,
+  buildRemoteUptimeHistory,
   ModelCategory,
   TestResult,
 } from "@/lib/models";
@@ -18,21 +20,37 @@ const TESTABLE_CATEGORIES: ReadonlySet<ModelCategory> = new Set(["chat", "code",
 
 const REPO_OWNER = "COR1999";
 const REPO_NAME = "opensource-model-tracker";
+const UPTIME_HISTORY_PATH = "data/uptime-history.json";
 
 function utcDateStamp(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-// Writes the snapshot as a daily commit to this repo via the GitHub Contents
-// API. Needs a fine-grained PAT with contents:write on this repository in
-// SNAPSHOT_GITHUB_TOKEN; without it the run still completes but reports
-// persistence as skipped rather than failing the whole check.
-async function persistSnapshot(
+async function fetchExistingJson(token: string, path: string): Promise<unknown | null> {
+  const apiBase = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "opensource-model-tracker-cron",
+  };
+  try {
+    const res = await fetch(apiBase, { headers, signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const payload = (await res.json()) as { content?: string };
+    if (!payload.content) return null;
+    return JSON.parse(Buffer.from(payload.content, "base64").toString("utf8"));
+  } catch {
+    return null;
+  }
+}
+
+async function putJsonFile(
   token: string,
-  stamp: string,
-  summary: object
+  path: string,
+  data: unknown,
+  message: string
 ): Promise<{ persisted: boolean; detail: string }> {
-  const path = `data/snapshots/${stamp}.json`;
   const apiBase = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
@@ -53,8 +71,8 @@ async function persistSnapshot(
       method: "PUT",
       headers,
       body: JSON.stringify({
-        message: `snapshot: ${stamp} automated model health check`,
-        content: Buffer.from(JSON.stringify(summary, null, 2)).toString("base64"),
+        message,
+        content: Buffer.from(JSON.stringify(data, null, 2)).toString("base64"),
         ...(sha ? { sha } : {}),
       }),
       signal: AbortSignal.timeout(15000),
@@ -68,6 +86,47 @@ async function persistSnapshot(
   }
 }
 
+async function persistSnapshot(
+  token: string,
+  stamp: string,
+  summary: object
+): Promise<{ persisted: boolean; detail: string }> {
+  return putJsonFile(
+    token,
+    `data/snapshots/${stamp}.json`,
+    summary,
+    `snapshot: ${stamp} automated model health check`
+  );
+}
+
+async function persistUptimeHistory(
+  token: string,
+  results: TestResult[],
+  now: number
+): Promise<{ persisted: boolean; detail: string }> {
+  const previousRaw = await fetchExistingJson(token, UPTIME_HISTORY_PATH);
+  const previous = parseRemoteUptime(previousRaw);
+  const next = buildRemoteUptimeHistory(previous, results, now);
+  return putJsonFile(
+    token,
+    UPTIME_HISTORY_PATH,
+    next,
+    `uptime: ${utcDateStamp(now)} merge cron results`
+  );
+}
+
+/** Non-fatal setup report so remote operators know what is missing. */
+function cronPreflight(): Record<string, string | boolean> {
+  return {
+    cronSecretConfigured: Boolean(process.env.CRON_SECRET),
+    snapshotTokenConfigured: Boolean(process.env.SNAPSHOT_GITHUB_TOKEN),
+    nvidiaKeyConfigured: Boolean(process.env.NVIDIA_API_KEY),
+    openrouterKeyConfigured: Boolean(process.env.OPENROUTER_API_KEY),
+    scheduleHint:
+      "Vercel → Project → Cron Jobs: schedule /api/cron (e.g. 0 */6 * * *) with Authorization: Bearer $CRON_SECRET",
+  };
+}
+
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -77,7 +136,7 @@ export async function GET(req: Request) {
   // rather than silently skipping the check.
   if (!cronSecret) {
     return NextResponse.json(
-      { error: "CRON_SECRET is not configured" },
+      { error: "CRON_SECRET is not configured", preflight: cronPreflight() },
       { status: 503 }
     );
   }
@@ -118,10 +177,20 @@ export async function GET(req: Request) {
     persisted: false,
     detail: "SNAPSHOT_GITHUB_TOKEN not configured",
   };
+  let uptimePersistence: { persisted: boolean; detail: string } = {
+    persisted: false,
+    detail: "SNAPSHOT_GITHUB_TOKEN not configured",
+  };
   const snapshotToken = process.env.SNAPSHOT_GITHUB_TOKEN;
   if (snapshotToken) {
     persistence = await persistSnapshot(snapshotToken, summary.date, summary);
+    uptimePersistence = await persistUptimeHistory(snapshotToken, results, startedAt);
   }
 
-  return NextResponse.json({ ...summary, persistence });
+  return NextResponse.json({
+    ...summary,
+    persistence,
+    uptimePersistence,
+    preflight: cronPreflight(),
+  });
 }

@@ -69,6 +69,71 @@ describe("statusFromHttpFailure", () => {
   });
 });
 
+describe("testModel rate-limit retry", () => {
+  it("retries once after 429 then returns the second probe result", async () => {
+    const { testModel } = await import("@/lib/testing");
+    const calls: number[] = [];
+    const original = globalThis.fetch;
+    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const body = typeof init?.body === "string" ? init.body : "";
+      calls.push(calls.length + 1);
+      // First call is the main probe → 429. Later calls (retry + tools) succeed.
+      if (calls.length === 1) {
+        return new Response("rate limited", { status: 429 });
+      }
+      void body;
+      return new Response(JSON.stringify({ choices: [{ message: { content: "hi" } }] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    try {
+      const result = await testModel("", {
+        id: "opencode/big-pickle",
+        displayName: "Big Pickle",
+        provider: "opencode",
+        ownedBy: "opencode",
+        category: "chat",
+      });
+      // 429 + successful retry + tools probe
+      expect(calls.length).toBe(3);
+      expect(result.status).toBe("working");
+      expect(result.httpCode).toBe(200);
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it("does not retry when the first probe succeeds", async () => {
+    const { testModel } = await import("@/lib/testing");
+    let calls = 0;
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      return new Response(JSON.stringify({ choices: [{ message: { content: "hi" } }] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    try {
+      const result = await testModel("", {
+        id: "opencode/big-pickle",
+        displayName: "Big Pickle",
+        provider: "opencode",
+        ownedBy: "opencode",
+        category: "chat",
+      });
+      // main probe + tools probe only — no rate-limit retry
+      expect(calls).toBe(2);
+      expect(result.status).toBe("working");
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+});
+
 describe("display + share + curated free lineup", () => {
   it("labels rate-limited distinctly", () => {
     expect(statusLabel("rate-limited")).toBe("Rate limited");

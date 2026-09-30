@@ -12,6 +12,7 @@ export interface Filters {
   category: ModelCategory | "all";
   status: StatusFilter;
   hideEndpoints: boolean;
+  shortlistOnly: boolean;
 }
 
 const CATEGORIES: { value: ModelCategory | "all"; label: string }[] = [
@@ -57,6 +58,7 @@ const FilterBar = forwardRef<
     filters.provider !== "all" ||
     filters.category !== "all" ||
     filters.status !== "all" ||
+    filters.shortlistOnly ||
     !filters.hideEndpoints;
 
   const chip = (active: boolean) =>
@@ -114,6 +116,16 @@ const FilterBar = forwardRef<
               </option>
             ))}
           </select>
+
+          <button
+            type="button"
+            onClick={() => onChange({ shortlistOnly: !filters.shortlistOnly })}
+            aria-pressed={filters.shortlistOnly}
+            className={chip(filters.shortlistOnly)}
+            title="Show only starred models"
+          >
+            ★ Shortlist
+          </button>
 
           <div
             className={`hidden overflow-hidden rounded-lg border sm:flex ${border}`}

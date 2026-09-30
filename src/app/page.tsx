@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { encodeSnapshot } from "@/lib/share";
 import { CATEGORY_OPTIONS } from "@/lib/curated";
-import { isKnownSlow } from "@/lib/categories";
+import { isKnownSlow, recommendModel } from "@/lib/models";
 import { styles, type Theme } from "@/lib/display";
 import {
   loadHideEndpoints,
   loadTheme,
   loadDensity,
+  loadShortlist,
+  toggleShortlist,
   saveDensity,
   type Density,
 } from "@/lib/storage";
@@ -33,6 +35,7 @@ const DEFAULT_FILTERS: Filters = {
   category: "all",
   status: "all",
   hideEndpoints: true,
+  shortlistOnly: false,
 };
 
 export default function Dashboard() {
@@ -50,6 +53,7 @@ export default function Dashboard() {
   const [showChangelog, setShowChangelog] = useState(false);
   const [toastMsg, setToastMsg] = useState<ToastMessage | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const [shortlist, setShortlist] = useState<Set<string>>(new Set());
   const searchRef = useRef<HTMLInputElement>(null);
 
   const showToast = useCallback((text: string, tone: ToastMessage["tone"]) => {
@@ -71,7 +75,17 @@ export default function Dashboard() {
     });
     setTheme(loadTheme());
     setDensity(loadDensity());
+    setShortlist(loadShortlist());
   }, []);
+
+  const handleToggleShortlist = useCallback((id: string) => {
+    setShortlist((prev) => toggleShortlist(prev, id));
+  }, []);
+
+  const pick = useMemo(
+    () => recommendModel(catalog.models, testing.results),
+    [catalog.models, testing.results]
+  );
 
   // URL seeding: ?provider=&category=&q=&working=1
   useEffect(() => {
@@ -154,6 +168,7 @@ export default function Dashboard() {
             (filters.status === "error" &&
               (testing.results.get(m.id)?.status === "error" || testing.results.get(m.id)?.status === "timeout")) ||
             (filters.status === "untested" && !testing.results.has(m.id))) &&
+          (!filters.shortlistOnly || shortlist.has(m.id)) &&
           (filters.search === "" ||
             m.id.toLowerCase().includes(filters.search.toLowerCase()) ||
             m.displayName.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -204,7 +219,7 @@ export default function Dashboard() {
         }
         return sortAsc ? cmp : -cmp;
       });
-  }, [catalog.models, testing.results, filters, sortKey, sortAsc]);
+  }, [catalog.models, testing.results, filters, sortKey, sortAsc, shortlist]);
 
   const usableIds = useMemo(() => {
     return catalog.models
@@ -433,6 +448,34 @@ export default function Dashboard() {
           onDensityChange={setDensity}
         />
 
+        {pick && (
+          <div
+            className={`mb-4 rounded-xl border px-4 py-3 text-sm ${styles(theme).cardBg} ${styles(theme).border}`}
+          >
+            <span className={styles(theme).textMuted}>Best free pick right now: </span>
+            <button
+              type="button"
+              onClick={() => {
+                setCompareIds(new Set([pick.id]));
+                setShowCompare(true);
+              }}
+              className={`font-medium underline-offset-2 hover:underline ${styles(theme).text}`}
+            >
+              {pick.displayName}
+            </button>
+            {typeof pick.benchmarkScore === "number" && (
+              <span className={`ml-2 font-mono text-xs ${styles(theme).textSubtle}`}>
+                score {pick.benchmarkScore.toFixed(1)}
+              </span>
+            )}
+            {catalog.freeTierGone.size > 0 && (
+              <span className={`ml-3 text-xs ${styles(theme).textMuted}`}>
+                {catalog.freeTierGone.size} free-tier id{catalog.freeTierGone.size === 1 ? "" : "s"} gone
+              </span>
+            )}
+          </div>
+        )}
+
         {catalog.loading ? (
           <TableSkeleton theme={theme} />
         ) : filtered.length === 0 ? (
@@ -461,6 +504,9 @@ export default function Dashboard() {
                 copiedId={null}
                 testingSingle={testing.testingSingle}
                 newModels={catalog.newModels}
+                freeTierGone={catalog.freeTierGone}
+                shortlist={shortlist}
+                onToggleShortlist={handleToggleShortlist}
                 busy={testing.progress !== null}
               />
             </div>
@@ -477,6 +523,9 @@ export default function Dashboard() {
                 copiedId={null}
                 testingSingle={testing.testingSingle}
                 newModels={catalog.newModels}
+                freeTierGone={catalog.freeTierGone}
+                shortlist={shortlist}
+                onToggleShortlist={handleToggleShortlist}
               />
             </div>
           </>

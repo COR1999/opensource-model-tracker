@@ -9,11 +9,12 @@ export const STORAGE_KEYS = {
   THEME: "model-tracker-theme",
   HIDE_ENDPOINTS: "model-tracker-hide-endpoints",
   DENSITY: "model-tracker-density",
+  SHORTLIST: "model-tracker-shortlist",
 } as const;
 
 export interface ChangelogEntry {
   timestamp: number;
-  type: "added" | "removed";
+  type: "added" | "removed" | "free-tier-gone";
   modelId: string;
   displayName: string;
 }
@@ -156,3 +157,24 @@ export function loadDensity(): Density {
 export function saveDensity(density: Density): boolean {
   return write(STORAGE_KEYS.DENSITY, density);
 }
+
+export function loadShortlist(): Set<string> {
+  const ids = parse<unknown>(read(STORAGE_KEYS.SHORTLIST), []);
+  return new Set(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : []);
+}
+
+export function saveShortlist(ids: Iterable<string>): boolean {
+  return write(STORAGE_KEYS.SHORTLIST, JSON.stringify([...ids]));
+}
+
+export function toggleShortlist(prev: Set<string>, modelId: string): Set<string> {
+  const next = new Set(prev);
+  if (next.has(modelId)) next.delete(modelId);
+  else next.add(modelId);
+  saveShortlist(next);
+  return next;
+}
+
+/** Pure merge of remote uptime into local, re-exported for hooks. */
+export { mergeUptimeHistory, parseRemoteUptime } from "./uptime-history";
+export type { RemoteUptimeHistory } from "./uptime-history";

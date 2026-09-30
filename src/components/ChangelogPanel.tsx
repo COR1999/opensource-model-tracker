@@ -54,14 +54,27 @@ export default function ChangelogPanel({
                       className={`flex h-4 w-4 flex-none items-center justify-center rounded-full text-[10px] font-bold ${
                         e.type === "added"
                           ? "bg-emerald-500/15 " + accent.ok
-                          : "bg-red-500/15 " + accent.bad
+                          : e.type === "free-tier-gone"
+                            ? "bg-orange-500/15 text-orange-400"
+                            : "bg-red-500/15 " + accent.bad
                       }`}
                     >
-                      {e.type === "added" ? "+" : "−"}
+                      {e.type === "added" ? "+" : e.type === "free-tier-gone" ? "!" : "−"}
                     </span>
-                    <span className="sr-only">{e.type === "added" ? "Added" : "Removed"}</span>
+                    <span className="sr-only">
+                      {e.type === "added"
+                        ? "Added"
+                        : e.type === "free-tier-gone"
+                          ? "Free tier gone"
+                          : "Removed"}
+                    </span>
                     <span className={`min-w-0 flex-1 truncate ${text}`} title={e.modelId}>
                       {e.displayName}
+                      {e.type === "free-tier-gone" && (
+                        <span className={`ml-1.5 text-xs ${accent.warn || "text-orange-400"}`}>
+                          free tier gone
+                        </span>
+                      )}
                     </span>
                     <time
                       dateTime={new Date(e.timestamp).toISOString()}
