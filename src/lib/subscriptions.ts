@@ -18,6 +18,14 @@ export interface AlertPayload {
   currentStatus?: TestResult["status"];
 }
 
+/** Statuses worth a webhook: not working/slow noise. */
+export const INTERESTING_STATUSES: ReadonlySet<TestResult["status"]> = new Set([
+  "timeout",
+  "rate-limited",
+  "error",
+  "removed",
+]);
+
 const STORAGE_KEY = "model-tracker-subscriptions";
 
 export function isValidWebhookUrl(url: string): boolean {
@@ -91,6 +99,35 @@ export function matchingSubscriptions(
   subs: Subscription[]
 ): Subscription[] {
   return subs.filter((s) => s.modelIds.length === 0 || s.modelIds.includes(payload.modelId));
+}
+
+/**
+ * Diff two result maps and produce status_change alerts when a model enters
+ * an interesting status (timeout / rate-limited / error / removed).
+ */
+export function statusChangeAlerts(
+  prev: Map<string, TestResult>,
+  next: Map<string, TestResult>,
+  displayNames: Map<string, string> = new Map(),
+  now: number = Date.now()
+): AlertPayload[] {
+  const alerts: AlertPayload[] = [];
+  for (const [modelId, current] of next) {
+    const previous = prev.get(modelId);
+    if (!previous) continue;
+    if (previous.status === current.status) continue;
+    if (!INTERESTING_STATUSES.has(current.status)) continue;
+    alerts.push({
+      type: "status_change",
+      timestamp: now,
+      modelId,
+      displayName: displayNames.get(modelId) || modelId.split("/").pop() || modelId,
+      provider: current.provider,
+      previousStatus: previous.status,
+      currentStatus: current.status,
+    });
+  }
+  return alerts;
 }
 
 /**

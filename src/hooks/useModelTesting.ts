@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
 import { mergeUptimeHistory, parseRemoteUptime } from "@/lib/models";
+import { loadSubscriptions, statusChangeAlerts, dispatchAlerts } from "@/lib/subscriptions";
 import {
   appendUptime,
   loadLastResults,
@@ -92,6 +93,16 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
       const next = new Map(prev);
       for (const [id, r] of incoming) next.set(id, r);
       saveLastResults(next);
+      // Best-effort status-change webhooks; never block the test UI.
+      try {
+        const subs = loadSubscriptions();
+        if (subs.length > 0) {
+          const alerts = statusChangeAlerts(prev, next);
+          for (const payload of alerts) void dispatchAlerts(payload, subs);
+        }
+      } catch {
+        // subscriptions are optional enrichment
+      }
       return next;
     });
     setUptime((prev) => {

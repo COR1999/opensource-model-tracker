@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect, useMemo } from "react";
+import { use, useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
 import {
@@ -24,8 +24,9 @@ import {
   formatDuration,
   type Theme,
 } from "@/lib/display";
-import { loadLastResults, loadUptime, loadTheme } from "@/lib/storage";
+import { loadLastResults, loadUptime, loadTheme, saveLastResults } from "@/lib/storage";
 import ResponseTrendChart from "@/components/ResponseTrendChart";
+import Spinner from "@/components/Spinner";
 
 const DAY_LABELS = ["6d ago", "5d ago", "4d ago", "3d ago", "2d ago", "Yesterday", "Today"];
 
@@ -42,6 +43,8 @@ export default function ModelDetailPage({
   const [loading, setLoading] = useState(true);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [uptimeRecords, setUptimeRecords] = useState<UptimeRecord[]>([]);
+  const [testing, setTesting] = useState(false);
+  const [freeTierGone, setFreeTierGone] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is browser-only
@@ -92,6 +95,59 @@ export default function ModelDetailPage({
       cancelled = true;
     };
   }, []);
+
+  const handleTestNow = useCallback(async () => {
+    setTesting(true);
+    try {
+      const res = await fetch("/api/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: {
+            id: modelId,
+            displayName: modelId.split("/").pop() || modelId,
+            provider: modelId.startsWith("openrouter/")
+              ? "openrouter"
+              : modelId.startsWith("opencode/")
+                ? "opencode"
+                : "nvidia",
+            ownedBy: modelId.split("/")[0] || "unknown",
+            category: "chat",
+          },
+        }),
+      });
+      if (!res.ok) throw new Error(`Test failed (${res.status})`);
+      const result: TestResult = await res.json();
+      setTestResult(result);
+      const results = loadLastResults();
+      results.set(modelId, result);
+      saveLastResults(results);
+      if (result.status === "removed") setFreeTierGone(true);
+      const local = loadUptime();
+      const prev = local[modelId] ?? [];
+      local[modelId] = [
+        ...prev,
+        {
+          timestamp: Date.now(),
+          status: result.status,
+          responseTimeMs: result.responseTimeMs,
+        },
+      ];
+      setUptimeRecords(local[modelId]);
+    } catch (err) {
+      setTestResult({
+        modelId,
+        provider: "nvidia",
+        status: "error",
+        httpCode: 0,
+        responseTimeMs: 0,
+        supportsFunctionCalling: false,
+        error: err instanceof Error ? err.message : "Test failed",
+      });
+    } finally {
+      setTesting(false);
+    }
+  }, [modelId]);
 
   const model = useMemo(
     () => catalogModels.find((m) => m.id === modelId) ?? null,
@@ -167,6 +223,11 @@ export default function ModelDetailPage({
                 score {model.benchmarkScore.toFixed(1)}
               </span>
             )}
+            {(freeTierGone || testResult?.status === "removed") && (
+              <span className="inline-block rounded-full border border-orange-700/50 bg-orange-900/60 px-2.5 py-0.5 text-xs font-medium text-orange-300">
+                free gone
+              </span>
+            )}
             {model && isT3Available(model.id) && (
               <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs ${accent.ok}`}>
                 in T3
@@ -181,7 +242,22 @@ export default function ModelDetailPage({
 
           <p className={`mt-2 font-mono text-xs ${textSubtle}`}>{modelId}</p>
 
-          <div className="mt-3 flex flex-wrap gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleTestNow}
+              disabled={testing}
+              className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${cardBg} ${border} ${textMuted} hover:border-blue-500/60 disabled:opacity-60`}
+            >
+              {testing ? (
+                <>
+                  <Spinner className="h-3.5 w-3.5" />
+                  Testing…
+                </>
+              ) : (
+                "Test now"
+              )}
+            </button>
             <a
               href={model ? modelUrl(model) : "#"}
               target="_blank"

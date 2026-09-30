@@ -68,3 +68,10 @@ export {
   rateLimitRetryDelayMs,
   RATE_LIMIT_MAX_ATTEMPTS,
 } from "./rate-limit";
+export {
+  statusChangeAlerts,
+  loadSubscriptions,
+  dispatchAlerts,
+  type AlertPayload,
+  type Subscription,
+} from "./subscriptions";
