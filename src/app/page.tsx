@@ -453,7 +453,11 @@ export default function Dashboard() {
           counts={counts}
           theme={theme}
           onSelectStatus={(status) => handleFilterChange({ status: status ?? "all" })}
-          activeStatus={filters.status === "all" ? null : filters.status as "working" | "slow" | "error" | null}
+            activeStatus={
+              filters.status === "all"
+                ? null
+                : (filters.status as "working" | "slow" | "rate-limited" | "error")
+            }
         />
 
         <ProviderHealthStrip

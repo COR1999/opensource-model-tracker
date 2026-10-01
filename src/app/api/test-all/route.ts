@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAllProviderModels, runModelTests } from "@/lib/models";
+import { runModelTests } from "@/lib/models";
+import { getCachedCatalog } from "@/lib/catalog-cache";
 import { isAuthorized } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
@@ -33,9 +34,12 @@ export async function POST(req: NextRequest) {
   }
 
   const apiKey = process.env.NVIDIA_API_KEY || "";
-  const { models: all } = await fetchAllProviderModels(apiKey);
+  // Shares the TTL cache with /api/models. "Test All" walks the catalog in
+  // batches, and without this every batch re-fetched all three provider
+  // catalogs — ~45 upstream calls for one 150-model run.
+  const { value: all } = await getCachedCatalog(apiKey);
   const requested = new Set(modelIds as string[]);
-  const models = all.filter((m) => requested.has(m.id));
+  const models = all.models.filter((m) => requested.has(m.id));
 
   const results = await runModelTests(apiKey, models);
   return NextResponse.json({ results });
