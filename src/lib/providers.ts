@@ -1,6 +1,7 @@
 import type { ModelInfo, Provider } from "./types";
 import { inferCategory } from "./categories";
 import { FALLBACK_OPENCODE_MODELS, FALLBACK_OPENROUTER_MODELS } from "./curated";
+import { rankModels } from "./rankings";
 
 const NVIDIA_BASE = "https://integrate.api.nvidia.com/v1";
 const OPENCODE_BASE = "https://opencode.ai/zen/v1";
@@ -110,10 +111,13 @@ export async function fetchNvidiaModels(apiKey: string): Promise<ModelInfo[]> {
 }
 
 // Aggregated discovery across all three providers; a failing provider is
-// reported per-key instead of failing the whole listing.
+// reported per-key instead of failing the whole listing. Models are then
+// annotated and sorted with live BenchLM / OpenRouter benchmark ranks so the
+// catalog stays ordered best-first as upstream lineups change.
 export async function fetchAllProviderModels(apiKey: string): Promise<{
   models: ModelInfo[];
   errors: Record<Provider, string | null>;
+  rankingMeta: { asOf: string | null; sources: string[] };
 }> {
   const [nvidia, opencode, openrouter] = await Promise.allSettled([
     fetchNvidiaModels(apiKey),
@@ -124,12 +128,25 @@ export async function fetchAllProviderModels(apiKey: string): Promise<{
     r.status === "fulfilled" ? r.value : [];
   const reason = (r: PromiseSettledResult<ModelInfo[]>) =>
     r.status === "rejected" ? r.reason?.message || "Unknown error" : null;
+
+  const raw = [...pick(nvidia), ...pick(opencode), ...pick(openrouter)];
+  let ranked = raw;
+  let rankingMeta = { asOf: null as string | null, sources: [] as string[] };
+  try {
+    const result = await rankModels(raw);
+    ranked = result.models;
+    rankingMeta = result.meta;
+  } catch {
+    // Ranking is enrichment; a BenchLM/OpenRouter outage must not blank the catalog.
+  }
+
   return {
-    models: [...pick(nvidia), ...pick(opencode), ...pick(openrouter)],
+    models: ranked,
     errors: {
       nvidia: reason(nvidia),
       opencode: reason(opencode),
       openrouter: reason(openrouter),
     },
+    rankingMeta,
   };
 }

@@ -34,6 +34,44 @@ export {
   fetchAllProviderModels,
 } from "./providers";
 export {
+  rankingKey,
+  lookupBenchmark,
+  annotateAndSortModels,
+  rankModels,
+  getBenchmarkIndex,
+  type BenchmarkEntry,
+  type BenchmarkIndex,
+  type BenchmarkSource,
+} from "./rankings";
+export {
   testModel,
   runModelTests,
+  isFreeTierModel,
+  testTimeoutMs,
+  toolsTimeoutMs,
+  statusFromHttpFailure,
+  FREE_TEST_TIMEOUT_MS,
+  PAID_TEST_TIMEOUT_MS,
+  SLOW_THRESHOLD_MS,
 } from "./testing";
+export {
+  parseRemoteUptime,
+  mergeUptimeHistory,
+  buildRemoteUptimeHistory,
+  EMPTY_REMOTE_UPTIME,
+  type RemoteUptimeHistory,
+} from "./uptime-history";
+export { recommendModel, bestForChips, type BestForChip } from "./picks";
+export { diffCatalog, isFreeTierId, freeTierGoneIds, type CatalogChange } from "./catalog-changes";
+export {
+  shouldRetryRateLimit,
+  rateLimitRetryDelayMs,
+  RATE_LIMIT_MAX_ATTEMPTS,
+} from "./rate-limit";
+export {
+  statusChangeAlerts,
+  loadSubscriptions,
+  dispatchAlerts,
+  type AlertPayload,
+  type Subscription,
+} from "./subscriptions";

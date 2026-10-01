@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
-import { isKnownSlow, isT3Available, isT3Breaking, modelUrl } from "@/lib/models";
+import { isKnownSlow, isT3Available, isT3Breaking, modelUrl, bestForChips } from "@/lib/models";
 import {
   categoryBadge,
   computeUptimePercent,
@@ -21,7 +22,14 @@ import {
 import Spinner from "./Spinner";
 import UptimeSparkline from "./UptimeSparkline";
 
-export type SortKey = "displayName" | "provider" | "status" | "responseTimeMs" | "category" | "contextLength";
+export type SortKey =
+  | "displayName"
+  | "provider"
+  | "status"
+  | "responseTimeMs"
+  | "category"
+  | "contextLength"
+  | "benchmarkScore";
 
 export interface TableColumn {
   key: SortKey | null;
@@ -32,6 +40,7 @@ export interface TableColumn {
 }
 
 const COLUMNS: TableColumn[] = [
+  { key: "benchmarkScore", label: "Score", align: "right" },
   { key: "provider", label: "Provider" },
   { key: "displayName", label: "Model" },
   { key: "category", label: "Category", hide: "hidden xl:table-cell" },
@@ -60,6 +69,9 @@ export default function ModelTable({
   copiedId,
   testingSingle,
   newModels,
+  freeTierGone,
+  shortlist,
+  onToggleShortlist,
   busy,
 }: {
   models: ModelInfo[];
@@ -77,6 +89,9 @@ export default function ModelTable({
   copiedId: string | null;
   testingSingle: string | null;
   newModels: Set<string>;
+  freeTierGone?: Set<string>;
+  shortlist?: Set<string>;
+  onToggleShortlist?: (id: string) => void;
   busy: boolean;
 }) {
   const { cardBg, border, text, textMuted, textSubtle, hoverBg, raisedBg } = styles(theme);
@@ -87,8 +102,9 @@ export default function ModelTable({
     <div className={`scroll-thin overflow-x-auto rounded-xl border ${border}`}>
       <table className="w-full min-w-[52rem] border-collapse text-left">
         <caption className="sr-only">
-          Tracked models with provider, category, status and response time. Column headers sort the
-          table.
+          Tracked models with provider, category, benchmark score, status and response time.
+          Column headers sort the table. Benchmark scores from BenchLM.ai and OpenRouter
+          (live, may lag provider catalog changes).
         </caption>
         <thead className={`sticky top-0 z-10 ${raisedBg} backdrop-blur`}>
           <tr className={`border-b ${border}`}>
@@ -161,6 +177,21 @@ export default function ModelTable({
                   />
                 </td>
 
+                <td className={`px-4 ${d.cellY} text-right font-mono text-xs tabular-nums`} title={m.benchmarkRank ? `BenchLM rank #${m.benchmarkRank}` : undefined}>
+                  {typeof m.benchmarkScore === "number" ? (
+                    <span className={text}>
+                      {m.benchmarkScore.toFixed(1)}
+                      {typeof m.codingScore === "number" && (
+                        <span className={`ml-1 ${textSubtle}`} title={`Coding ${m.codingScore.toFixed(1)}`}>
+                          c{m.codingScore.toFixed(0)}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className={textSubtle}>—</span>
+                  )}
+                </td>
+
                 <td className={`px-4 ${d.cellY}`}>
                   <span
                     className={`inline-block rounded-full border px-2 py-0.5 text-xs whitespace-nowrap ${providerBadge(m.provider, theme)}`}
@@ -171,14 +202,21 @@ export default function ModelTable({
 
                 <td className={`px-4 ${d.cellY}`}>
                   <div className="flex items-center gap-2">
+                    <Link
+                      href={`/model/${encodeURIComponent(m.id)}`}
+                      className={`font-medium ${d.rowText} rounded text-blue-400 underline-offset-2 hover:underline`}
+                    >
+                      {m.displayName}
+                    </Link>
                     <a
                       href={modelUrl(m)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`font-medium ${d.rowText} rounded text-blue-400 underline-offset-2 hover:underline`}
+                      className={`${textSubtle} hover:text-blue-400 transition-colors`}
+                      title={`View on ${m.provider === "nvidia" ? "build.nvidia.com" : m.provider === "openrouter" ? "openrouter.ai" : "opencode.ai"}`}
                     >
-                      {m.displayName}
-                      <span className="sr-only"> (opens in a new tab)</span>
+                      <span className="text-[10px]" aria-hidden="true">↗</span>
+                      <span className="sr-only">View on provider site (opens in a new tab)</span>
                     </a>
                     {newModels.has(m.id) && (
                       <span className="rounded-full border border-cyan-700/50 bg-cyan-900/60 px-1.5 py-0.5 text-[10px] font-medium text-cyan-300">
@@ -193,6 +231,14 @@ export default function ModelTable({
                         T3 ⚠
                       </span>
                     )}
+                    {freeTierGone?.has(m.id) && (
+                      <span
+                        title="Free tier appears revoked — model no longer resolves on its free endpoint"
+                        className="rounded-full border border-orange-700/50 bg-orange-900/60 px-1.5 py-0.5 text-[10px] font-medium text-orange-300"
+                      >
+                        free gone
+                      </span>
+                    )}
                     {skipped && (
                       <span
                         title="Skipped by Test All — consistently slower than the request budget"
@@ -201,8 +247,29 @@ export default function ModelTable({
                         slow
                       </span>
                     )}
+                    {bestForChips(m, r)
+                      .filter((c) => c.kind !== "unranked")
+                      .map((c) => (
+                        <span
+                          key={c.kind}
+                          className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${border} ${textMuted}`}
+                        >
+                          {c.label}
+                        </span>
+                      ))}
                   </div>
                   <div className="mt-0.5 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onToggleShortlist?.(m.id)}
+                      aria-label={`${shortlist?.has(m.id) ? "Remove" : "Add"} ${m.displayName} ${shortlist?.has(m.id) ? "from" : "to"} shortlist`}
+                      aria-pressed={shortlist?.has(m.id) ?? false}
+                      className={`rounded px-1 text-sm transition-colors ${
+                        shortlist?.has(m.id) ? "text-amber-400" : `${textSubtle} hover:text-amber-400`
+                      }`}
+                    >
+                      {shortlist?.has(m.id) ? "★" : "☆"}
+                    </button>
                     <span className={`font-mono text-xs ${textSubtle}`}>{m.id}</span>
                     <button
                       type="button"

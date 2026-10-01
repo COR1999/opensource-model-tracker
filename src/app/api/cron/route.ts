@@ -3,6 +3,8 @@ import {
   fetchAllProviderModels,
   runModelTests,
   isKnownSlow,
+  parseRemoteUptime,
+  buildRemoteUptimeHistory,
   ModelCategory,
   TestResult,
 } from "@/lib/models";
@@ -18,21 +20,41 @@ const TESTABLE_CATEGORIES: ReadonlySet<ModelCategory> = new Set(["chat", "code",
 
 const REPO_OWNER = "COR1999";
 const REPO_NAME = "opensource-model-tracker";
+const UPTIME_HISTORY_PATH = "data/uptime-history.json";
+// Production deploys from main-dev; the GitHub default branch is master.
+// Pin every Contents API call to main-dev so snapshots/uptime land where
+// /api/uptime and /api/results read from.
+const GITHUB_BRANCH = "main-dev";
 
 function utcDateStamp(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-// Writes the snapshot as a daily commit to this repo via the GitHub Contents
-// API. Needs a fine-grained PAT with contents:write on this repository in
-// SNAPSHOT_GITHUB_TOKEN; without it the run still completes but reports
-// persistence as skipped rather than failing the whole check.
-async function persistSnapshot(
+async function fetchExistingJson(token: string, path: string): Promise<unknown | null> {
+  const apiBase = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${GITHUB_BRANCH}`;
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "opensource-model-tracker-cron",
+  };
+  try {
+    const res = await fetch(apiBase, { headers, signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const payload = (await res.json()) as { content?: string };
+    if (!payload.content) return null;
+    return JSON.parse(Buffer.from(payload.content, "base64").toString("utf8"));
+  } catch {
+    return null;
+  }
+}
+
+async function putJsonFile(
   token: string,
-  stamp: string,
-  summary: object
+  path: string,
+  data: unknown,
+  message: string
 ): Promise<{ persisted: boolean; detail: string }> {
-  const path = `data/snapshots/${stamp}.json`;
   const apiBase = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
@@ -44,7 +66,10 @@ async function persistSnapshot(
 
   try {
     let sha: string | undefined;
-    const existing = await fetch(apiBase, { headers, signal: AbortSignal.timeout(10000) });
+    const existing = await fetch(`${apiBase}?ref=${GITHUB_BRANCH}`, {
+      headers,
+      signal: AbortSignal.timeout(10000),
+    });
     if (existing.ok) {
       sha = ((await existing.json()) as { sha?: string }).sha;
     }
@@ -53,8 +78,9 @@ async function persistSnapshot(
       method: "PUT",
       headers,
       body: JSON.stringify({
-        message: `snapshot: ${stamp} automated model health check`,
-        content: Buffer.from(JSON.stringify(summary, null, 2)).toString("base64"),
+        message,
+        content: Buffer.from(JSON.stringify(data, null, 2)).toString("base64"),
+        branch: GITHUB_BRANCH,
         ...(sha ? { sha } : {}),
       }),
       signal: AbortSignal.timeout(15000),
@@ -62,10 +88,51 @@ async function persistSnapshot(
     if (!put.ok) {
       return { persisted: false, detail: `GitHub API error (${put.status})` };
     }
-    return { persisted: true, detail: sha ? `updated ${path}` : `created ${path}` };
+    return { persisted: true, detail: sha ? `updated ${path}@${GITHUB_BRANCH}` : `created ${path}@${GITHUB_BRANCH}` };
   } catch {
     return { persisted: false, detail: "GitHub API request failed" };
   }
+}
+
+async function persistSnapshot(
+  token: string,
+  stamp: string,
+  summary: object
+): Promise<{ persisted: boolean; detail: string }> {
+  return putJsonFile(
+    token,
+    `data/snapshots/${stamp}.json`,
+    summary,
+    `snapshot: ${stamp} automated model health check`
+  );
+}
+
+async function persistUptimeHistory(
+  token: string,
+  results: TestResult[],
+  now: number
+): Promise<{ persisted: boolean; detail: string }> {
+  const previousRaw = await fetchExistingJson(token, UPTIME_HISTORY_PATH);
+  const previous = parseRemoteUptime(previousRaw);
+  const next = buildRemoteUptimeHistory(previous, results, now);
+  return putJsonFile(
+    token,
+    UPTIME_HISTORY_PATH,
+    next,
+    `uptime: ${utcDateStamp(now)} merge cron results`
+  );
+}
+
+/** Non-fatal setup report so remote operators know what is missing. */
+function cronPreflight(): Record<string, string | boolean> {
+  return {
+    cronSecretConfigured: Boolean(process.env.CRON_SECRET),
+    snapshotTokenConfigured: Boolean(process.env.SNAPSHOT_GITHUB_TOKEN),
+    nvidiaKeyConfigured: Boolean(process.env.NVIDIA_API_KEY),
+    openrouterKeyConfigured: Boolean(process.env.OPENROUTER_API_KEY),
+    scheduleHint:
+      "Vercel → Project → Cron Jobs: schedule /api/cron (e.g. 0 */6 * * *) with Authorization: Bearer $CRON_SECRET",
+  };
 }
 
 export async function GET(req: Request) {
@@ -77,7 +144,7 @@ export async function GET(req: Request) {
   // rather than silently skipping the check.
   if (!cronSecret) {
     return NextResponse.json(
-      { error: "CRON_SECRET is not configured" },
+      { error: "CRON_SECRET is not configured", preflight: cronPreflight() },
       { status: 503 }
     );
   }
@@ -96,6 +163,7 @@ export async function GET(req: Request) {
 
   const working = results.filter((r) => r.status === "working").length;
   const slow = results.filter((r) => r.status === "slow").length;
+  const rateLimited = results.filter((r) => r.status === "rate-limited").length;
   const down = results.filter((r) => r.status === "error" || r.status === "timeout").length;
   const removed = results.filter((r) => r.status === "removed").length;
 
@@ -107,6 +175,7 @@ export async function GET(req: Request) {
     testedTotal: results.length,
     working,
     slow,
+    rateLimited,
     down,
     removed,
     results,
@@ -116,10 +185,20 @@ export async function GET(req: Request) {
     persisted: false,
     detail: "SNAPSHOT_GITHUB_TOKEN not configured",
   };
+  let uptimePersistence: { persisted: boolean; detail: string } = {
+    persisted: false,
+    detail: "SNAPSHOT_GITHUB_TOKEN not configured",
+  };
   const snapshotToken = process.env.SNAPSHOT_GITHUB_TOKEN;
   if (snapshotToken) {
     persistence = await persistSnapshot(snapshotToken, summary.date, summary);
+    uptimePersistence = await persistUptimeHistory(snapshotToken, results, startedAt);
   }
 
-  return NextResponse.json({ ...summary, persistence });
+  return NextResponse.json({
+    ...summary,
+    persistence,
+    uptimePersistence,
+    preflight: cronPreflight(),
+  });
 }

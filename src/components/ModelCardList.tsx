@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
-import { isKnownSlow, isT3Available, isT3Breaking, modelUrl } from "@/lib/models";
+import { isKnownSlow, isT3Available, isT3Breaking, modelUrl, bestForChips } from "@/lib/models";
 import {
   categoryBadge,
   computeUptimePercent,
@@ -32,6 +33,9 @@ export default function ModelCardList({
   copiedId,
   testingSingle,
   newModels,
+  freeTierGone,
+  shortlist,
+  onToggleShortlist,
 }: {
   models: ModelInfo[];
   results: Map<string, TestResult>;
@@ -44,6 +48,9 @@ export default function ModelCardList({
   copiedId: string | null;
   testingSingle: string | null;
   newModels: Set<string>;
+  freeTierGone?: Set<string>;
+  shortlist?: Set<string>;
+  onToggleShortlist?: (id: string) => void;
 }) {
   const { cardBg, border, text, textMuted, textSubtle } = styles(theme);
   const accent = accents(theme);
@@ -75,14 +82,20 @@ export default function ModelCardList({
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <Link
+                    href={`/model/${encodeURIComponent(m.id)}`}
+                    className={`rounded text-sm font-medium text-blue-400 underline-offset-2 hover:underline`}
+                  >
+                    {m.displayName}
+                  </Link>
                   <a
                     href={modelUrl(m)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`rounded text-sm font-medium text-blue-400 underline-offset-2 hover:underline`}
+                    className={`${textSubtle} hover:text-blue-400 transition-colors text-[10px]`}
+                    title={`View on ${m.provider === "nvidia" ? "build.nvidia.com" : m.provider === "openrouter" ? "openrouter.ai" : "opencode.ai"}`}
                   >
-                    {m.displayName}
-                    <span className="sr-only"> (opens in a new tab)</span>
+                    ↗<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                   {newModels.has(m.id) && (
                     <span className="rounded-full border border-cyan-700/50 bg-cyan-900/60 px-1.5 py-0.5 text-[10px] font-medium text-cyan-300">
@@ -101,6 +114,37 @@ export default function ModelCardList({
                       slow
                     </span>
                   )}
+                  {freeTierGone?.has(m.id) && (
+                    <span className="rounded-full border border-orange-700/50 bg-orange-900/60 px-1.5 py-0.5 text-[10px] font-medium text-orange-300">
+                      free gone
+                    </span>
+                  )}
+                  {bestForChips(m, r)
+                    .filter((c) => c.kind !== "unranked")
+                    .map((c) => (
+                      <span
+                        key={c.kind}
+                        className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${border} ${textMuted}`}
+                      >
+                        {c.label}
+                      </span>
+                    ))}
+                  {typeof m.benchmarkScore === "number" && (
+                    <span
+                      title={m.benchmarkRank ? `BenchLM rank #${m.benchmarkRank}` : "Benchmark score"}
+                      className={`rounded-full border px-1.5 py-0.5 font-mono text-[10px] font-medium ${border} ${textMuted}`}
+                    >
+                      {m.benchmarkScore.toFixed(1)}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onToggleShortlist?.(m.id)}
+                    aria-label={`${shortlist?.has(m.id) ? "Remove from" : "Add to"} shortlist`}
+                    className={`rounded px-1 text-sm ${shortlist?.has(m.id) ? "text-amber-400" : `${textSubtle} hover:text-amber-400`}`}
+                  >
+                    {shortlist?.has(m.id) ? "★" : "☆"}
+                  </button>
                 </div>
 
                 <div className="mt-1 flex items-start gap-1.5">

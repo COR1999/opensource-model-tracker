@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { encodeSnapshot } from "@/lib/share";
 import { CATEGORY_OPTIONS } from "@/lib/curated";
-import { isKnownSlow } from "@/lib/categories";
+import { isKnownSlow, recommendModel } from "@/lib/models";
 import { styles, type Theme } from "@/lib/display";
 import {
   loadHideEndpoints,
   loadTheme,
   loadDensity,
+  loadShortlist,
+  toggleShortlist,
   saveDensity,
   type Density,
 } from "@/lib/storage";
@@ -23,6 +25,7 @@ import ModelTable from "@/components/ModelTable";
 import ModelCardList from "@/components/ModelCardList";
 import ChangelogPanel from "@/components/ChangelogPanel";
 import ComparePanel from "@/components/ComparePanel";
+import AlertSettings from "@/components/AlertSettings";
 import Toast, { type ToastMessage } from "@/components/Toast";
 import EmptyState from "@/components/EmptyState";
 import TableSkeleton from "@/components/TableSkeleton";
@@ -33,6 +36,7 @@ const DEFAULT_FILTERS: Filters = {
   category: "all",
   status: "all",
   hideEndpoints: true,
+  shortlistOnly: false,
 };
 
 export default function Dashboard() {
@@ -40,16 +44,20 @@ export default function Dashboard() {
   // localStorage exists only on the client, so initializer reads produce SSR
   // markup that disagrees with the client's first render.
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [sortKey, setSortKey] = useState<SortKey>("provider");
+  // Live benchmark score (BenchLM/OpenRouter); best models first by default.
+  const [sortKey, setSortKey] = useState<SortKey>("benchmarkScore");
   const [sortAsc, setSortAsc] = useState(true);
   const [theme, setTheme] = useState<Theme>("dark");
   const [density, setDensity] = useState<Density>("comfortable");
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const [showCompare, setShowCompare] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
   const [toastMsg, setToastMsg] = useState<ToastMessage | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const [shortlist, setShortlist] = useState<Set<string>>(new Set());
   const searchRef = useRef<HTMLInputElement>(null);
+  const lastAutoTested = useRef<Set<string>>(new Set());
 
   const showToast = useCallback((text: string, tone: ToastMessage["tone"]) => {
     setToastMsg({ id: Date.now(), text, tone });
@@ -70,7 +78,30 @@ export default function Dashboard() {
     });
     setTheme(loadTheme());
     setDensity(loadDensity());
+    setShortlist(loadShortlist());
   }, []);
+
+  const handleToggleShortlist = useCallback((id: string) => {
+    setShortlist((prev) => toggleShortlist(prev, id));
+  }, []);
+
+  // Auto-test newly detected models so the "NEW" badge is immediately actionable.
+  useEffect(() => {
+    if (catalog.newModels.size === 0 || testing.progress !== null) return;
+    const newIds = [...catalog.newModels].filter((id) => !lastAutoTested.current.has(id));
+    if (newIds.length === 0) return;
+    const newModels = catalog.models.filter(
+      (m) => newIds.includes(m.id) && !isKnownSlow(m.id)
+    );
+    if (newModels.length === 0) return;
+    lastAutoTested.current = new Set([...lastAutoTested.current, ...newIds]);
+    testing.testMany(newModels, "Auto-test new models");
+  }, [catalog.newModels, catalog.models, testing]);
+
+  const pick = useMemo(
+    () => recommendModel(catalog.models, testing.results),
+    [catalog.models, testing.results]
+  );
 
   // URL seeding: ?provider=&category=&q=&working=1
   useEffect(() => {
@@ -149,9 +180,11 @@ export default function Dashboard() {
             (filters.status === "working" &&
               (testing.results.get(m.id)?.status === "working" || testing.results.get(m.id)?.status === "slow")) ||
             (filters.status === "slow" && testing.results.get(m.id)?.status === "slow") ||
+            (filters.status === "rate-limited" && testing.results.get(m.id)?.status === "rate-limited") ||
             (filters.status === "error" &&
               (testing.results.get(m.id)?.status === "error" || testing.results.get(m.id)?.status === "timeout")) ||
             (filters.status === "untested" && !testing.results.has(m.id))) &&
+          (!filters.shortlistOnly || shortlist.has(m.id)) &&
           (filters.search === "" ||
             m.id.toLowerCase().includes(filters.search.toLowerCase()) ||
             m.displayName.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -172,8 +205,17 @@ export default function Dashboard() {
           case "category":
             cmp = a.category.localeCompare(b.category);
             break;
+          case "benchmarkScore":
+            // Higher is better. BenchLM overall first; models BenchLM has not
+            // scored fall back to OpenRouter AA coding, then agentic.
+            cmp =
+              (b.benchmarkScore ?? -1) - (a.benchmarkScore ?? -1) ||
+              (b.codingScore ?? -1) - (a.codingScore ?? -1) ||
+              (b.agenticScore ?? -1) - (a.agenticScore ?? -1) ||
+              (b.intelligenceScore ?? -1) - (a.intelligenceScore ?? -1);
+            break;
           case "status": {
-            const order = { working: 0, slow: 1, error: 2, timeout: 3, removed: 4 };
+            const order = { working: 0, slow: 1, "rate-limited": 2, error: 3, timeout: 4, removed: 5 };
             cmp = (order[ra?.status ?? "error"] ?? 5) - (order[rb?.status ?? "error"] ?? 5);
             break;
           }
@@ -184,9 +226,16 @@ export default function Dashboard() {
             cmp = (a.contextLength ?? 0) - (b.contextLength ?? 0);
             break;
         }
+        // Unlisted models (no benchmark score) sort after scored ones even
+        // when the user flips the order.
+        if (sortKey === "benchmarkScore") {
+          const aHas = typeof a.benchmarkScore === "number";
+          const bHas = typeof b.benchmarkScore === "number";
+          if (aHas !== bHas) return aHas ? -1 : 1;
+        }
         return sortAsc ? cmp : -cmp;
       });
-  }, [catalog.models, testing.results, filters, sortKey, sortAsc]);
+  }, [catalog.models, testing.results, filters, sortKey, sortAsc, shortlist]);
 
   const usableIds = useMemo(() => {
     return catalog.models
@@ -275,6 +324,7 @@ export default function Dashboard() {
       working: [...testing.results.values()].filter((r) => r.status === "working").length,
       slow: [...testing.results.values()].filter((r) => r.status === "slow").length,
       error: [...testing.results.values()].filter((r) => r.status === "error" || r.status === "timeout").length,
+      rateLimited: [...testing.results.values()].filter((r) => r.status === "rate-limited").length,
       removed: [...testing.results.values()].filter((r) => r.status === "removed").length,
       new: catalog.newModels.size,
     }),
@@ -323,22 +373,28 @@ export default function Dashboard() {
       </button>
       {compareIds.size > 0 && (
         <button
-          onClick={() => { setShowCompare(!showCompare); setShowChangelog(false); }}
+          onClick={() => { setShowCompare(!showCompare); setShowChangelog(false); setShowAlerts(false); }}
           className="px-4 py-2 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-500 transition-colors"
         >
           Compare ({compareIds.size})
         </button>
       )}
       <button
-        onClick={() => { setShowChangelog(!showChangelog); setShowCompare(false); }}
+        onClick={() => { setShowChangelog(!showChangelog); setShowCompare(false); setShowAlerts(false); }}
         className={`px-3 py-2 rounded-lg text-sm border transition-colors ${styles(theme).cardBg} ${styles(theme).border} ${styles(theme).textMuted}`}
       >
         Changelog ({catalog.changelog.length})
       </button>
+      <button
+        onClick={() => { setShowAlerts(!showAlerts); setShowChangelog(false); setShowCompare(false); }}
+        className={`px-3 py-2 rounded-lg text-sm border transition-colors ${showAlerts ? "bg-blue-600 text-white border-blue-600" : `${styles(theme).cardBg} ${styles(theme).border} ${styles(theme).textMuted}`}`}
+      >
+        Alerts
+      </button>
     </>
   );
 
-  const { bg, text } = styles(theme);
+  const { bg, text, textMuted } = styles(theme);
 
   return (
     <div className={`min-h-screen ${bg} ${text} transition-colors`}>
@@ -356,6 +412,8 @@ export default function Dashboard() {
         />
 
         {showChangelog && <ChangelogPanel entries={catalog.changelog} theme={theme} />}
+
+        {showAlerts && <AlertSettings theme={theme} />}
 
         {showCompare && compared.length > 0 && (
           <ComparePanel
@@ -414,6 +472,34 @@ export default function Dashboard() {
           onDensityChange={setDensity}
         />
 
+        {pick && (
+          <div
+            className={`mb-4 rounded-xl border px-4 py-3 text-sm ${styles(theme).cardBg} ${styles(theme).border}`}
+          >
+            <span className={styles(theme).textMuted}>Best free pick right now: </span>
+            <button
+              type="button"
+              onClick={() => {
+                setCompareIds(new Set([pick.id]));
+                setShowCompare(true);
+              }}
+              className={`font-medium underline-offset-2 hover:underline ${styles(theme).text}`}
+            >
+              {pick.displayName}
+            </button>
+            {typeof pick.benchmarkScore === "number" && (
+              <span className={`ml-2 font-mono text-xs ${styles(theme).textSubtle}`}>
+                score {pick.benchmarkScore.toFixed(1)}
+              </span>
+            )}
+            {catalog.freeTierGone.size > 0 && (
+              <span className={`ml-3 text-xs ${styles(theme).textMuted}`}>
+                {catalog.freeTierGone.size} free-tier id{catalog.freeTierGone.size === 1 ? "" : "s"} gone
+              </span>
+            )}
+          </div>
+        )}
+
         {catalog.loading ? (
           <TableSkeleton theme={theme} />
         ) : filtered.length === 0 ? (
@@ -442,6 +528,9 @@ export default function Dashboard() {
                 copiedId={null}
                 testingSingle={testing.testingSingle}
                 newModels={catalog.newModels}
+                freeTierGone={catalog.freeTierGone}
+                shortlist={shortlist}
+                onToggleShortlist={handleToggleShortlist}
                 busy={testing.progress !== null}
               />
             </div>
@@ -458,10 +547,35 @@ export default function Dashboard() {
                 copiedId={null}
                 testingSingle={testing.testingSingle}
                 newModels={catalog.newModels}
+                freeTierGone={catalog.freeTierGone}
+                shortlist={shortlist}
+                onToggleShortlist={handleToggleShortlist}
               />
             </div>
           </>
         )}
+
+        <p className={`mt-6 text-xs ${textMuted}`}>
+          Benchmark scores refresh live from{" "}
+          <a
+            href="https://benchlm.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:opacity-80"
+          >
+            BenchLM.ai
+          </a>{" "}
+          (CC BY-NC 4.0) and, when available, the{" "}
+          <a
+            href="https://openrouter.ai/rankings"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:opacity-80"
+          >
+            OpenRouter Data API
+          </a>
+          . Models without a public score sort to the bottom.
+        </p>
       </div>
 
       {toastMsg && <Toast message={toastMsg} theme={theme} onDismiss={() => setToastMsg(null)} />}

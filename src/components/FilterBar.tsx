@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 import type { ModelCategory } from "@/lib/models";
 import { styles, providerLabel, type Theme, type Density } from "@/lib/display";
 
-export type StatusFilter = "all" | "working" | "slow" | "error" | "untested";
+export type StatusFilter = "all" | "working" | "slow" | "rate-limited" | "error" | "untested";
 
 export interface Filters {
   search: string;
@@ -12,6 +12,7 @@ export interface Filters {
   category: ModelCategory | "all";
   status: StatusFilter;
   hideEndpoints: boolean;
+  shortlistOnly: boolean;
 }
 
 const CATEGORIES: { value: ModelCategory | "all"; label: string }[] = [
@@ -30,6 +31,7 @@ const STATUSES: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "Any status" },
   { value: "working", label: "Working" },
   { value: "slow", label: "Slow" },
+  { value: "rate-limited", label: "Rate limited" },
   { value: "error", label: "Down" },
   { value: "untested", label: "Not tested" },
 ];
@@ -56,6 +58,7 @@ const FilterBar = forwardRef<
     filters.provider !== "all" ||
     filters.category !== "all" ||
     filters.status !== "all" ||
+    filters.shortlistOnly ||
     !filters.hideEndpoints;
 
   const chip = (active: boolean) =>
@@ -113,6 +116,16 @@ const FilterBar = forwardRef<
               </option>
             ))}
           </select>
+
+          <button
+            type="button"
+            onClick={() => onChange({ shortlistOnly: !filters.shortlistOnly })}
+            aria-pressed={filters.shortlistOnly}
+            className={chip(filters.shortlistOnly)}
+            title="Show only starred models"
+          >
+            ★ Shortlist
+          </button>
 
           <div
             className={`hidden overflow-hidden rounded-lg border sm:flex ${border}`}

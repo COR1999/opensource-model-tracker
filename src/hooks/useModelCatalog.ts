@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ModelInfo, Provider } from "@/lib/models";
+import { diffCatalog } from "@/lib/models";
 import {
   loadChangelog,
   loadKnownModels,
@@ -9,6 +10,7 @@ import {
   saveKnownModels,
   type ChangelogEntry,
 } from "@/lib/storage";
+import { loadSubscriptions, dispatchAlerts, type AlertPayload } from "@/lib/subscriptions";
 
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -32,6 +34,7 @@ export function useModelCatalog() {
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [newModels, setNewModels] = useState<Set<string>>(new Set());
   const [changelog, setChangelog] = useState<ChangelogEntry[]>([]);
+  const [freeTierGone, setFreeTierGone] = useState<Set<string>>(new Set());
 
   const mounted = useRef(true);
   const inFlight = useRef<AbortController | null>(null);
@@ -80,35 +83,55 @@ export function useModelCatalog() {
 
       const known = loadKnownModels();
       const currentIds = fetched.map((m) => m.id);
+      const displayNames = new Map(fetched.map((m) => [m.id, m.displayName]));
       if (known.size > 0) {
-        const currentSet = new Set(currentIds);
-        const added = currentIds.filter((id) => !known.has(id));
-        const removed = [...known].filter((id) => !currentSet.has(id));
+        const changes = diffCatalog(known, currentIds, displayNames);
+        const added = changes.filter((c) => c.type === "added").map((c) => c.modelId);
+        const goneFree = changes.filter((c) => c.type === "free-tier-gone");
+        const removedIds = changes.filter((c) => c.type === "removed").map((c) => c.modelId);
 
         if (added.length > 0) setNewModels(new Set(added));
+        if (goneFree.length > 0) {
+          setFreeTierGone(new Set(goneFree.map((c) => c.modelId)));
+        }
 
-        if (added.length + removed.length > 0) {
-          const now = Date.now();
-          const entries: ChangelogEntry[] = [
-            ...added.map((id) => ({
-              timestamp: now,
-              type: "added" as const,
-              modelId: id,
-              displayName: fetched.find((m) => m.id === id)?.displayName || id,
-            })),
-            ...removed.map((id) => ({
-              timestamp: now,
-              type: "removed" as const,
-              modelId: id,
-              displayName: id.split("/").pop() || id,
-            })),
-          ];
+        if (changes.length > 0) {
           setChangelog((prev) => {
-            const next = [...prev, ...entries];
+            const next = [
+              ...prev,
+              ...changes.map((c) => ({
+                timestamp: c.timestamp,
+                type: c.type,
+                modelId: c.modelId,
+                displayName: c.displayName,
+              })),
+            ];
             saveChangelog(next);
             return next;
           });
+
+          // Best-effort webhook alerts; never block catalog refresh on failure.
+          const subs = loadSubscriptions();
+          if (subs.length > 0) {
+            const nowTs = Date.now();
+            for (const c of changes) {
+              const payload: AlertPayload = {
+                type:
+                  c.type === "added"
+                    ? "new_model"
+                    : c.type === "free-tier-gone"
+                      ? "removed_model"
+                      : "removed_model",
+                timestamp: nowTs,
+                modelId: c.modelId,
+                displayName: c.displayName,
+                provider: fetched.find((m) => m.id === c.modelId)?.provider ?? "unknown",
+              };
+              void dispatchAlerts(payload, subs);
+            }
+          }
         }
+        void removedIds;
       }
       saveKnownModels(currentIds);
     } catch (err) {
@@ -145,6 +168,7 @@ export function useModelCatalog() {
     lastRefresh,
     newModels,
     changelog,
+    freeTierGone,
     refresh,
     dismissNewModels,
   };
