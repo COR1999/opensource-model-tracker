@@ -33,6 +33,7 @@ const VALID_STATUSES = new Set([
   "working",
   "slow",
   "rate-limited",
+  "opencode-only",
   "error",
   "timeout",
   "removed",

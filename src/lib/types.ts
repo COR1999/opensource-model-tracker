@@ -25,7 +25,15 @@ export interface TestResult {
   modelId: string;
   provider: Provider;
   // "rate-limited" = HTTP 429 / provider throttling — model may still be fine
-  status: "working" | "slow" | "rate-limited" | "error" | "timeout" | "removed";
+  // "opencode-only" = Zen free tier rejects server-side calls; works in the OpenCode app
+  status:
+    | "working"
+    | "slow"
+    | "rate-limited"
+    | "opencode-only"
+    | "error"
+    | "timeout"
+    | "removed";
   httpCode: number;
   responseTimeMs: number;
   supportsFunctionCalling: boolean;

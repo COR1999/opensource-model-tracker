@@ -47,10 +47,25 @@ export function statusFromHttpFailure(
 ): TestResult["status"] {
   if (httpCode === 410 || httpCode === 404) return "removed";
   if (httpCode === 429) return "rate-limited";
+  if (body && isOpenCodeOnlyBody(body)) return "opencode-only";
   if (body && (body.includes("tool choice") || body.includes("tool-call-parser"))) {
     return "working";
   }
   return "error";
+}
+
+/** Zen free tier is gated to the OpenCode app; server probes always 403. */
+export function isOpenCodeOnlyBody(body: string): boolean {
+  return body.includes("FreeTierError") || body.includes("within OpenCode");
+}
+
+/**
+ * True for OpenCode Zen free/agent ids that only work inside the OpenCode app.
+ * Cron, Test All, and auto-test skip these — probing them from Vercel always
+ * returns FreeTierError and wastes the free-tier budget.
+ */
+export function isOpencodeAppOnlyModel(model: FreeTierRef): boolean {
+  return isFreeTierModel(model) && model.provider === "opencode";
 }
 
 // Tools definition for function-calling detection

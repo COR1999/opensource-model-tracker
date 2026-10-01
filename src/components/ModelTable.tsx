@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
-import { isKnownSlow, isT3Available, isT3Breaking, modelUrl, bestForChips } from "@/lib/models";
+import { isKnownSlow, isOpencodeAppOnlyModel, isT3Available, isT3Breaking, modelUrl, bestForChips } from "@/lib/models";
 import {
   categoryBadge,
   computeUptimePercent,
@@ -158,6 +158,7 @@ export default function ModelTable({
             const isTesting = testingSingle === m.id;
             const selected = compareIds.has(m.id);
             const skipped = isKnownSlow(m.id);
+            const zenOnly = isOpencodeAppOnlyModel(m);
 
             return (
               <tr
@@ -237,6 +238,14 @@ export default function ModelTable({
                         className="rounded-full border border-orange-700/50 bg-orange-900/60 px-1.5 py-0.5 text-[10px] font-medium text-orange-300"
                       >
                         free gone
+                      </span>
+                    )}
+                    {zenOnly && (
+                      <span
+                        title="OpenCode Zen free tier only works inside the OpenCode app — not via API"
+                        className="rounded-full border border-cyan-700/50 bg-cyan-900/60 px-1.5 py-0.5 text-[10px] font-medium text-cyan-300"
+                      >
+                        OpenCode only
                       </span>
                     )}
                     {skipped && (
