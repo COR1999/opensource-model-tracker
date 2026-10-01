@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   fetchAllProviderModels,
-  runModelTests,
+  testModel,
   isKnownSlow,
   parseRemoteUptime,
   buildRemoteUptimeHistory,
@@ -156,10 +156,35 @@ export async function GET(req: Request) {
   const apiKey = process.env.NVIDIA_API_KEY || "";
   const { models: allModels } = await fetchAllProviderModels(apiKey);
 
-  const scoped = allModels.filter(
-    (m) => TESTABLE_CATEGORIES.has(m.category) && !isKnownSlow(m.id)
-  );
-  const results: TestResult[] = await runModelTests(apiKey, scoped, CONCURRENCY);
+  // Vercel caps the function at 60s. Test a ranked subset only, and stop
+  // launching new batches once the deadline is near so persistence still runs.
+  const scoped = allModels
+    .filter((m) => TESTABLE_CATEGORIES.has(m.category) && !isKnownSlow(m.id))
+    .sort((a, b) => (b.benchmarkScore ?? -1) - (a.benchmarkScore ?? -1))
+    .slice(0, 25);
+
+  const DEADLINE_MS = 42_000;
+  const results: TestResult[] = [];
+  for (let i = 0; i < scoped.length; i += CONCURRENCY) {
+    if (Date.now() - startedAt > DEADLINE_MS) break;
+    const batch = scoped.slice(i, i + CONCURRENCY);
+    const settled = await Promise.allSettled(batch.map((m) => testModel(apiKey, m)));
+    for (let j = 0; j < settled.length; j++) {
+      const r = settled[j];
+      if (r.status === "fulfilled") results.push(r.value);
+      else {
+        results.push({
+          modelId: batch[j].id,
+          provider: batch[j].provider,
+          status: "error",
+          httpCode: 0,
+          responseTimeMs: 0,
+          supportsFunctionCalling: false,
+          error: r.reason?.message || "Test failed",
+        });
+      }
+    }
+  }
 
   const working = results.filter((r) => r.status === "working").length;
   const slow = results.filter((r) => r.status === "slow").length;
@@ -172,6 +197,7 @@ export async function GET(req: Request) {
     timestamp: startedAt,
     durationMs: Date.now() - startedAt,
     discoveredTotal: allModels.length,
+    scopedTotal: scoped.length,
     testedTotal: results.length,
     working,
     slow,
