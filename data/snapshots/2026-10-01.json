@@ -1,0 +1,234 @@
+{
+  "date": "2026-10-01",
+  "timestamp": 1790858399905,
+  "durationMs": 21196,
+  "discoveredTotal": 109,
+  "scopedTotal": 25,
+  "testedTotal": 25,
+  "working": 5,
+  "slow": 0,
+  "rateLimited": 8,
+  "down": 11,
+  "removed": 1,
+  "results": [
+    {
+      "modelId": "moonshotai/kimi-k3",
+      "provider": "nvidia",
+      "status": "timeout",
+      "httpCode": 0,
+      "responseTimeMs": 8002,
+      "supportsFunctionCalling": false,
+      "error": "This operation was aborted"
+    },
+    {
+      "modelId": "opencode/mimo-v2.6-flash-free",
+      "provider": "opencode",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 163,
+      "supportsFunctionCalling": false,
+      "error": "{\"type\":\"error\",\"error\":{\"type\":\"FreeTierError\",\"message\":\"Error from provider (Console): OpenCode's free tier can only be used from within OpenCode\"}}"
+    },
+    {
+      "modelId": "opencode/muse-spark-1.2-contributor-free",
+      "provider": "opencode",
+      "status": "error",
+      "httpCode": 500,
+      "responseTimeMs": 127,
+      "supportsFunctionCalling": false,
+      "error": "{\"type\":\"error\",\"error\":{\"type\":\"error\",\"message\":\"Internal server error\"}}"
+    },
+    {
+      "modelId": "openrouter/dots-studio/dots-3-note-preview:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 1599,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
+    },
+    {
+      "modelId": "opencode/mimo-v2.5-free",
+      "provider": "opencode",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 212,
+      "supportsFunctionCalling": false,
+      "error": "{\"type\":\"error\",\"error\":{\"type\":\"FreeTierError\",\"message\":\"Error from provider (Console): OpenCode's free tier can only be used from within OpenCode\"}}"
+    },
+    {
+      "modelId": "opencode/ling-3.0-flash-fin-free",
+      "provider": "opencode",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 169,
+      "supportsFunctionCalling": false,
+      "error": "{\"type\":\"error\",\"error\":{\"type\":\"FreeTierError\",\"message\":\"Error from provider (Console): OpenCode's free tier can only be used from within OpenCode\"}}"
+    },
+    {
+      "modelId": "openrouter/thinkingmachines/inkling-small:free",
+      "provider": "openrouter",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 58,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"thinkingmachines/inkling-small:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":40"
+    },
+    {
+      "modelId": "openrouter/thinkingmachines/inkling:free",
+      "provider": "openrouter",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 59,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"thinkingmachines/inkling:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":403,\"met"
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 912,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "opencode/nemotron-3-ultra-free",
+      "provider": "opencode",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 183,
+      "supportsFunctionCalling": false,
+      "error": "{\"type\":\"error\",\"error\":{\"type\":\"FreeTierError\",\"message\":\"Error from provider (Console): OpenCode's free tier can only be used from within OpenCode\"}}"
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 1599,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
+    },
+    {
+      "modelId": "openrouter/google/gemma-4-26b-a4b-it:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 2090,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 619,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 1603,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
+    },
+    {
+      "modelId": "openrouter/cohere/north-mini-code:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 1583,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "provider": "nvidia",
+      "status": "timeout",
+      "httpCode": 0,
+      "responseTimeMs": 8001,
+      "supportsFunctionCalling": false,
+      "error": "This operation was aborted"
+    },
+    {
+      "modelId": "opencode/nemotron-3.5-lightning-free",
+      "provider": "opencode",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 162,
+      "supportsFunctionCalling": false,
+      "error": "{\"type\":\"error\",\"error\":{\"type\":\"FreeTierError\",\"message\":\"Error from provider (Console): OpenCode's free tier can only be used from within OpenCode\"}}"
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-lightning:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 1569,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
+    },
+    {
+      "modelId": "openai/gpt-oss-20b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 262,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "mistralai/mistral-large-2-instruct",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 37,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 464,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 1569,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
+    },
+    {
+      "modelId": "opencode/space-bunny-free",
+      "provider": "opencode",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 1339,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "opencode/muse-spark-1.3-contributor-free",
+      "provider": "opencode",
+      "status": "error",
+      "httpCode": 500,
+      "responseTimeMs": 85,
+      "supportsFunctionCalling": false,
+      "error": "{\"type\":\"error\",\"error\":{\"type\":\"error\",\"message\":\"Internal server error\"}}"
+    },
+    {
+      "modelId": "openrouter/poolside/laguna-s-2.1:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 1612,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
+    }
+  ]
+}
