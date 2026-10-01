@@ -3,6 +3,7 @@ import {
   fetchAllProviderModels,
   testModel,
   isKnownSlow,
+  isOpencodeAppOnlyModel,
   parseRemoteUptime,
   buildRemoteUptimeHistory,
   ModelCategory,
@@ -158,8 +159,12 @@ export async function GET(req: Request) {
 
   // Vercel caps the function at 60s. Test a ranked subset only, and stop
   // launching new batches once the deadline is near so persistence still runs.
+  // Zen free models only work inside the OpenCode app — skip them here.
   const scoped = allModels
-    .filter((m) => TESTABLE_CATEGORIES.has(m.category) && !isKnownSlow(m.id))
+    .filter(
+      (m) =>
+        TESTABLE_CATEGORIES.has(m.category) && !isKnownSlow(m.id) && !isOpencodeAppOnlyModel(m)
+    )
     .sort((a, b) => (b.benchmarkScore ?? -1) - (a.benchmarkScore ?? -1))
     .slice(0, 25);
 

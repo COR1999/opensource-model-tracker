@@ -18,7 +18,7 @@ export interface AlertPayload {
   currentStatus?: TestResult["status"];
 }
 
-/** Statuses worth a webhook: not working/slow noise. */
+/** Statuses worth a webhook: not working/slow noise. App-only is informational. */
 export const INTERESTING_STATUSES: ReadonlySet<TestResult["status"]> = new Set([
   "timeout",
   "rate-limited",

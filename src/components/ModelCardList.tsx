@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
-import { isKnownSlow, isT3Available, isT3Breaking, modelUrl, bestForChips } from "@/lib/models";
+import { isKnownSlow, isOpencodeAppOnlyModel, isT3Available, isT3Breaking, modelUrl, bestForChips } from "@/lib/models";
 import {
   categoryBadge,
   computeUptimePercent,
@@ -105,6 +105,14 @@ export default function ModelCardList({
                   {isT3Breaking(m.id) && (
                     <span className="rounded-full border border-amber-700/50 bg-amber-900/60 px-1.5 py-0.5 text-[10px] font-medium text-amber-300">
                       T3 ⚠
+                    </span>
+                  )}
+                  {isOpencodeAppOnlyModel(m) && (
+                    <span
+                      title="OpenCode Zen free tier only works inside the OpenCode app — not via API"
+                      className="rounded-full border border-cyan-700/50 bg-cyan-900/60 px-1.5 py-0.5 text-[10px] font-medium text-cyan-300"
+                    >
+                      OpenCode only
                     </span>
                   )}
                   {isKnownSlow(m.id) && (

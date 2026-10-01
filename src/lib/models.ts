@@ -50,6 +50,8 @@ export {
   testTimeoutMs,
   toolsTimeoutMs,
   statusFromHttpFailure,
+  isOpenCodeOnlyBody,
+  isOpencodeAppOnlyModel,
   FREE_TEST_TIMEOUT_MS,
   PAID_TEST_TIMEOUT_MS,
   SLOW_THRESHOLD_MS,
