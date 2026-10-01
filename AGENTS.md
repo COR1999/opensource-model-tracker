@@ -100,7 +100,7 @@ Layer 3 — State            src/hooks/      Custom React hooks
 | `rankings.ts` | Live BenchLM + OpenRouter AA/usage ranking; fuzzy free-tier id matching; 1h `TtlCache` |
 | `testing.ts` | `testModel`/`runModelTests`; free-tier 15s budget vs paid 8s; one retry on 429 |
 | `rate-limit.ts` | Retry policy for HTTP 429 (`shouldRetryRateLimit`) |
-| `uptime-history.ts` | Remote/local uptime merge + 7-day roll for cron `data/uptime-history.json` |
+| `uptime-history.ts` | Remote/local uptime merge + 7-day roll for cron `data/uptime-history.json` (on the `data` branch) |
 | `picks.ts` | `bestForChips`, `recommendModel` |
 | `catalog-changes.ts` | `diffCatalog` → added / removed / free-tier-gone |
 | `subscriptions.ts` | Webhook CRUD + `statusChangeAlerts` + best-effort `dispatchAlerts` |
@@ -172,15 +172,31 @@ npm run build        # production build
 
 4. **`/api/cron` fails closed.** Returns 503 if `CRON_SECRET` is unset. Never lower this.
 
-5. **`TtlCache` uses module-level state.** Intentional — persists across warm serverless
+5. **Cron output lives on the `data` branch, never on a code branch.**
+   `data/uptime-history.json`, `data/benchmarks.json` and `data/snapshots/*` are
+   written there and read from there. `DATA_BRANCH` in `lib/curated.ts` is the
+   single source; `/api/uptime`, `/api/results` and `rankings.ts` must not add
+   `master`/`main-dev`/`main` back as fallbacks.
+
+   This has churned twice and both times the cause was a wrong belief about
+   which branch production deploys from. **Production deploys from `master`;
+   `main-dev` is the integration branch; `master` is also the GitHub default
+   branch.** Cron originally wrote to the default branch with no explicit ref
+   while `/api/uptime` read only `main-dev`, so shared uptime never appeared. It
+   was then pinned to `main-dev` to match the reader, which left `master`
+   drifting a data commit behind daily. Verify with `git log`, not assumption.
+
+   Corollary: there is deliberately **no** fallback reader. If `data` is
+   unreachable the route returns an empty history — honest, unlike a stale copy.
+
+6. **`TtlCache` uses module-level state.** Intentional — persists across warm serverless
    invocations on Vercel. Do not make it request-scoped.
 
-6. **All `fetch` calls must use `AbortSignal.timeout()`.** 8s for model tests, 10s for
+7. **All `fetch` calls must use `AbortSignal.timeout()`.** 8s for model tests, 10s for
    provider catalog fetches, 15s for GitHub API writes.
 
-7. **Share links are base64 in the URL path.** `encodeSnapshot` caps at 150 results,
+8. **Share links are base64 in the URL path.** `encodeSnapshot` caps at 150 results,
    truncates errors to 140 chars. URL length must stay under browser limits.
-
 ## Coding Conventions
 
 - Comments explain **why**, not **what** (historical context, design trade-offs)
