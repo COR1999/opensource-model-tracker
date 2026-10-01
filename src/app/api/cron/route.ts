@@ -3,6 +3,7 @@ import {
   fetchAllProviderModels,
   testModel,
   isKnownSlow,
+  isFreeTierModel,
   isOpencodeAppOnlyModel,
   parseRemoteUptime,
   buildRemoteUptimeHistory,
@@ -18,6 +19,9 @@ export const maxDuration = 60;
 // so a full pass fits the window: ~45 models at concurrency 16 is ~3 batches.
 const CONCURRENCY = 16;
 const TESTABLE_CATEGORIES: ReadonlySet<ModelCategory> = new Set(["chat", "code", "vision"]);
+// Models per run. 16-wide batches at a 15s free-tier budget need two rounds,
+// which is what fits inside the 42s deadline below.
+const CRON_MODEL_LIMIT = 25;
 
 const REPO_OWNER = "COR1999";
 const REPO_NAME = "opensource-model-tracker";
@@ -187,13 +191,19 @@ export async function GET(req: Request) {
   // Vercel caps the function at 60s. Test a ranked subset only, and stop
   // launching new batches once the deadline is near so persistence still runs.
   // Zen free models only work inside the OpenCode app — skip them here.
-  const scoped = allModels
-    .filter(
-      (m) =>
-        TESTABLE_CATEGORIES.has(m.category) && !isKnownSlow(m.id) && !isOpencodeAppOnlyModel(m)
-    )
-    .sort((a, b) => (b.benchmarkScore ?? -1) - (a.benchmarkScore ?? -1))
-    .slice(0, 25);
+  const eligible = allModels.filter(
+    (m) => TESTABLE_CATEGORIES.has(m.category) && !isKnownSlow(m.id) && !isOpencodeAppOnlyModel(m)
+  );
+
+  // Free tiers first. The window used to be sorted by benchmarkScore alone,
+  // which is only ever populated for models BenchLM scores — so paid NVIDIA
+  // entries took every slot and the shared uptime history (which feeds the
+  // free-model sparklines) was majority paid. allModels already arrives
+  // best-first from annotateAndSortModels, so partitioning preserves ranking.
+  const scoped = [
+    ...eligible.filter((m) => isFreeTierModel(m)),
+    ...eligible.filter((m) => !isFreeTierModel(m)),
+  ].slice(0, CRON_MODEL_LIMIT);
 
   const DEADLINE_MS = 42_000;
   const results: TestResult[] = [];
