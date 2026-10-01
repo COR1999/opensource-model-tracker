@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { encodeSnapshot } from "@/lib/share";
 import { CATEGORY_OPTIONS } from "@/lib/curated";
-import { isKnownSlow, recommendModel } from "@/lib/models";
+import { isKnownSlow, isOpencodeAppOnlyModel, recommendModel } from "@/lib/models";
 import { styles, type Theme } from "@/lib/display";
 import {
   loadHideEndpoints,
@@ -91,7 +91,7 @@ export default function Dashboard() {
     const newIds = [...catalog.newModels].filter((id) => !lastAutoTested.current.has(id));
     if (newIds.length === 0) return;
     const newModels = catalog.models.filter(
-      (m) => newIds.includes(m.id) && !isKnownSlow(m.id)
+      (m) => newIds.includes(m.id) && !isKnownSlow(m.id) && !isOpencodeAppOnlyModel(m)
     );
     if (newModels.length === 0) return;
     lastAutoTested.current = new Set([...lastAutoTested.current, ...newIds]);
@@ -215,7 +215,7 @@ export default function Dashboard() {
               (b.intelligenceScore ?? -1) - (a.intelligenceScore ?? -1);
             break;
           case "status": {
-            const order = { working: 0, slow: 1, "rate-limited": 2, error: 3, timeout: 4, removed: 5 };
+            const order = { working: 0, slow: 1, "rate-limited": 2, "opencode-only": 3, error: 4, timeout: 5, removed: 6 };
             cmp = (order[ra?.status ?? "error"] ?? 5) - (order[rb?.status ?? "error"] ?? 5);
             break;
           }
@@ -304,12 +304,12 @@ export default function Dashboard() {
   }, []);
 
   const testVisible = useCallback(async () => {
-    const scoped = filtered.filter((m) => !isKnownSlow(m.id));
+    const scoped = filtered.filter((m) => !isKnownSlow(m.id) && !isOpencodeAppOnlyModel(m));
     await testing.testMany(scoped, "Test Visible");
   }, [filtered, testing]);
 
   const testAll = useCallback(async () => {
-    const testable = catalog.models.filter((m) => !isKnownSlow(m.id));
+    const testable = catalog.models.filter((m) => !isKnownSlow(m.id) && !isOpencodeAppOnlyModel(m));
     await testing.testMany(testable, "Test All");
   }, [catalog.models, testing]);
 

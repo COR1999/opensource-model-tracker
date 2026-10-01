@@ -107,9 +107,10 @@ export default function ResultsPage({ params }: { params: Promise<{ timestamp: s
                   working: 0,
                   slow: 1,
                   "rate-limited": 2,
-                  error: 3,
-                  timeout: 4,
-                  removed: 5,
+                  "opencode-only": 3,
+                  error: 4,
+                  timeout: 5,
+                  removed: 6,
                 };
                 return (order[a.status] ?? 5) - (order[b.status] ?? 5);
               })
