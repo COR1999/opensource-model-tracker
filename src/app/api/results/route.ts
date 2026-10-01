@@ -9,13 +9,10 @@ const SNAPSHOTS_PATH = "data/snapshots";
 
 const RAW_BASES = [
   `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${DATA_BRANCH}/${SNAPSHOTS_PATH}`,
-  `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/${SNAPSHOTS_PATH}`,
-  `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main-dev/${SNAPSHOTS_PATH}`,
-  `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${SNAPSHOTS_PATH}`,
 ];
 
-/** DATA_BRANCH first, then code branches for snapshots predating the migration. */
-const REFS = [DATA_BRANCH, "master", "main-dev", "main"] as const;
+/** DATA_BRANCH is the only place snapshots live. */
+const REFS = [DATA_BRANCH] as const;
 
 function corsHeaders(): Record<string, string> {
   return {

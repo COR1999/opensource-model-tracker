@@ -44,18 +44,32 @@ describe("GET /api/uptime branch preference", () => {
     expect(requested[0]).toContain(`${REPO}/data/`);
   });
 
-  it("still falls back to master when data has no history yet", async () => {
-    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes(`${REPO}/data/`)) return new Response("nope", { status: 404 });
-      if (url.includes(`${REPO}/master/`)) return historyResponse("2026-10-01T12:39:00.000Z");
-      return new Response("not found", { status: 404 });
-    }) as typeof fetch;
+  it("returns no history rather than serving a stale copy from a code branch", async () => {
+    // The code branches no longer carry data/, so there is nothing to fall back
+    // to. An empty history is honest; serving an older copy is not, and that
+    // mismatch is what this whole move fixed.
+    globalThis.fetch = vi.fn(async () => new Response("not found", { status: 404 })) as typeof fetch;
 
     const { GET } = await import("@/app/api/uptime/route");
     const res = await GET();
     const body = await res.json();
-    expect(body.updatedAt).toBe("2026-10-01T12:39:00.000Z");
+
+    expect(res.status).toBe(200);
+    expect(body.updatedAt).toBeNull();
+    expect(body.days).toEqual({});
+  });
+
+  it("never requests a code branch, only the data branch", async () => {
+    const requested: string[] = [];
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      requested.push(String(input));
+      return new Response("not found", { status: 404 });
+    }) as typeof fetch;
+
+    const { GET } = await import("@/app/api/uptime/route");
+    await GET();
+
+    expect(requested.every((u) => u.includes(`${REPO}/data/`))).toBe(true);
   });
 
   it("prefers the token-authenticated Contents API for the data branch when a token exists", async () => {

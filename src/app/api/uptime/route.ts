@@ -26,23 +26,18 @@ async function loadFromGitHubRaw(): Promise<RemoteUptimeHistory> {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  // DATA_BRANCH first: that is where /api/cron commits the history. The code
-  // branches remain as fallbacks for files written before the migration, and
-  // because they can carry different ages of the same file.
+  // DATA_BRANCH is the single source of truth for cron output. The code
+  // branches deliberately do not carry these files: two divergent copies meant
+  // the reader could serve a stale one and win the race against the fresh one.
+  // Nothing to fall back to — if the data branch is unreachable, there is no
+  // history to show, which is honest rather than misleading.
   const urls = [
     `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${DATA_BRANCH}/${HISTORY_PATH}`,
-    `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/${HISTORY_PATH}`,
-    `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main-dev/${HISTORY_PATH}`,
-    `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${HISTORY_PATH}`,
   ];
   if (token) {
-    // Reverse order because unshift prepends: iterating [data, master, ...]
-    // would leave master at the front and reintroduce the stale-copy bug.
-    for (const ref of ["main-dev", "master", DATA_BRANCH]) {
-      urls.unshift(
-        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=${ref}`
-      );
-    }
+    urls.unshift(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=${DATA_BRANCH}`
+    );
   }
 
   for (const url of urls) {
