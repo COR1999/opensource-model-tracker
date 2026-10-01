@@ -92,11 +92,14 @@ function sleep(ms: number): Promise<void> {
 
 async function probeOnce(
   model: ModelInfo,
-  start: number,
   baseUrl: string,
   upstreamId: string,
   headers: Record<string, string>
 ): Promise<TestResult> {
+  // Each attempt owns its own clock. Sharing one start across attempts bills the
+  // rate-limit backoff to the model, inflating uptime trends and mislabelling a
+  // fast model as slow.
+  const start = Date.now();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), testTimeoutMs(model));
 
@@ -232,11 +235,11 @@ export async function testModel(
   // One retry on 429: free gateways throttle under Test All far more often
   // than they hard-fail, and a single backoff cuts false "rate-limited" noise.
   let attempt = 1;
-  let result = await probeOnce(model, start, baseUrl, upstreamId, headers);
+  let result = await probeOnce(model, baseUrl, upstreamId, headers);
   while (result.status === "rate-limited" && shouldRetryRateLimit(attempt)) {
     attempt += 1;
     await sleep(rateLimitRetryDelayMs());
-    result = await probeOnce(model, start, baseUrl, upstreamId, headers);
+    result = await probeOnce(model, baseUrl, upstreamId, headers);
   }
   return result;
 }

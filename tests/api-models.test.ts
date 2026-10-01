@@ -14,16 +14,6 @@ vi.mock("@/lib/rankings", () => ({
   annotateAndSortModels: vi.fn((models: ModelInfo[]) => models),
 }));
 
-const sampleModels: ModelInfo[] = [
-  {
-    id: "opencode/big-pickle",
-    displayName: "Big Pickle",
-    provider: "opencode",
-    ownedBy: "opencode",
-    category: "chat",
-  },
-];
-
 function jsonRes(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {
     status,
