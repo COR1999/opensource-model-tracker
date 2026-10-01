@@ -1,23 +1,23 @@
 {
   "date": "2026-10-01",
-  "timestamp": 1790869406031,
-  "durationMs": 17247,
+  "timestamp": 1790871373538,
+  "durationMs": 20818,
   "discoveredTotal": 109,
   "scopedTotal": 25,
-  "skippedRemoved": 1,
+  "skippedRemoved": 8,
   "testedTotal": 25,
-  "working": 4,
+  "working": 5,
   "slow": 0,
   "rateLimited": 10,
-  "down": 4,
-  "removed": 7,
+  "down": 6,
+  "removed": 4,
   "results": [
     {
       "modelId": "openrouter/dots-studio/dots-3-note-preview:free",
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 21,
+      "responseTimeMs": 39,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -26,7 +26,7 @@
       "provider": "openrouter",
       "status": "error",
       "httpCode": 403,
-      "responseTimeMs": 65,
+      "responseTimeMs": 99,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"thinkingmachines/inkling-small:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":40"
     },
@@ -35,7 +35,7 @@
       "provider": "openrouter",
       "status": "error",
       "httpCode": 403,
-      "responseTimeMs": 102,
+      "responseTimeMs": 123,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"thinkingmachines/inkling:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":403,\"met"
     },
@@ -44,7 +44,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 22,
+      "responseTimeMs": 20,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -53,7 +53,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 21,
+      "responseTimeMs": 27,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -62,7 +62,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 20,
+      "responseTimeMs": 27,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -71,7 +71,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 23,
+      "responseTimeMs": 39,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -80,7 +80,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 31,
+      "responseTimeMs": 18,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -89,7 +89,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 17,
+      "responseTimeMs": 36,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -98,7 +98,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 18,
+      "responseTimeMs": 23,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -107,7 +107,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 21,
+      "responseTimeMs": 19,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -116,7 +116,7 @@
       "provider": "openrouter",
       "status": "rate-limited",
       "httpCode": 429,
-      "responseTimeMs": 18,
+      "responseTimeMs": 39,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day\",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"50\",\"X-RateLimit-Remain"
     },
@@ -134,7 +134,7 @@
       "provider": "nvidia",
       "status": "error",
       "httpCode": 503,
-      "responseTimeMs": 286,
+      "responseTimeMs": 297,
       "supportsFunctionCalling": false,
       "error": "{\"error\":{\"message\":\"Service temporarily overloaded\",\"type\":\"Service Unavailable\",\"code\":503}}"
     },
@@ -143,7 +143,7 @@
       "provider": "nvidia",
       "status": "working",
       "httpCode": 200,
-      "responseTimeMs": 4927,
+      "responseTimeMs": 377,
       "supportsFunctionCalling": false
     },
     {
@@ -151,7 +151,7 @@
       "provider": "nvidia",
       "status": "working",
       "httpCode": 200,
-      "responseTimeMs": 483,
+      "responseTimeMs": 283,
       "supportsFunctionCalling": false
     },
     {
@@ -159,35 +159,37 @@
       "provider": "nvidia",
       "status": "working",
       "httpCode": 200,
-      "responseTimeMs": 353,
+      "responseTimeMs": 153,
       "supportsFunctionCalling": false
     },
     {
       "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
       "provider": "nvidia",
+      "status": "error",
+      "httpCode": 503,
+      "responseTimeMs": 48,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"ResourceExhausted: Worker local total request limit reached (16/16)\",\"type\":\"Service Unavailable\",\"code\":503}}"
+    },
+    {
+      "modelId": "meta/llama-3.2-11b-vision-instruct",
+      "provider": "nvidia",
       "status": "working",
       "httpCode": 200,
-      "responseTimeMs": 452,
+      "responseTimeMs": 275,
       "supportsFunctionCalling": false
     },
     {
-      "modelId": "bigcode/starcoder2-15b",
+      "modelId": "meta/llama-3.2-90b-vision-instruct",
       "provider": "nvidia",
-      "status": "removed",
-      "httpCode": 404,
-      "responseTimeMs": 23,
-      "supportsFunctionCalling": false
+      "status": "timeout",
+      "httpCode": 0,
+      "responseTimeMs": 8001,
+      "supportsFunctionCalling": false,
+      "error": "This operation was aborted"
     },
     {
-      "modelId": "deepseek-ai/deepseek-coder-6.7b-instruct",
-      "provider": "nvidia",
-      "status": "removed",
-      "httpCode": 404,
-      "responseTimeMs": 46,
-      "supportsFunctionCalling": false
-    },
-    {
-      "modelId": "google/codegemma-1.1-7b",
+      "modelId": "microsoft/phi-3-vision-128k-instruct",
       "provider": "nvidia",
       "status": "removed",
       "httpCode": 404,
@@ -195,7 +197,23 @@
       "supportsFunctionCalling": false
     },
     {
-      "modelId": "google/codegemma-7b",
+      "modelId": "mistralai/codestral-22b-instruct-v0.1",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 50,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 43,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/neva-22b",
       "provider": "nvidia",
       "status": "removed",
       "httpCode": 404,
@@ -203,27 +221,11 @@
       "supportsFunctionCalling": false
     },
     {
-      "modelId": "ibm/granite-34b-code-instruct",
+      "modelId": "poolside/laguna-xs-2.1",
       "provider": "nvidia",
-      "status": "removed",
-      "httpCode": 404,
-      "responseTimeMs": 39,
-      "supportsFunctionCalling": false
-    },
-    {
-      "modelId": "ibm/granite-8b-code-instruct",
-      "provider": "nvidia",
-      "status": "removed",
-      "httpCode": 404,
-      "responseTimeMs": 47,
-      "supportsFunctionCalling": false
-    },
-    {
-      "modelId": "meta/codellama-70b",
-      "provider": "nvidia",
-      "status": "removed",
-      "httpCode": 404,
-      "responseTimeMs": 44,
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 147,
       "supportsFunctionCalling": false
     }
   ]
