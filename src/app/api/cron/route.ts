@@ -7,6 +7,7 @@ import {
   isOpencodeAppOnlyModel,
   parseRemoteUptime,
   buildRemoteUptimeHistory,
+  DATA_BRANCH,
   ModelCategory,
   TestResult,
 } from "@/lib/models";
@@ -28,10 +29,10 @@ const REPO_NAME = "opensource-model-tracker";
 const UPTIME_HISTORY_PATH = "data/uptime-history.json";
 const BENCHMARKS_PATH = "data/benchmarks.json";
 const BENCHLM_LEADERBOARD_URL = "https://benchlm.ai/api/data/leaderboard";
-// Production deploys from main-dev; the GitHub default branch is master.
-// Pin every Contents API call to main-dev so snapshots/uptime land where
-// /api/uptime and /api/results read from.
-const GITHUB_BRANCH = "main-dev";
+// Generated files go to the dedicated data branch, not to a code branch. See
+// DATA_BRANCH in lib/curated.ts for why this has churned twice already and why
+// master/main-dev must never carry cron output.
+const GITHUB_BRANCH = DATA_BRANCH;
 
 function utcDateStamp(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);

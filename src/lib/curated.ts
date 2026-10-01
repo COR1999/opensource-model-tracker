@@ -23,6 +23,24 @@ export const KNOWN_SLOW = new Set([
   "deepseek-v4-flash",
 ]);
 
+/**
+ * Branch holding cron-generated files (data/uptime-history.json,
+ * data/benchmarks.json, data/snapshots/*).
+ *
+ * This deliberately lives on neither code branch. It has churned twice: cron
+ * originally wrote to the default branch (master) with no explicit ref while
+ * /api/uptime read main-dev, so shared uptime never appeared; a later fix
+ * pinned writes to main-dev to match the reader, but production deploys from
+ * master, so that only swapped one mismatch for another and left master
+ * drifting a commit behind every day. A dedicated branch removes the coupling:
+ * generated files cannot diverge from a code branch and cannot trigger a
+ * production deploy.
+ *
+ * Readers must consult DATA_BRANCH first, then the code branches as fallbacks
+ * for anything not yet migrated.
+ */
+export const DATA_BRANCH = "data";
+
 // OpenCode Zen free tier — gateway lists paid models too; keep only
 // "-free"-suffixed ids plus big-pickle (the unsuffixed free agent model)
 // Order is a static fallback: live catalogs are re-sorted by BenchLM /

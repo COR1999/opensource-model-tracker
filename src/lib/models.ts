@@ -5,6 +5,7 @@ export type { Provider, ModelCategory, ModelInfo, TestResult, UptimeRecord } fro
 export {
   T3_KNOWN_BREAKING,
   KNOWN_SLOW,
+  DATA_BRANCH,
   FALLBACK_OPENCODE_MODELS,
   FALLBACK_OPENROUTER_MODELS,
   T3_AVAILABLE_MODELS,
