@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
+import { mergeUptimeHistory, parseRemoteUptime } from "@/lib/models";
+import { loadSubscriptions, statusChangeAlerts, dispatchAlerts } from "@/lib/subscriptions";
 import {
   appendUptime,
   loadLastResults,
@@ -52,8 +54,31 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
     // keep the prerendered markup identical to the client's first render.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
     setResults(loadLastResults());
-    setUptime(loadUptime());
+    const localUptime = loadUptime();
+    setUptime(localUptime);
     setHydrated(true);
+
+    // Shared uptime from cron snapshots; merge into local so sparklines show
+    // history even on a fresh browser.
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/uptime", { signal: AbortSignal.timeout(8000) });
+        if (!res.ok || cancelled) return;
+        const remote = parseRemoteUptime(await res.json());
+        if (Object.keys(remote.days).length === 0) return;
+        setUptime((prev) => {
+          const merged = mergeUptimeHistory(prev, remote);
+          saveUptime(merged);
+          return merged;
+        });
+      } catch {
+        // offline / API missing — local history still works
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /**
@@ -68,6 +93,16 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
       const next = new Map(prev);
       for (const [id, r] of incoming) next.set(id, r);
       saveLastResults(next);
+      // Best-effort status-change webhooks; never block the test UI.
+      try {
+        const subs = loadSubscriptions();
+        if (subs.length > 0) {
+          const alerts = statusChangeAlerts(prev, next);
+          for (const payload of alerts) void dispatchAlerts(payload, subs);
+        }
+      } catch {
+        // subscriptions are optional enrichment
+      }
       return next;
     });
     setUptime((prev) => {

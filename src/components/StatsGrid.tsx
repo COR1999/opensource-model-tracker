@@ -11,6 +11,7 @@ export interface DashboardCounts {
   working: number;
   slow: number;
   error: number;
+  rateLimited: number;
   removed: number;
   new: number;
 }
@@ -27,10 +28,12 @@ export function computeCounts(
   let working = 0;
   let slow = 0;
   let error = 0;
+  let rateLimited = 0;
   let removed = 0;
   for (const r of results.values()) {
     if (r.status === "working") working++;
     else if (r.status === "slow") slow++;
+    else if (r.status === "rate-limited") rateLimited++;
     else if (r.status === "error" || r.status === "timeout") error++;
     else if (r.status === "removed") removed++;
   }
@@ -42,6 +45,7 @@ export function computeCounts(
     working,
     slow,
     error,
+    rateLimited,
     removed,
     new: newCount,
   };
@@ -60,8 +64,8 @@ export default function StatsGrid({
 }: {
   counts: DashboardCounts;
   theme: Theme;
-  onSelectStatus?: (status: "working" | "slow" | "error" | null) => void;
-  activeStatus?: "working" | "slow" | "error" | null;
+  onSelectStatus?: (status: "working" | "slow" | "rate-limited" | "error" | null) => void;
+  activeStatus?: "working" | "slow" | "rate-limited" | "error" | null;
 }) {
   const accent = accents(theme);
   const { cardBg, border, text, textMuted, textSubtle } = styles(theme);
@@ -69,6 +73,7 @@ export default function StatsGrid({
   const health = [
     { key: "working" as const, label: "Working", value: counts.working, tone: accent.ok },
     { key: "slow" as const, label: "Slow", value: counts.slow, tone: accent.warn },
+    { key: "rate-limited" as const, label: "Rate limited", value: counts.rateLimited, tone: accent.info },
     { key: "error" as const, label: "Down", value: counts.error, tone: accent.bad },
   ];
 

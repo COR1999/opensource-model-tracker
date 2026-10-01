@@ -29,7 +29,14 @@ export function encodeSnapshot(data: { ts: number; results: TestResult[] }): str
 }
 
 const VALID_PROVIDERS = new Set(["nvidia", "opencode", "openrouter"]);
-const VALID_STATUSES = new Set(["working", "slow", "error", "timeout", "removed"]);
+const VALID_STATUSES = new Set([
+  "working",
+  "slow",
+  "rate-limited",
+  "error",
+  "timeout",
+  "removed",
+]);
 
 function normalizeResult(raw: unknown): TestResult | null {
   if (!raw || typeof raw !== "object") return null;

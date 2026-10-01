@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 interface Catalog {
   models: ModelInfo[];
   errors: Record<Provider, string | null>;
+  rankingMeta: { asOf: string | null; sources: string[] };
 }
 
 // Provider catalogs change on the order of days. Serving every visitor's
