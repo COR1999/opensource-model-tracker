@@ -34,8 +34,6 @@ export interface BenchmarkIndex {
 const BENCHLM_LEADERBOARD_URL = "https://benchlm.ai/api/data/leaderboard";
 const BENCHMARKS_SNAPSHOT_URLS = [
   "https://raw.githubusercontent.com/COR1999/opensource-model-tracker/data/data/benchmarks.json",
-  "https://raw.githubusercontent.com/COR1999/opensource-model-tracker/main-dev/data/benchmarks.json",
-  "https://raw.githubusercontent.com/COR1999/opensource-model-tracker/master/data/benchmarks.json",
 ];
 const OPENROUTER_BENCHMARKS_URL =
   "https://openrouter.ai/api/v1/benchmarks?source=artificial-analysis&max_results=100";
