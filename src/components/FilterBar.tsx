@@ -3,15 +3,9 @@
 import { forwardRef } from "react";
 import type { ModelCategory } from "@/lib/models";
 import { styles, providerLabel, type Theme, type Density } from "@/lib/display";
+import { STATUS_FILTER_OPTIONS, type StatusFilter } from "@/lib/filters";
 
-export type StatusFilter =
-  | "all"
-  | "working"
-  | "slow"
-  | "rate-limited"
-  | "opencode-only"
-  | "error"
-  | "untested";
+export type { StatusFilter };
 
 export interface Filters {
   search: string;
@@ -34,15 +28,7 @@ const CATEGORIES: { value: ModelCategory | "all"; label: string }[] = [
 
 const PROVIDERS = ["all", "nvidia", "opencode", "openrouter"];
 
-const STATUSES: { value: StatusFilter; label: string }[] = [
-  { value: "all", label: "Any status" },
-  { value: "working", label: "Working" },
-  { value: "slow", label: "Slow" },
-  { value: "rate-limited", label: "Rate limited" },
-  { value: "opencode-only", label: "OpenCode app" },
-  { value: "error", label: "Down" },
-  { value: "untested", label: "Not tested" },
-];
+const STATUSES = STATUS_FILTER_OPTIONS;
 
 const FilterBar = forwardRef<
   HTMLInputElement,
