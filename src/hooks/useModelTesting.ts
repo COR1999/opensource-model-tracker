@@ -49,6 +49,13 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
     notify.current = onNotify;
   }, [onNotify]);
 
+  // State updaters must be pure: React re-invokes them (StrictMode, concurrent
+  // re-render). These refs hold the latest value so persistence writes and
+  // webhook dispatch can happen outside the updater. Doing them inside made
+  // every status-change alert get delivered twice to every subscriber.
+  const resultsRef = useRef<Map<string, TestResult>>(new Map());
+  const uptimeRef = useRef<Record<string, UptimeRecord[]>>({});
+
   useEffect(() => {
     // localStorage is browser-only, so persisted state loads after mount to
     // keep the prerendered markup identical to the client's first render.
@@ -56,6 +63,8 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
     setResults(loadLastResults());
     const localUptime = loadUptime();
     setUptime(localUptime);
+    resultsRef.current = loadLastResults();
+    uptimeRef.current = localUptime;
     setHydrated(true);
 
     // Shared uptime from cron snapshots; merge into local so sparklines show
@@ -67,11 +76,10 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
         if (!res.ok || cancelled) return;
         const remote = parseRemoteUptime(await res.json());
         if (Object.keys(remote.days).length === 0) return;
-        setUptime((prev) => {
-          const merged = mergeUptimeHistory(prev, remote);
-          saveUptime(merged);
-          return merged;
-        });
+        const merged = mergeUptimeHistory(uptimeRef.current, remote);
+        uptimeRef.current = merged;
+        saveUptime(merged);
+        setUptime(merged);
       } catch {
         // offline / API missing — local history still works
       }
@@ -89,28 +97,29 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
    */
   const mergeResults = useCallback((incoming: Map<string, TestResult>) => {
     if (incoming.size === 0) return;
-    setResults((prev) => {
-      const next = new Map(prev);
-      for (const [id, r] of incoming) next.set(id, r);
-      saveLastResults(next);
-      // Best-effort status-change webhooks; never block the test UI.
-      try {
-        const subs = loadSubscriptions();
-        if (subs.length > 0) {
-          const alerts = statusChangeAlerts(prev, next);
-          for (const payload of alerts) void dispatchAlerts(payload, subs);
-        }
-      } catch {
-        // subscriptions are optional enrichment
+
+    const prev = resultsRef.current;
+    const next = new Map(prev);
+    for (const [id, r] of incoming) next.set(id, r);
+    resultsRef.current = next;
+    setResults(next);
+    saveLastResults(next);
+
+    let nextUptime = uptimeRef.current;
+    for (const [id, r] of incoming) nextUptime = appendUptime(nextUptime, id, r);
+    uptimeRef.current = nextUptime;
+    saveUptime(nextUptime);
+    setUptime(nextUptime);
+
+    // Best-effort status-change webhooks; never block the test UI.
+    try {
+      const subs = loadSubscriptions();
+      if (subs.length > 0) {
+        for (const payload of statusChangeAlerts(prev, next)) void dispatchAlerts(payload, subs);
       }
-      return next;
-    });
-    setUptime((prev) => {
-      let next = prev;
-      for (const [id, r] of incoming) next = appendUptime(next, id, r);
-      saveUptime(next);
-      return next;
-    });
+    } catch {
+      // subscriptions are optional enrichment
+    }
   }, []);
 
   const testOne = useCallback(
@@ -215,6 +224,7 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
   }, []);
 
   const clearResults = useCallback(() => {
+    resultsRef.current = new Map();
     setResults(new Map());
     saveLastResults(new Map());
   }, []);

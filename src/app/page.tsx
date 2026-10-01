@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { encodeSnapshot } from "@/lib/share";
 import { CATEGORY_OPTIONS } from "@/lib/curated";
 import { isKnownSlow, isOpencodeAppOnlyModel, recommendModel } from "@/lib/models";
+import { matchesStatusFilter } from "@/lib/filters";
 import { styles, type Theme } from "@/lib/display";
 import {
   loadHideEndpoints,
@@ -171,15 +172,7 @@ export default function Dashboard() {
             m.category === "chat" ||
             m.category === "code" ||
             m.category === "vision") &&
-          (filters.status === "all" ||
-            (filters.status === "working" &&
-              (testing.results.get(m.id)?.status === "working" || testing.results.get(m.id)?.status === "slow")) ||
-            (filters.status === "slow" && testing.results.get(m.id)?.status === "slow") ||
-            (filters.status === "rate-limited" && testing.results.get(m.id)?.status === "rate-limited") ||
-            (filters.status === "opencode-only" && isOpencodeAppOnlyModel(m)) ||
-            (filters.status === "error" &&
-              (testing.results.get(m.id)?.status === "error" || testing.results.get(m.id)?.status === "timeout")) ||
-            (filters.status === "untested" && !testing.results.has(m.id))) &&
+          matchesStatusFilter(m, testing.results.get(m.id)?.status, filters.status) &&
           (!filters.shortlistOnly || shortlist.has(m.id)) &&
           (filters.search === "" ||
             m.id.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -453,7 +446,11 @@ export default function Dashboard() {
           counts={counts}
           theme={theme}
           onSelectStatus={(status) => handleFilterChange({ status: status ?? "all" })}
-          activeStatus={filters.status === "all" ? null : filters.status as "working" | "slow" | "error" | null}
+            activeStatus={
+              filters.status === "all"
+                ? null
+                : (filters.status as "working" | "slow" | "rate-limited" | "error")
+            }
         />
 
         <ProviderHealthStrip

@@ -105,6 +105,38 @@ describe("testModel rate-limit retry", () => {
     }
   });
 
+  it("measures only the successful attempt, not the rate-limit backoff", async () => {
+    const { testModel } = await import("@/lib/testing");
+    const { RATE_LIMIT_RETRY_DELAY_MS } = await import("@/lib/rate-limit");
+    let calls = 0;
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      if (calls === 1) return new Response("rate limited", { status: 429 });
+      return new Response(JSON.stringify({ choices: [{ message: { content: "hi" } }] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    try {
+      const result = await testModel("", {
+        id: "opencode/big-pickle",
+        displayName: "Big Pickle",
+        provider: "opencode",
+        ownedBy: "opencode",
+        category: "chat",
+      });
+      expect(result.status).toBe("working");
+      // The mock answers instantly, so the recorded latency must stay below the
+      // 1500ms backoff sleep. Otherwise the retry's wait time is billed to the
+      // model, which both inflates uptime trends and drops the "fast" chip.
+      expect(result.responseTimeMs).toBeLessThan(RATE_LIMIT_RETRY_DELAY_MS);
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
   it("does not retry when the first probe succeeds", async () => {
     const { testModel } = await import("@/lib/testing");
     let calls = 0;
