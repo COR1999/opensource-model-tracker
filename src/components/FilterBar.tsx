@@ -4,7 +4,14 @@ import { forwardRef } from "react";
 import type { ModelCategory } from "@/lib/models";
 import { styles, providerLabel, type Theme, type Density } from "@/lib/display";
 
-export type StatusFilter = "all" | "working" | "slow" | "rate-limited" | "error" | "untested";
+export type StatusFilter =
+  | "all"
+  | "working"
+  | "slow"
+  | "rate-limited"
+  | "opencode-only"
+  | "error"
+  | "untested";
 
 export interface Filters {
   search: string;
@@ -32,6 +39,7 @@ const STATUSES: { value: StatusFilter; label: string }[] = [
   { value: "working", label: "Working" },
   { value: "slow", label: "Slow" },
   { value: "rate-limited", label: "Rate limited" },
+  { value: "opencode-only", label: "OpenCode app" },
   { value: "error", label: "Down" },
   { value: "untested", label: "Not tested" },
 ];

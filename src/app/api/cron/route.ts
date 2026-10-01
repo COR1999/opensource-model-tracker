@@ -22,6 +22,8 @@ const TESTABLE_CATEGORIES: ReadonlySet<ModelCategory> = new Set(["chat", "code",
 const REPO_OWNER = "COR1999";
 const REPO_NAME = "opensource-model-tracker";
 const UPTIME_HISTORY_PATH = "data/uptime-history.json";
+const BENCHMARKS_PATH = "data/benchmarks.json";
+const BENCHLM_LEADERBOARD_URL = "https://benchlm.ai/api/data/leaderboard";
 // Production deploys from main-dev; the GitHub default branch is master.
 // Pin every Contents API call to main-dev so snapshots/uptime land where
 // /api/uptime and /api/results read from.
@@ -124,6 +126,31 @@ async function persistUptimeHistory(
   );
 }
 
+/** Snapshot BenchLM leaderboard so rankings can fall back offline / on outage. */
+async function persistBenchmarks(
+  token: string,
+  now: number
+): Promise<{ persisted: boolean; detail: string }> {
+  try {
+    const res = await fetch(BENCHLM_LEADERBOARD_URL, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return { persisted: false, detail: `BenchLM HTTP ${res.status}` };
+    const payload = await res.json();
+    const body = {
+      fetchedAt: new Date(now).toISOString(),
+      lastUpdated: (payload as { lastUpdated?: string }).lastUpdated ?? null,
+      models: (payload as { models?: unknown[] }).models ?? [],
+    };
+    return putJsonFile(
+      token,
+      BENCHMARKS_PATH,
+      body,
+      `benchmarks: ${utcDateStamp(now)} snapshot BenchLM leaderboard`
+    );
+  } catch {
+    return { persisted: false, detail: "BenchLM fetch failed" };
+  }
+}
+
 /** Non-fatal setup report so remote operators know what is missing. */
 function cronPreflight(): Record<string, string | boolean> {
   return {
@@ -220,16 +247,22 @@ export async function GET(req: Request) {
     persisted: false,
     detail: "SNAPSHOT_GITHUB_TOKEN not configured",
   };
+  let benchmarkPersistence: { persisted: boolean; detail: string } = {
+    persisted: false,
+    detail: "SNAPSHOT_GITHUB_TOKEN not configured",
+  };
   const snapshotToken = process.env.SNAPSHOT_GITHUB_TOKEN;
   if (snapshotToken) {
     persistence = await persistSnapshot(snapshotToken, summary.date, summary);
     uptimePersistence = await persistUptimeHistory(snapshotToken, results, startedAt);
+    benchmarkPersistence = await persistBenchmarks(snapshotToken, startedAt);
   }
 
   return NextResponse.json({
     ...summary,
     persistence,
     uptimePersistence,
+    benchmarkPersistence,
     preflight: cronPreflight(),
   });
 }

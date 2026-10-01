@@ -12,6 +12,7 @@ export interface DashboardCounts {
   slow: number;
   error: number;
   rateLimited: number;
+  opencodeOnly: number;
   removed: number;
   new: number;
 }
@@ -29,11 +30,13 @@ export function computeCounts(
   let slow = 0;
   let error = 0;
   let rateLimited = 0;
+  let opencodeOnly = 0;
   let removed = 0;
   for (const r of results.values()) {
     if (r.status === "working") working++;
     else if (r.status === "slow") slow++;
     else if (r.status === "rate-limited") rateLimited++;
+    else if (r.status === "opencode-only") opencodeOnly++;
     else if (r.status === "error" || r.status === "timeout") error++;
     else if (r.status === "removed") removed++;
   }
@@ -46,6 +49,7 @@ export function computeCounts(
     slow,
     error,
     rateLimited,
+    opencodeOnly,
     removed,
     new: newCount,
   };

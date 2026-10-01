@@ -1,4 +1,5 @@
 import type { ModelInfo, TestResult } from "./types";
+import { isFreeTierModel } from "./testing";
 
 export type ChipKind = "code" | "reason" | "know" | "agent" | "long-ctx" | "fast" | "unranked";
 
@@ -43,15 +44,21 @@ export function bestForChips(model: ModelInfo, result?: TestResult): BestForChip
 }
 
 /**
- * Recommend one model from a catalog: prefer BenchLM score, then AA coding,
- * then a recently working test result. Never returns an error/timeout model
- * if a working alternative exists.
+ * Recommend one free-tier model from the catalog (Zen free + OpenRouter :free).
+ * Never recommends NVIDIA paid catalog rows (e.g. GLM-5.3 on NIM) that are not
+ * on the free list. Prefer models that tested working; otherwise BenchLM/AA.
  */
 export function recommendModel(
   models: ModelInfo[],
-  results: Map<string, TestResult>
+  results: Map<string, TestResult>,
+  options: { onlyFree?: boolean } = {}
 ): ModelInfo | null {
-  if (models.length === 0) return null;
+  const onlyFree = options.onlyFree ?? true;
+  let pool = models;
+  if (onlyFree) {
+    pool = pool.filter((m) => isFreeTierModel(m));
+  }
+  if (pool.length === 0) return null;
 
   const working = (m: ModelInfo) => {
     const r = results.get(m.id);
@@ -79,7 +86,7 @@ export function recommendModel(
     return a.id.localeCompare(b.id);
   };
 
-  const workingModels = models.filter(working);
-  const pool = workingModels.length > 0 ? workingModels : models;
-  return [...pool].sort((a, b) => better(b, a))[0] ?? null;
+  const workingModels = pool.filter(working);
+  const eligible = workingModels.length > 0 ? workingModels : pool;
+  return [...eligible].sort((a, b) => better(b, a))[0] ?? null;
 }
