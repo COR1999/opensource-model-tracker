@@ -203,52 +203,76 @@ function parseOpenRouterUsage(payload: unknown, byKey: Map<string, BenchmarkEntr
   });
 }
 
+interface BenchlmLoad {
+  ok: boolean;
+  asOf: string | null;
+}
+
+function readLastUpdated(payload: unknown): string | null {
+  const value = (payload as { lastUpdated?: unknown }).lastUpdated;
+  return typeof value === "string" ? value : null;
+}
+
+/**
+ * A non-2xx from BenchLM is an outage just as much as a thrown fetch is, so
+ * both must fall through to the committed snapshot rather than silently
+ * producing an unranked catalog.
+ */
+async function loadBenchlmPrimary(byKey: Map<string, BenchmarkEntry>): Promise<BenchlmLoad> {
+  try {
+    const res = await fetch(BENCHLM_LEADERBOARD_URL, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return { ok: false, asOf: null };
+    const payload = await res.json();
+    parseBenchlm(payload, byKey);
+    return { ok: true, asOf: readLastUpdated(payload) };
+  } catch {
+    return { ok: false, asOf: null };
+  }
+}
+
+/** data/benchmarks.json as committed by the daily cron snapshot job. */
+async function loadBenchlmSnapshot(byKey: Map<string, BenchmarkEntry>): Promise<BenchlmLoad> {
+  for (const url of BENCHMARKS_SNAPSHOT_URLS) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      const payload = await res.json();
+      parseBenchlm(payload, byKey);
+      return { ok: true, asOf: readLastUpdated(payload) };
+    } catch {
+      // try the next snapshot branch
+    }
+  }
+  return { ok: false, asOf: null };
+}
+
 async function loadBenchmarks(): Promise<BenchmarkIndex> {
   const byKey = new Map<string, BenchmarkEntry>();
   const sources: string[] = [];
   let asOf: string | null = null;
 
-  try {
-    const res = await fetch(BENCHLM_LEADERBOARD_URL, { signal: AbortSignal.timeout(10000) });
-    if (res.ok) {
-      const payload = await res.json();
-      parseBenchlm(payload, byKey);
-      sources.push("benchlm");
-      asOf =
-        typeof (payload as { lastUpdated?: string }).lastUpdated === "string"
-          ? (payload as { lastUpdated: string }).lastUpdated
-          : null;
-    }
-  } catch {
-    // BenchLM outage: try the cron-committed snapshot, then OpenRouter.
-    for (const url of BENCHMARKS_SNAPSHOT_URLS) {
-      try {
-        const snap = await fetch(url, { signal: AbortSignal.timeout(8000) });
-        if (!snap.ok) continue;
-        const payload = await snap.json();
-        parseBenchlm(payload, byKey);
-        sources.push("benchlm-snapshot");
-        asOf =
-          typeof (payload as { lastUpdated?: string }).lastUpdated === "string"
-            ? (payload as { lastUpdated: string }).lastUpdated
-            : asOf;
-        break;
-      } catch {
-        // try next snapshot URL
-      }
+  const benchlm = await loadBenchlmPrimary(byKey);
+  if (benchlm.ok) {
+    sources.push("benchlm");
+    asOf = benchlm.asOf;
+  } else {
+    const snapshot = await loadBenchlmSnapshot(byKey);
+    if (snapshot.ok) {
+      sources.push("benchlm-snapshot");
+      asOf = snapshot.asOf;
     }
   }
 
   const openRouterKey = process.env.OPENROUTER_API_KEY;
   if (openRouterKey) {
-  try {
-    const res = await fetch(
-      `${OPENROUTER_BENCHMARKS_URL.replace("max_results=100", "max_results=200")}`,
-      {
-        headers: { Authorization: `Bearer ${openRouterKey}` },
-        signal: AbortSignal.timeout(10000),
-      }
-    );
+    try {
+      const res = await fetch(
+        `${OPENROUTER_BENCHMARKS_URL.replace("max_results=100", "max_results=200")}`,
+        {
+          headers: { Authorization: `Bearer ${openRouterKey}` },
+          signal: AbortSignal.timeout(10000),
+        }
+      );
       if (res.ok) {
         parseOpenRouterBenchmarks(await res.json(), byKey);
         sources.push("openrouter-aa");

@@ -38,10 +38,16 @@ export function useModelCatalog() {
 
   const mounted = useRef(true);
   const inFlight = useRef<AbortController | null>(null);
+  // State updaters must be pure; React re-invokes them. Holding the changelog
+  // in a ref lets the localStorage write happen outside the updater instead of
+  // once per re-invocation.
+  const changelogRef = useRef<ChangelogEntry[]>([]);
 
   useEffect(() => {
+    const stored = loadChangelog();
+    changelogRef.current = stored;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is browser-only; reading during render breaks SSR prerender
-    setChangelog(loadChangelog());
+    setChangelog(stored);
   }, []);
 
   /**
@@ -88,7 +94,6 @@ export function useModelCatalog() {
         const changes = diffCatalog(known, currentIds, displayNames);
         const added = changes.filter((c) => c.type === "added").map((c) => c.modelId);
         const goneFree = changes.filter((c) => c.type === "free-tier-gone");
-        const removedIds = changes.filter((c) => c.type === "removed").map((c) => c.modelId);
 
         if (added.length > 0) setNewModels(new Set(added));
         if (goneFree.length > 0) {
@@ -96,19 +101,18 @@ export function useModelCatalog() {
         }
 
         if (changes.length > 0) {
-          setChangelog((prev) => {
-            const next = [
-              ...prev,
-              ...changes.map((c) => ({
-                timestamp: c.timestamp,
-                type: c.type,
-                modelId: c.modelId,
-                displayName: c.displayName,
-              })),
-            ];
-            saveChangelog(next);
-            return next;
-          });
+          const nextChangelog = [
+            ...changelogRef.current,
+            ...changes.map((c) => ({
+              timestamp: c.timestamp,
+              type: c.type,
+              modelId: c.modelId,
+              displayName: c.displayName,
+            })),
+          ];
+          changelogRef.current = nextChangelog;
+          saveChangelog(nextChangelog);
+          setChangelog(nextChangelog);
 
           // Best-effort webhook alerts; never block catalog refresh on failure.
           const subs = loadSubscriptions();
@@ -131,7 +135,6 @@ export function useModelCatalog() {
             }
           }
         }
-        void removedIds;
       }
       saveKnownModels(currentIds);
     } catch (err) {

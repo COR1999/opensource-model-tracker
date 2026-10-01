@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   rankingKey,
   lookupBenchmark,
@@ -133,6 +133,70 @@ describe("annotateAndSortModels", () => {
       }
     );
     expect(sorted.map((m) => m.id)).toEqual(["opencode/a", "openrouter/b"]);
+  });
+});
+
+describe("loadBenchmarks fallback chain", () => {
+  it("falls back to the committed snapshot when BenchLM returns 5xx, not just on a network throw", async () => {
+    vi.resetModules();
+    const { getBenchmarkIndex } = await import("@/lib/rankings");
+    const prevKey = process.env.OPENROUTER_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
+    const original = globalThis.fetch;
+    const requested: string[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      requested.push(url);
+      // BenchLM is up but erroring — a 5xx must not skip the snapshot fallback.
+      if (url.includes("benchlm.ai")) return new Response("upstream boom", { status: 503 });
+      if (url.includes("data/benchmarks.json")) {
+        return new Response(
+          JSON.stringify({
+            lastUpdated: "2026-09-30",
+            models: [{ rank: 7, model: "GLM-5.2", creator: "z-ai", overallScore: 62.44 }],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      return new Response("not found", { status: 404 });
+    }) as typeof fetch;
+
+    try {
+      const index = await getBenchmarkIndex();
+      expect(index.meta.sources).toContain("benchlm-snapshot");
+      expect(index.byKey.get("glm52")?.score).toBe(62.44);
+      expect(index.meta.asOf).toBe("2026-09-30");
+      expect(requested.some((u) => u.includes("benchlm.ai"))).toBe(true);
+      expect(requested.some((u) => u.includes("data/benchmarks.json"))).toBe(true);
+    } finally {
+      globalThis.fetch = original;
+      if (prevKey !== undefined) process.env.OPENROUTER_API_KEY = prevKey;
+      vi.resetModules();
+    }
+  });
+
+  it("reports no benchlm source at all when both live and snapshot are unavailable", async () => {
+    vi.resetModules();
+    const { getBenchmarkIndex } = await import("@/lib/rankings");
+    const prevKey = process.env.OPENROUTER_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
+    const original = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("benchlm.ai")) throw new Error("network down");
+      return new Response("not found", { status: 404 });
+    }) as typeof fetch;
+
+    try {
+      const index = await getBenchmarkIndex();
+      expect(index.meta.sources).not.toContain("benchlm");
+      expect(index.meta.sources).not.toContain("benchlm-snapshot");
+      expect(index.byKey.size).toBe(0);
+    } finally {
+      globalThis.fetch = original;
+      if (prevKey !== undefined) process.env.OPENROUTER_API_KEY = prevKey;
+      vi.resetModules();
+    }
   });
 });
 
