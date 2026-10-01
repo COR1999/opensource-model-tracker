@@ -71,30 +71,65 @@ describe("uptime history", () => {
 describe("recommendModel", () => {
   it("prefers higher BenchLM score among working models", () => {
     const models = [
-      model({ id: "a", benchmarkScore: 40 }),
-      model({ id: "b", benchmarkScore: 70 }),
+      model({ id: "opencode/a-free", provider: "opencode", benchmarkScore: 40 }),
+      model({ id: "opencode/b-free", provider: "opencode", benchmarkScore: 70 }),
     ];
     const results = new Map([
-      ["a", result({ modelId: "a" })],
-      ["b", result({ modelId: "b" })],
+      ["opencode/a-free", result({ modelId: "opencode/a-free" })],
+      ["opencode/b-free", result({ modelId: "opencode/b-free" })],
     ]);
-    expect(recommendModel(models, results)?.id).toBe("b");
+    expect(recommendModel(models, results)?.id).toBe("opencode/b-free");
   });
 
   it("skips error models when a working alternative exists", () => {
     const models = [
-      model({ id: "dead", benchmarkScore: 90 }),
-      model({ id: "ok", benchmarkScore: 50 }),
+      model({ id: "opencode/dead-free", provider: "opencode", benchmarkScore: 90 }),
+      model({ id: "opencode/ok-free", provider: "opencode", benchmarkScore: 50 }),
     ];
     const results = new Map([
-      ["dead", result({ modelId: "dead", status: "error" })],
-      ["ok", result({ modelId: "ok", status: "working" })],
+      ["opencode/dead-free", result({ modelId: "opencode/dead-free", status: "error" })],
+      ["opencode/ok-free", result({ modelId: "opencode/ok-free", status: "working" })],
     ]);
-    expect(recommendModel(models, results)?.id).toBe("ok");
+    expect(recommendModel(models, results)?.id).toBe("opencode/ok-free");
+  });
+
+  it("never recommends NVIDIA paid catalog rows as a free pick", () => {
+    const models = [
+      model({
+        id: "z-ai/glm-5.3",
+        provider: "nvidia",
+        displayName: "GLM-5.3",
+        benchmarkScore: 65.7,
+      }),
+      model({
+        id: "openrouter/z-ai/glm-5.2:free",
+        provider: "openrouter",
+        displayName: "GLM 5.2",
+        benchmarkScore: 62.4,
+      }),
+    ];
+    const results = new Map([
+      ["z-ai/glm-5.3", result({ modelId: "z-ai/glm-5.3", provider: "nvidia", status: "working" })],
+    ]);
+    expect(recommendModel(models, results)?.id).toBe("openrouter/z-ai/glm-5.2:free");
+  });
+
+  it("skips OpenCode paid-looking rows; zen free ids are eligible", () => {
+    const models = [
+      model({ id: "opencode/big-pickle", provider: "opencode", benchmarkScore: 80 }),
+      model({
+        id: "openrouter/dots-studio/dots-3-note-preview:free",
+        provider: "openrouter",
+        benchmarkScore: 62,
+      }),
+    ];
+    // Big Pickle is free-tier Zen; it may win on score when nothing better tests working
+    expect(recommendModel(models, new Map())?.id).toBe("opencode/big-pickle");
   });
 
   it("returns null for empty catalog", () => {
     expect(recommendModel([], new Map())).toBeNull();
+    expect(recommendModel([model({ id: "nvidia/paid", provider: "nvidia" })], new Map())).toBeNull();
   });
 });
 

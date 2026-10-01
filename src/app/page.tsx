@@ -98,11 +98,6 @@ export default function Dashboard() {
     testing.testMany(newModels, "Auto-test new models");
   }, [catalog.newModels, catalog.models, testing]);
 
-  const pick = useMemo(
-    () => recommendModel(catalog.models, testing.results),
-    [catalog.models, testing.results]
-  );
-
   // URL seeding: ?provider=&category=&q=&working=1
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -181,6 +176,7 @@ export default function Dashboard() {
               (testing.results.get(m.id)?.status === "working" || testing.results.get(m.id)?.status === "slow")) ||
             (filters.status === "slow" && testing.results.get(m.id)?.status === "slow") ||
             (filters.status === "rate-limited" && testing.results.get(m.id)?.status === "rate-limited") ||
+            (filters.status === "opencode-only" && isOpencodeAppOnlyModel(m)) ||
             (filters.status === "error" &&
               (testing.results.get(m.id)?.status === "error" || testing.results.get(m.id)?.status === "timeout")) ||
             (filters.status === "untested" && !testing.results.has(m.id))) &&
@@ -236,6 +232,12 @@ export default function Dashboard() {
         return sortAsc ? cmp : -cmp;
       });
   }, [catalog.models, testing.results, filters, sortKey, sortAsc, shortlist]);
+
+  // Free-tier ids from the visible list only — not NVIDIA paid catalog rows.
+  const pick = useMemo(
+    () => recommendModel(filtered, testing.results),
+    [filtered, testing.results]
+  );
 
   const usableIds = useMemo(() => {
     return catalog.models
@@ -325,6 +327,7 @@ export default function Dashboard() {
       slow: [...testing.results.values()].filter((r) => r.status === "slow").length,
       error: [...testing.results.values()].filter((r) => r.status === "error" || r.status === "timeout").length,
       rateLimited: [...testing.results.values()].filter((r) => r.status === "rate-limited").length,
+      opencodeOnly: [...testing.results.values()].filter((r) => r.status === "opencode-only").length,
       removed: [...testing.results.values()].filter((r) => r.status === "removed").length,
       new: catalog.newModels.size,
     }),
@@ -484,6 +487,7 @@ export default function Dashboard() {
                 setShowCompare(true);
               }}
               className={`font-medium underline-offset-2 hover:underline ${styles(theme).text}`}
+              title={pick.id}
             >
               {pick.displayName}
             </button>
@@ -500,13 +504,47 @@ export default function Dashboard() {
           </div>
         )}
 
+        {filters.status === "opencode-only" && filtered.length > 0 && (
+          <div
+            className={`mb-4 rounded-xl border px-4 py-3 text-sm ${styles(theme).cardBg} ${styles(theme).border}`}
+          >
+            <span className={styles(theme).textMuted}>
+              These models only work inside the{" "}
+            </span>
+            <a
+              href="https://opencode.ai/docs/zen"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-blue-400 underline-offset-2 hover:underline"
+            >
+              OpenCode app
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+            <span className={styles(theme).textMuted}>
+              {" "}
+              — the tracker cannot call them from a normal API request.
+            </span>
+          </div>
+        )}
+
         {catalog.loading ? (
           <TableSkeleton theme={theme} />
         ) : filtered.length === 0 ? (
           <EmptyState
             theme={theme}
-            title="No models found"
-            description="Try adjusting your filters or search query."
+            icon={filters.status === "rate-limited" ? "⏳" : "🔍"}
+            title={
+              filters.status === "rate-limited"
+                ? "No rate-limited models right now"
+                : filters.status === "opencode-only"
+                  ? "No OpenCode app-only models in this catalog"
+                  : "No models found"
+            }
+            description={
+              filters.status === "rate-limited"
+                ? "OpenRouter free tier allows ~50 requests/day without credits. Models may show Working until the daily cap hits."
+                : "Try adjusting your filters or search query."
+            }
             action={{ label: "Clear filters", onClick: handleFilterReset }}
           />
         ) : (
