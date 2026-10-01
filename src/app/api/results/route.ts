@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { DATA_BRANCH } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
 
@@ -7,10 +8,14 @@ const REPO_NAME = "opensource-model-tracker";
 const SNAPSHOTS_PATH = "data/snapshots";
 
 const RAW_BASES = [
-  `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main-dev/${SNAPSHOTS_PATH}`,
+  `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${DATA_BRANCH}/${SNAPSHOTS_PATH}`,
   `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/${SNAPSHOTS_PATH}`,
+  `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main-dev/${SNAPSHOTS_PATH}`,
   `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${SNAPSHOTS_PATH}`,
 ];
+
+/** DATA_BRANCH first, then code branches for snapshots predating the migration. */
+const REFS = [DATA_BRANCH, "master", "main-dev", "main"] as const;
 
 function corsHeaders(): Record<string, string> {
   return {
@@ -33,7 +38,7 @@ async function fetchJsonFromRaw(path: string): Promise<unknown | null> {
 }
 
 async function fetchFromGithubApi(token: string, path: string): Promise<unknown | null> {
-  for (const ref of ["main-dev", "master", "main"]) {
+  for (const ref of REFS) {
     const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${ref}`;
     try {
       const res = await fetch(url, {
@@ -96,7 +101,7 @@ export async function GET(req: Request) {
   }
 
   let files: Array<{ name: string }> | null = null;
-  for (const ref of ["main-dev", "master", "main"]) {
+  for (const ref of REFS) {
     const listRes = await fetch(
       `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${SNAPSHOTS_PATH}?ref=${ref}`,
       {

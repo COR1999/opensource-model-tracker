@@ -5,6 +5,7 @@ import {
   type RemoteUptimeHistory,
 } from "@/lib/models";
 import { TtlCache } from "@/lib/cache";
+import { DATA_BRANCH } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
 
@@ -25,22 +26,23 @@ async function loadFromGitHubRaw(): Promise<RemoteUptimeHistory> {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  // Order matters: /api/cron commits data/uptime-history.json to main-dev, so
-  // main-dev must be read first. Checking master first served a stale copy and
-  // won whenever the two branches disagreed, which is every day after a cron
-  // run. `main` is the original default branch and is kept last as a fallback.
+  // DATA_BRANCH first: that is where /api/cron commits the history. The code
+  // branches remain as fallbacks for files written before the migration, and
+  // because they can carry different ages of the same file.
   const urls = [
-    `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main-dev/${HISTORY_PATH}`,
+    `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${DATA_BRANCH}/${HISTORY_PATH}`,
     `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/${HISTORY_PATH}`,
+    `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main-dev/${HISTORY_PATH}`,
     `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${HISTORY_PATH}`,
   ];
   if (token) {
-    urls.unshift(
-      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=master`
-    );
-    urls.unshift(
-      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=main-dev`
-    );
+    // Reverse order because unshift prepends: iterating [data, master, ...]
+    // would leave master at the front and reintroduce the stale-copy bug.
+    for (const ref of ["main-dev", "master", DATA_BRANCH]) {
+      urls.unshift(
+        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=${ref}`
+      );
+    }
   }
 
   for (const url of urls) {
