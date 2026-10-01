@@ -25,20 +25,21 @@ async function loadFromGitHubRaw(): Promise<RemoteUptimeHistory> {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  // Prefer raw.githubusercontent (works for public repos without a token).
-  // master is the GitHub default branch where the PAT can write; main-dev is
-  // where production deploys from. Try both.
+  // Order matters: /api/cron commits data/uptime-history.json to main-dev, so
+  // main-dev must be read first. Checking master first served a stale copy and
+  // won whenever the two branches disagreed, which is every day after a cron
+  // run. `main` is the original default branch and is kept last as a fallback.
   const urls = [
-    `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/${HISTORY_PATH}`,
     `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main-dev/${HISTORY_PATH}`,
+    `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/${HISTORY_PATH}`,
     `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${HISTORY_PATH}`,
   ];
   if (token) {
     urls.unshift(
-      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=main-dev`
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=master`
     );
     urls.unshift(
-      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=master`
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${HISTORY_PATH}?ref=main-dev`
     );
   }
 
