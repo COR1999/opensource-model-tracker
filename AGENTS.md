@@ -144,9 +144,17 @@ npm test             # vitest unit tests
 npm run lint         # eslint
 npx tsc --noEmit     # type check
 npm run build        # production build
+npm run verify:production  # live smoke check against the deployed site
 ```
 
 **Windows:** Run tests with `npx vitest run --no-file-parallelism` (vitest fork pool can hang).
+
+`verify:production` asserts what unit tests cannot see: that the deployed
+catalog is populated and ranked, that no provider is erroring, and that the
+shared uptime is *fresh* rather than merely present. A stale uptime history and
+a ranking snapshot pointing at a branch with no file were both invisible to the
+test suite and only surfaced when the live endpoints were queried. Run it
+whenever a change touches cron, the data branch, or either reader.
 
 ## Environment
 
@@ -188,6 +196,11 @@ npm run build        # production build
 
    Corollary: there is deliberately **no** fallback reader. If `data` is
    unreachable the route returns an empty history — honest, unlike a stale copy.
+
+   This is enforced, not just documented. `tests/data-branch-guard.test.ts`
+   fails the build if any code-branch name appears in a string literal under
+   `src/`, if cron stops writing to `DATA_BRANCH`, if a reader stops reading it,
+   or if a `data/` directory reappears in the working tree.
 
 6. **`TtlCache` uses module-level state.** Intentional — persists across warm serverless
    invocations on Vercel. Do not make it request-scoped.
