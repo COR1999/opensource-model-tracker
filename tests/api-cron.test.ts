@@ -131,6 +131,101 @@ describe("GET /api/cron model window", () => {
       "vendor/paid-code-0",
     ]);  });
 
+  it("skips models the shared history already recorded as removed", async () => {
+    // NVIDIA keeps ~15% of its catalog listed while the inference endpoint
+    // 404s them. Re-probing those daily burns scarce cron slots confirming
+    // what is already known.
+    const day = 24 * 60 * 60 * 1000;
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("uptime-history.json")) {
+        return jsonRes({
+          updatedAt: new Date().toISOString(),
+          days: {
+            "vendor/paid-code-0": [
+              { timestamp: Date.now() - day, status: "removed", responseTimeMs: 100 },
+            ],
+          },
+        });
+      }
+      if (url.includes("openrouter.ai/api/v1/models")) return jsonRes({ data: [freeModel(0)] });
+      if (url.includes("opencode.ai")) return jsonRes({ data: [] });
+      if (url.includes("nvidia.com")) {
+        return jsonRes({ data: [paidModel(0), paidModel(1)] });
+      }
+      if (url.includes("/chat/completions")) {
+        return jsonRes({ choices: [{ message: { content: "hi" } }] });
+      }
+      return jsonRes({ error: "unavailable" }, 503);
+    }) as typeof fetch;
+
+    const { GET } = await import("@/app/api/cron/route");
+    const res = await GET(cronRequest());
+    const body = await res.json();
+    const results = body.results as TestResult[];
+
+    expect(results.map((r) => r.modelId)).not.toContain("vendor/paid-code-0");
+    expect(results.map((r) => r.modelId)).toContain("vendor/paid-code-1");
+    expect(body.skippedRemoved).toBe(1);
+  });
+
+  it("still re-probes a removed model once its history has aged past the grace window", async () => {
+    // The 7-day retention drops old records, so a skipped model falls out of
+    // the history and gets retested. That is what catches a model coming back.
+    const old = 9 * 24 * 60 * 60 * 1000;
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("uptime-history.json")) {
+        return jsonRes({
+          updatedAt: new Date().toISOString(),
+          days: {
+            "vendor/paid-code-0": [
+              { timestamp: Date.now() - old, status: "removed", responseTimeMs: 100 },
+            ],
+          },
+        });
+      }
+      if (url.includes("openrouter.ai/api/v1/models")) return jsonRes({ data: [freeModel(0)] });
+      if (url.includes("opencode.ai")) return jsonRes({ data: [{ id: "big-pickle" }] });
+      if (url.includes("nvidia.com")) return jsonRes({ data: [paidModel(0)] });
+      if (url.includes("/chat/completions")) {
+        return jsonRes({ choices: [{ message: { content: "hi" } }] });
+      }
+      return jsonRes({ error: "unavailable" }, 503);
+    }) as typeof fetch;
+
+    const { GET } = await import("@/app/api/cron/route");
+    const res = await GET(cronRequest());
+    const body = await res.json();
+
+    expect(body.skippedRemoved).toBe(0);
+    expect((body.results as TestResult[]).map((r) => r.modelId)).toContain("vendor/paid-code-0");
+  });
+
+  it("probes normally when no shared history is readable", async () => {
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("uptime-history.json")) return jsonRes({ error: "gone" }, 503);
+      if (url.includes("openrouter.ai/api/v1/models")) return jsonRes({ data: [freeModel(0)] });
+      // A real listing, not an empty one: providers.ts falls back to the curated
+      // lineup on an empty catalog, which would smuggle in unrelated models.
+      if (url.includes("opencode.ai")) return jsonRes({ data: [{ id: "big-pickle" }] });
+      if (url.includes("nvidia.com")) return jsonRes({ data: [paidModel(0), paidModel(1)] });
+      if (url.includes("/chat/completions")) {
+        return jsonRes({ choices: [{ message: { content: "hi" } }] });
+      }
+      return jsonRes({ error: "unavailable" }, 503);
+    }) as typeof fetch;
+
+    const { GET } = await import("@/app/api/cron/route");
+    const res = await GET(cronRequest());
+    const body = await res.json();
+
+    // 1 free + 2 paid; big-pickle is app-only so it never enters the window.
+    expect(body.skippedRemoved).toBe(0);
+    expect(body.testedTotal).toBe(3);
+  });
+
   it("fails closed with 503 when CRON_SECRET is unset", async () => {
     delete process.env.CRON_SECRET;
     globalThis.fetch = vi.fn(async () => jsonRes({})) as typeof fetch;
