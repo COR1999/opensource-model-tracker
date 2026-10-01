@@ -21,13 +21,17 @@ const TESTABLE_CATEGORIES: ReadonlySet<ModelCategory> = new Set(["chat", "code",
 const REPO_OWNER = "COR1999";
 const REPO_NAME = "opensource-model-tracker";
 const UPTIME_HISTORY_PATH = "data/uptime-history.json";
+// Production deploys from main-dev; the GitHub default branch is master.
+// Pin every Contents API call to main-dev so snapshots/uptime land where
+// /api/uptime and /api/results read from.
+const GITHUB_BRANCH = "main-dev";
 
 function utcDateStamp(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
 async function fetchExistingJson(token: string, path: string): Promise<unknown | null> {
-  const apiBase = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
+  const apiBase = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${GITHUB_BRANCH}`;
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
@@ -62,7 +66,10 @@ async function putJsonFile(
 
   try {
     let sha: string | undefined;
-    const existing = await fetch(apiBase, { headers, signal: AbortSignal.timeout(10000) });
+    const existing = await fetch(`${apiBase}?ref=${GITHUB_BRANCH}`, {
+      headers,
+      signal: AbortSignal.timeout(10000),
+    });
     if (existing.ok) {
       sha = ((await existing.json()) as { sha?: string }).sha;
     }
@@ -73,6 +80,7 @@ async function putJsonFile(
       body: JSON.stringify({
         message,
         content: Buffer.from(JSON.stringify(data, null, 2)).toString("base64"),
+        branch: GITHUB_BRANCH,
         ...(sha ? { sha } : {}),
       }),
       signal: AbortSignal.timeout(15000),
@@ -80,7 +88,7 @@ async function putJsonFile(
     if (!put.ok) {
       return { persisted: false, detail: `GitHub API error (${put.status})` };
     }
-    return { persisted: true, detail: sha ? `updated ${path}` : `created ${path}` };
+    return { persisted: true, detail: sha ? `updated ${path}@${GITHUB_BRANCH}` : `created ${path}@${GITHUB_BRANCH}` };
   } catch {
     return { persisted: false, detail: "GitHub API request failed" };
   }

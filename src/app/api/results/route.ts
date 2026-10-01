@@ -8,6 +8,7 @@ const SNAPSHOTS_PATH = "data/snapshots";
 
 const RAW_BASES = [
   `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main-dev/${SNAPSHOTS_PATH}`,
+  `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/master/${SNAPSHOTS_PATH}`,
   `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${SNAPSHOTS_PATH}`,
 ];
 
@@ -32,27 +33,30 @@ async function fetchJsonFromRaw(path: string): Promise<unknown | null> {
 }
 
 async function fetchFromGithubApi(token: string, path: string): Promise<unknown | null> {
-  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
-  try {
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-        "User-Agent": "opensource-model-tracker-api",
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error(`GitHub API error (${res.status})`);
-    const file = (await res.json()) as { content?: string; encoding?: string };
-    if (file.encoding === "base64" && file.content) {
-      return JSON.parse(Buffer.from(file.content, "base64").toString("utf-8"));
+  for (const ref of ["main-dev", "master", "main"]) {
+    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${ref}`;
+    try {
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "User-Agent": "opensource-model-tracker-api",
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (res.status === 404) continue;
+      if (!res.ok) throw new Error(`GitHub API error (${res.status})`);
+      const file = (await res.json()) as { content?: string; encoding?: string };
+      if (file.encoding === "base64" && file.content) {
+        return JSON.parse(Buffer.from(file.content, "base64").toString("utf-8"));
+      }
+      return null;
+    } catch {
+      // try next ref
     }
-    return null;
-  } catch {
-    return null;
   }
+  return null;
 }
 
 /**
@@ -91,26 +95,31 @@ export async function GET(req: Request) {
     );
   }
 
-  const listRes = await fetch(
-    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${SNAPSHOTS_PATH}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-        "User-Agent": "opensource-model-tracker-api",
-      },
-      signal: AbortSignal.timeout(10000),
+  let files: Array<{ name: string }> | null = null;
+  for (const ref of ["main-dev", "master", "main"]) {
+    const listRes = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${SNAPSHOTS_PATH}?ref=${ref}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "User-Agent": "opensource-model-tracker-api",
+        },
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+    if (listRes.status === 404) continue;
+    if (!listRes.ok) {
+      return NextResponse.json({ error: `GitHub API error (${listRes.status})` }, { status: 502 });
     }
-  );
-  if (listRes.status === 404) {
+    files = (await listRes.json()) as Array<{ name: string }>;
+    break;
+  }
+  if (!files) {
     return NextResponse.json({ error: "No snapshots directory found" }, { status: 404 });
   }
-  if (!listRes.ok) {
-    return NextResponse.json({ error: `GitHub API error (${listRes.status})` }, { status: 502 });
-  }
 
-  const files = (await listRes.json()) as Array<{ name: string }>;
   const snapshots = files
     .filter((f) => f.name.endsWith(".json"))
     .map((f) => f.name.replace(/\.json$/, ""))
