@@ -167,6 +167,39 @@ function cronPreflight(): Record<string, string | boolean> {
   };
 }
 
+/**
+ * Models the shared history already shows as gone. NVIDIA keeps retired models
+ * in its catalog listing (all 12 sampled ones were still listed) and the
+ * inference endpoint 404s them, so re-probing daily spends scarce cron slots
+ * confirming what is already known.
+ *
+ * Read from raw.githubusercontent, which is public, so this works without a
+ * token and cannot fail in a way that costs a GitHub API call. The 7-day
+ * retention in buildRemoteUptimeHistory is what makes this self-healing: a
+ * skipped model accrues no new records, ages out, and is probed again — which
+ * is how a re-added model gets noticed.
+ */
+const REMOVAL_GRACE_MS = 3 * 24 * 60 * 60 * 1000;
+
+async function loadRecentlyRemoved(now: number): Promise<Set<string>> {
+  const out = new Set<string>();
+  const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${GITHUB_BRANCH}/${UPTIME_HISTORY_PATH}`;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return out;
+    const history = parseRemoteUptime(await res.json());
+    for (const [modelId, records] of Object.entries(history.days)) {
+      const latest = records.reduce((a, b) => (b.timestamp > a.timestamp ? b : a));
+      if (latest.status === "removed" && now - latest.timestamp < REMOVAL_GRACE_MS) {
+        out.add(modelId);
+      }
+    }
+  } catch {
+    // No history available: probe everything, exactly as before.
+  }
+  return out;
+}
+
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -200,9 +233,12 @@ export async function GET(req: Request) {
   // entries took every slot and the shared uptime history (which feeds the
   // free-model sparklines) was majority paid. allModels already arrives
   // best-first from annotateAndSortModels, so partitioning preserves ranking.
+  const recentlyRemoved = await loadRecentlyRemoved(startedAt);
+  const notKnownGone = eligible.filter((m) => !recentlyRemoved.has(m.id));
+  const skippedRemoved = eligible.length - notKnownGone.length;
   const scoped = [
-    ...eligible.filter((m) => isFreeTierModel(m)),
-    ...eligible.filter((m) => !isFreeTierModel(m)),
+    ...notKnownGone.filter((m) => isFreeTierModel(m)),
+    ...notKnownGone.filter((m) => !isFreeTierModel(m)),
   ].slice(0, CRON_MODEL_LIMIT);
 
   const DEADLINE_MS = 42_000;
@@ -240,6 +276,7 @@ export async function GET(req: Request) {
     durationMs: Date.now() - startedAt,
     discoveredTotal: allModels.length,
     scopedTotal: scoped.length,
+    skippedRemoved,
     testedTotal: results.length,
     working,
     slow,
