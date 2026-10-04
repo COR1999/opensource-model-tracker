@@ -133,6 +133,9 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
         const res = await fetch("/api/test", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          // Matches the route's own `maxDuration = 30` so the client doesn't
+          // give up on a request the server is still allowed to be finishing.
+          signal: AbortSignal.timeout(30000),
           body: JSON.stringify({ model }),
         });
         if (!res.ok) {
@@ -178,6 +181,8 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
           const res = await fetch("/api/test-all", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            // Matches the route's own `maxDuration = 60`.
+            signal: AbortSignal.timeout(60000),
             body: JSON.stringify({ modelIds: batch.map((m) => m.id) }),
           });
           if (!res.ok) {
