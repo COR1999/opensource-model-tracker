@@ -11,15 +11,15 @@ export const T3_KNOWN_BREAKING = new Set([
 //
 // Entries are matched via lookupCandidates, so a bare "org/model" key also
 // covers that model's OpenRouter listing. OpenCode Zen *renames* models rather
-// than namespacing them ("deepseek-v4-flash-free" for what NVIDIA calls
-// "deepseek-ai/deepseek-v4-flash-0731"), so those need their own bare-name
+// than namespacing them ("deepseek-v4-flash-free" for NVIDIA's
+// "nvidia/deepseek-ai/deepseek-v4-flash"), so those need their own bare-name
 // entry — no string rule can bridge a rename.
 export const KNOWN_SLOW = new Set([
   "openai/gpt-oss-120b",
   "google/gemma-4-31b-it",
-  "deepseek-ai/deepseek-v4-flash-0731",
+  "deepseek-ai/deepseek-v4-flash",
   "minimaxai/minimax-m3",
-  // OpenCode Zen aliases for the above
+  // OpenCode Zen alias for the entry above
   "deepseek-v4-flash",
 ]);
 
@@ -36,8 +36,10 @@ export const KNOWN_SLOW = new Set([
  * generated files cannot diverge from a code branch and cannot trigger a
  * production deploy.
  *
- * Readers must consult DATA_BRANCH first, then the code branches as fallbacks
- * for anything not yet migrated.
+ * Readers must consult DATA_BRANCH ONLY. There is deliberately no fallback to
+ * a code branch (master/main-dev): that fallback is the exact mismatch that
+ * caused both churns above. If DATA_BRANCH is unreachable, return an empty
+ * result — honest, unlike a stale copy from a code branch.
  */
 export const DATA_BRANCH = "data";
 

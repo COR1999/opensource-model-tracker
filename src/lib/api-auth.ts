@@ -1,4 +1,17 @@
+import { timingSafeEqual } from "crypto";
 import { NextRequest } from "next/server";
+
+// A plain `===` on the secret short-circuits on the first mismatched byte,
+// letting response-time variance leak how many leading bytes of a guess were
+// right. Lengths are compared first (cheap, and length alone isn't the secret)
+// before the constant-time comparison so timingSafeEqual never throws on a
+// buffer-length mismatch.
+function timingSafeStringEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
 
 // These endpoints spend the server's NVIDIA_API_KEY, so they must not be
 // unconditionally public. Authorization is granted to either:
@@ -9,7 +22,8 @@ import { NextRequest } from "next/server";
 // path plus per-request batch limits in the handlers.
 export function isAuthorized(req: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && req.headers.get("authorization") === `Bearer ${cronSecret}`) {
+  const authHeader = req.headers.get("authorization");
+  if (cronSecret && authHeader && timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return true;
   }
 

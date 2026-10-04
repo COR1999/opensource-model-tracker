@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
+  fetchAllProviderModels,
   fetchOpenCodeModels,
   fetchOpenRouterModels,
   modelUrl,
@@ -100,5 +101,34 @@ describe("fetchOpenRouterModels", () => {
 
     const models = await fetchOpenRouterModels();
     expect(models).toEqual(FALLBACK_OPENROUTER_MODELS);
+  });
+});
+
+describe("fetchAllProviderModels", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("reports a per-provider error when OpenCode or OpenRouter fail, not just NVIDIA", async () => {
+    // Every provider (NVIDIA included) and the ranking lookup share one fetch
+    // mock: NVIDIA's URL succeeds, everything else (Zen, OpenRouter, BenchLM)
+    // fails, so this exercises the fallback path for all three at once.
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("integrate.api.nvidia.com")) {
+        return new Response(
+          JSON.stringify({ data: [{ id: "nvidia/x", owned_by: "nvidia" }] }),
+          { status: 200 }
+        );
+      }
+      throw new Error("network down");
+    }) as typeof fetch;
+
+    const { errors } = await fetchAllProviderModels("fake-key");
+    expect(errors.nvidia).toBeNull();
+    expect(errors.opencode).toBe("network down");
+    expect(errors.openrouter).toBe("network down");
   });
 });
