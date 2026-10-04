@@ -37,7 +37,11 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
   const [results, setResults] = useState<Map<string, TestResult>>(new Map());
   const [uptime, setUptime] = useState<Record<string, UptimeRecord[]>>({});
   const [progress, setProgress] = useState<TestProgress | null>(null);
-  const [testingSingle, setTestingSingle] = useState<string | null>(null);
+  // A set, not a single id: two testOne calls for different models can be in
+  // flight at once (user clicks "Test" on row A, then row B before A
+  // resolves). A single shared id meant whichever call's `finally` ran last
+  // cleared the *other* model's still-in-progress indicator.
+  const [testingIds, setTestingIds] = useState<Set<string>>(new Set());
   const [hydrated, setHydrated] = useState(false);
 
   // Lets an in-flight batch run be cancelled without leaving stale writes.
@@ -124,7 +128,7 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
 
   const testOne = useCallback(
     async (model: ModelInfo) => {
-      setTestingSingle(model.id);
+      setTestingIds((prev) => new Set(prev).add(model.id));
       try {
         const res = await fetch("/api/test", {
           method: "POST",
@@ -142,7 +146,12 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
         mergeResults(new Map([[model.id, errorResult(model, message)]]));
         notify.current?.(`${model.displayName}: ${message}`, "error");
       } finally {
-        setTestingSingle(null);
+        setTestingIds((prev) => {
+          if (!prev.has(model.id)) return prev;
+          const next = new Set(prev);
+          next.delete(model.id);
+          return next;
+        });
       }
     },
     [mergeResults]
@@ -233,7 +242,7 @@ export function useModelTesting(onNotify?: (text: string, tone: "success" | "war
     results,
     uptime,
     progress,
-    testingSingle,
+    testingIds,
     hydrated,
     testOne,
     testMany,

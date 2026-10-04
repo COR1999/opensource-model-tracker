@@ -31,7 +31,7 @@ export default function ModelCardList({
   onTest,
   onCopyId,
   copiedId,
-  testingSingle,
+  testingIds,
   newModels,
   freeTierGone,
   shortlist,
@@ -46,7 +46,7 @@ export default function ModelCardList({
   onTest: (model: ModelInfo) => void;
   onCopyId: (id: string) => void;
   copiedId: string | null;
-  testingSingle: string | null;
+  testingIds: Set<string>;
   newModels: Set<string>;
   freeTierGone?: Set<string>;
   shortlist?: Set<string>;
@@ -61,7 +61,7 @@ export default function ModelCardList({
         const r = results.get(m.id);
         const records = uptime[m.id] || [];
         const uptimePercent = computeUptimePercent(records);
-        const isTesting = testingSingle === m.id;
+        const isTesting = testingIds.has(m.id);
         const selected = compareIds.has(m.id);
 
         return (

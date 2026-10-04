@@ -561,7 +561,7 @@ export default function Dashboard() {
                 onTest={testing.testOne}
                 onCopyId={copyId}
                 copiedId={null}
-                testingSingle={testing.testingSingle}
+                testingIds={testing.testingIds}
                 newModels={catalog.newModels}
                 freeTierGone={catalog.freeTierGone}
                 shortlist={shortlist}
@@ -580,7 +580,7 @@ export default function Dashboard() {
                 onTest={testing.testOne}
                 onCopyId={copyId}
                 copiedId={null}
-                testingSingle={testing.testingSingle}
+                testingIds={testing.testingIds}
                 newModels={catalog.newModels}
                 freeTierGone={catalog.freeTierGone}
                 shortlist={shortlist}

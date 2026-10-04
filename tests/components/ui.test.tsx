@@ -47,7 +47,7 @@ function renderTable(
       onTest: () => {},
       onCopyId: () => {},
       copiedId: null,
-      testingSingle: null,
+      testingIds: new Set<string>(),
       newModels: new Set<string>(),
       freeTierGone,
       shortlist: new Set<string>(),
