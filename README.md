@@ -39,7 +39,7 @@ Dashboard to track which free AI models are available across NVIDIA NIM, OpenCod
 3. Add NVIDIA_API_KEY and OPENROUTER_API_KEY in Project Settings > Environment Variables
 4. (Optional) Add CRON_SECRET for secure cron auth — without it the cron endpoint refuses to run (fail closed)
 5. (Optional) Add SNAPSHOT_GITHUB_TOKEN: a fine-grained PAT scoped to this repo with Contents: Read & Write, so the daily cron commits its summary to data/snapshots/YYYY-MM-DD.json and merges rolling uptime into data/uptime-history.json. Without it the cron still runs but skips persistence.
-6. **Cron schedule (required for shared uptime):** Vercel → Project → Cron Jobs → add `/api/cron` (e.g. `0 */6 * * *`) with header `Authorization: Bearer $CRON_SECRET`
+6. **Cron is already declared in `vercel.json`** (`/api/cron`, daily at 08:00 UTC) — Vercel registers it automatically on deploy, no manual Cron Jobs dashboard step needed. Setting `CRON_SECRET` is what matters: Vercel sends it as `Authorization: Bearer $CRON_SECRET` on every cron-triggered request automatically, which is what lets `/api/cron` tell a real cron run apart from a stray public request. To change the schedule, edit `vercel.json`, not the dashboard.
 7. Deploy
 
 After the first successful cron run with a snapshot token, `/api/uptime` serves shared history to every browser (merged with local results).
@@ -47,7 +47,7 @@ After the first successful cron run with a snapshot token, `/api/uptime` serves 
 ## Tests
 
 ```
-npm test        # vitest suite for the pure logic modules
+npm test        # vitest suite: lib modules, API routes, hooks, and components
 npm run lint    # eslint
 npx tsc --noEmit
 ```
