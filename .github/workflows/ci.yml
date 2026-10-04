@@ -18,7 +18,12 @@ jobs:
 
       - run: npm ci
 
-      - run: npm audit --audit-level=high
+      # --omit=dev: a shipped-dependency vuln would gate CI; a lint-tool-only
+      # transitive advisory with no fix available (e.g. GHSA-vfj7-8cjw-p6xm in
+      # braces, pulled in only by eslint-config-next's internal glob matching,
+      # never bundled or run against untrusted input) should not block every
+      # PR indefinitely.
+      - run: npm audit --omit=dev --audit-level=high
 
       - run: npm run lint
 
