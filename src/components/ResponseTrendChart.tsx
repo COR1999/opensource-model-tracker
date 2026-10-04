@@ -1,3 +1,5 @@
+"use client";
+
 import type { UptimeRecord } from "@/lib/models";
 import { formatDuration, type Theme } from "@/lib/display";
 

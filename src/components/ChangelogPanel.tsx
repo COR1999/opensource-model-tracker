@@ -1,3 +1,5 @@
+"use client";
+
 import type { ChangelogEntry } from "@/lib/storage";
 import { accents, styles, type Theme } from "@/lib/display";
 

@@ -58,6 +58,8 @@ export default function AlertSettings({ theme }: { theme: Theme }) {
         <button
           type="button"
           onClick={() => setShowForm(!showForm)}
+          aria-expanded={showForm}
+          aria-controls="webhook-form"
           className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${cardBg} ${border} ${textMuted} hover:border-blue-500/60`}
         >
           {showForm ? "Cancel" : "+ Add webhook"}
@@ -65,7 +67,15 @@ export default function AlertSettings({ theme }: { theme: Theme }) {
       </div>
 
       {showForm && (
-        <div className={`mb-4 rounded-lg border p-3 ${border}`}>
+        <form
+          id="webhook-form"
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAdd();
+          }}
+          className={`mb-4 rounded-lg border p-3 ${border}`}
+        >
           <label htmlFor="webhook-url" className={`block text-xs font-medium ${textMuted} mb-1.5`}>
             Webhook URL
           </label>
@@ -84,8 +94,7 @@ export default function AlertSettings({ theme }: { theme: Theme }) {
               } focus:border-blue-500`}
             />
             <button
-              type="button"
-              onClick={handleAdd}
+              type="submit"
               className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
             >
               Add
@@ -96,7 +105,7 @@ export default function AlertSettings({ theme }: { theme: Theme }) {
             POSTs a JSON payload to this URL when a model is added or removed from the catalog.
             Monitors all models by default.
           </p>
-        </div>
+        </form>
       )}
 
       {subs.length === 0 ? (

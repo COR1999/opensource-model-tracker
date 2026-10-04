@@ -1,3 +1,5 @@
+"use client";
+
 import { styles, type Theme } from "@/lib/display";
 
 /**
