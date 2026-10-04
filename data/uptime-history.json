@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-03T08:02:27.064Z",
+  "updatedAt": "2026-10-04T08:02:27.261Z",
   "days": {
     "moonshotai/kimi-k3": [
       {
@@ -26,6 +26,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 3019
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "timeout",
+        "responseTimeMs": 8002
       }
     ],
     "opencode/mimo-v2.6-flash-free": [
@@ -67,6 +72,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 453
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 678
       }
     ],
     "opencode/mimo-v2.5-free": [
@@ -108,6 +118,11 @@
         "timestamp": 1791014547064,
         "status": "error",
         "responseTimeMs": 55
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "error",
+        "responseTimeMs": 55
       }
     ],
     "openrouter/thinkingmachines/inkling:free": [
@@ -135,6 +150,11 @@
         "timestamp": 1791014547064,
         "status": "error",
         "responseTimeMs": 56
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "error",
+        "responseTimeMs": 51
       }
     ],
     "nvidia/nemotron-3-ultra-550b-a55b": [
@@ -162,6 +182,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 2033
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 455
       }
     ],
     "opencode/nemotron-3-ultra-free": [
@@ -196,6 +221,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 292
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 290
       }
     ],
     "openrouter/google/gemma-4-26b-a4b-it:free": [
@@ -223,6 +253,11 @@
         "timestamp": 1791014547064,
         "status": "rate-limited",
         "responseTimeMs": 81
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "rate-limited",
+        "responseTimeMs": 89
       }
     ],
     "nvidia/nemotron-3-super-120b-a12b": [
@@ -250,6 +285,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 296
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 321
       }
     ],
     "openrouter/nvidia/nemotron-3-super-120b-a12b:free": [
@@ -275,6 +315,11 @@
       },
       {
         "timestamp": 1791014547064,
+        "status": "working",
+        "responseTimeMs": 244
+      },
+      {
+        "timestamp": 1791100947261,
         "status": "working",
         "responseTimeMs": 244
       }
@@ -304,6 +349,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 205
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 1571
       }
     ],
     "nvidia/nemotron-3.5-lightning-30b-a3b": [
@@ -331,6 +381,11 @@
         "timestamp": 1791014547064,
         "status": "timeout",
         "responseTimeMs": 8003
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 205
       }
     ],
     "opencode/nemotron-3.5-lightning-free": [
@@ -365,6 +420,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 80
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 1378
       }
     ],
     "openai/gpt-oss-20b": [
@@ -392,6 +452,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 111
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 199
       }
     ],
     "mistralai/mistral-large-2-instruct": [
@@ -426,6 +491,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 745
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "error",
+        "responseTimeMs": 34
       }
     ],
     "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": [
@@ -453,6 +523,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 79
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 83
       }
     ],
     "opencode/space-bunny-free": [
@@ -494,6 +569,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 768
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 785
       }
     ],
     "openrouter/liquid/lfm-2.5-2.6b:free": [
@@ -516,6 +596,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 276
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 1466
       }
     ],
     "openrouter/poolside/laguna-xs-2.1:free": [
@@ -538,6 +623,11 @@
         "timestamp": 1791014547064,
         "status": "rate-limited",
         "responseTimeMs": 68
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "rate-limited",
+        "responseTimeMs": 81
       }
     ],
     "bigcode/starcoder2-15b": [
@@ -604,6 +694,11 @@
         "timestamp": 1791014547064,
         "status": "working",
         "responseTimeMs": 645
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "working",
+        "responseTimeMs": 1039
       }
     ],
     "meta/llama-3.2-90b-vision-instruct": [
@@ -619,6 +714,11 @@
       },
       {
         "timestamp": 1791014547064,
+        "status": "timeout",
+        "responseTimeMs": 8001
+      },
+      {
+        "timestamp": 1791100947261,
         "status": "timeout",
         "responseTimeMs": 8001
       }
@@ -666,6 +766,11 @@
         "timestamp": 1791014547064,
         "status": "error",
         "responseTimeMs": 29
+      },
+      {
+        "timestamp": 1791100947261,
+        "status": "timeout",
+        "responseTimeMs": 8002
       }
     ]
   }
