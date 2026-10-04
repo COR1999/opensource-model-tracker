@@ -36,7 +36,16 @@ export default function ModelDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id: rawId } = use(params);
-  const modelId = decodeURIComponent(rawId);
+  // A malformed percent-encoding (e.g. a truncated/copy-pasted share link)
+  // makes decodeURIComponent throw; fall back to the raw id rather than
+  // crashing the whole page — it just won't match a catalog entry.
+  const modelId = useMemo(() => {
+    try {
+      return decodeURIComponent(rawId);
+    } catch {
+      return rawId;
+    }
+  }, [rawId]);
 
   const [theme, setTheme] = useState<Theme>("dark");
   const [catalogModels, setCatalogModels] = useState<ModelInfo[]>([]);
@@ -90,7 +99,7 @@ export default function ModelDetailPage({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/models");
+        const res = await fetch("/api/models", { signal: AbortSignal.timeout(10000) });
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled && Array.isArray(data.models)) {
@@ -113,6 +122,9 @@ export default function ModelDetailPage({
       const res = await fetch("/api/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // Matches the route's own `maxDuration = 30` so the client doesn't
+        // give up on a request the server is still allowed to be finishing.
+        signal: AbortSignal.timeout(30000),
         body: JSON.stringify({
           model: {
             id: modelId,

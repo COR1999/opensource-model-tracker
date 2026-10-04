@@ -61,12 +61,13 @@ async function loadFromGitHubRaw(): Promise<RemoteUptimeHistory> {
 
 export async function GET() {
   try {
-    const { value } = await uptimeCache.get(loadFromGitHubRaw);
+    const { value, hit, stale } = await uptimeCache.get(loadFromGitHubRaw);
     return NextResponse.json(
-      { ...value, cached: true },
+      { ...value, cached: hit, stale },
       {
         headers: {
           "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600",
+          "X-Cache": hit ? (stale ? "STALE" : "HIT") : "MISS",
         },
       }
     );

@@ -43,6 +43,7 @@ function normalizeResult(raw: unknown): TestResult | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
   if (typeof r.modelId !== "string" || !r.modelId) return null;
+  const error = typeof r.error === "string" && r.error ? r.error.slice(0, MAX_ERROR_CHARS) : null;
   return {
     modelId: r.modelId,
     provider: VALID_PROVIDERS.has(r.provider as string) ? (r.provider as "nvidia" | "opencode" | "openrouter") : "nvidia",
@@ -50,7 +51,7 @@ function normalizeResult(raw: unknown): TestResult | null {
     httpCode: typeof r.httpCode === "number" ? r.httpCode : 0,
     responseTimeMs: typeof r.responseTimeMs === "number" ? r.responseTimeMs : 0,
     supportsFunctionCalling: r.supportsFunctionCalling === true,
-    ...(typeof r.error === "string" && r.error ? { error: r.error } : {}),
+    ...(error ? { error } : {}),
   };
 }
 // snapshot flagged invalid rather than throwing, so a bad link renders the
@@ -67,13 +68,18 @@ export function decodeSnapshot(encoded: string): Snapshot {
       return { ts: null, results: [], omitted: 0, valid: false };
     }
     const raw: unknown[] = Array.isArray(data.results) ? data.results : [];
-    const results = raw
+    // A hand-built (not app-generated) link could carry an arbitrarily large
+    // payload; re-apply the same cap encodeSnapshot enforces on its way out,
+    // folding anything beyond it into `omitted` rather than rendering it all.
+    const capped = raw.slice(0, MAX_RESULTS);
+    const results = capped
       .map((r) => normalizeResult(r))
       .filter((r): r is TestResult => r !== null);
+    const extraOmitted = raw.length - capped.length;
     return {
       ts: typeof data.ts === "number" ? data.ts : null,
       results,
-      omitted: typeof data.omitted === "number" ? data.omitted : 0,
+      omitted: (typeof data.omitted === "number" ? data.omitted : 0) + extraOmitted,
       valid: true,
     };
   } catch {
