@@ -5,9 +5,11 @@ import {
   statusColor,
   statusBg,
   providerBadge,
+  providerLabel,
   categoryBadge,
   computeUptimePercent,
   dailyBuckets,
+  formatRelativeTime,
 } from "@/lib/display";
 import type { UptimeRecord } from "@/lib/models";
 
@@ -115,5 +117,28 @@ describe("dailyBuckets", () => {
   it("ignores records older than seven days", () => {
     const buckets = dailyBuckets([uptime("working", 9)]);
     expect(buckets.every((b) => b.count === 0)).toBe(true);
+  });
+});
+
+describe("providerLabel", () => {
+  it("maps each known provider to its display name", () => {
+    expect(providerLabel("nvidia")).toBe("NVIDIA");
+    expect(providerLabel("opencode")).toBe("OpenCode");
+    expect(providerLabel("openrouter")).toBe("OpenRouter");
+  });
+
+  it("echoes back an unknown provider rather than throwing", () => {
+    expect(providerLabel("mystery")).toBe("mystery");
+  });
+});
+
+describe("formatRelativeTime", () => {
+  it("buckets elapsed time into just now / seconds / minutes / hours / days", () => {
+    const now = new Date("2026-01-01T12:00:00.000Z");
+    expect(formatRelativeTime(new Date("2026-01-01T11:59:58.000Z"), now)).toBe("just now");
+    expect(formatRelativeTime(new Date("2026-01-01T11:59:30.000Z"), now)).toBe("30s ago");
+    expect(formatRelativeTime(new Date("2026-01-01T11:55:00.000Z"), now)).toBe("5m ago");
+    expect(formatRelativeTime(new Date("2026-01-01T09:00:00.000Z"), now)).toBe("3h ago");
+    expect(formatRelativeTime(new Date("2025-12-30T12:00:00.000Z"), now)).toBe("2d ago");
   });
 });
