@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor, act } from "@testing-library/react";
+import { render, screen, waitFor, act, cleanup } from "@testing-library/react";
 import { createElement } from "react";
 import ModelTable from "@/components/ModelTable";
 import AlertSettings from "@/components/AlertSettings";
@@ -47,7 +47,7 @@ function renderTable(
       onTest: () => {},
       onCopyId: () => {},
       copiedId: null,
-      testingSingle: null,
+      testingIds: new Set<string>(),
       newModels: new Set<string>(),
       freeTierGone,
       shortlist: new Set<string>(),
@@ -112,6 +112,10 @@ describe("AlertSettings", () => {
 
   afterEach(() => {
     localStorage.clear();
+    // Vitest doesn't enable RTL's global-afterEach auto-cleanup (no `globals:
+    // true` in vitest.config.mts), so without this, two renders in one
+    // describe block leave two "+ Add webhook" buttons in the document.
+    cleanup();
   });
 
   it("rejects invalid webhook URLs and accepts valid ones", async () => {
@@ -153,6 +157,43 @@ describe("AlertSettings", () => {
     const stored = JSON.parse(localStorage.getItem(storageKey) || "[]");
     expect(stored).toHaveLength(1);
     expect(stored[0].url).toBe("https://hooks.example.com/x");
+  });
+
+  it("submits the webhook form on Enter, and exposes aria-expanded on the toggle", async () => {
+    render(createElement(AlertSettings, { theme: "dark" }));
+
+    const toggle = screen.getByText("+ Add webhook");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+
+    await act(async () => {
+      toggle.click();
+    });
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+
+    const input = screen.getByLabelText("Webhook URL") as HTMLInputElement;
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value"
+      )!.set!;
+      setter.call(input, "https://hooks.example.com/enter-submit");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    // A real <form> submits on Enter in its text input without an explicit
+    // click on the Add button.
+    const form = input.closest("form");
+    await act(async () => {
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("https://hooks.example.com/enter-submit")).toBeTruthy();
+    });
+    const stored = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    expect(stored.some((s: { url: string }) => s.url === "https://hooks.example.com/enter-submit")).toBe(
+      true
+    );
   });
 });
 

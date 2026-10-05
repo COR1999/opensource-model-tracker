@@ -35,12 +35,22 @@ export function modelUrl(model: Pick<ModelInfo, "id" | "provider">): string {
   }
 }
 
-export async function fetchOpenCodeModels(): Promise<ModelInfo[]> {
+// Detailed variants carry the failure reason alongside the (possibly
+// fallback) model list, so a real outage can still be reported per-provider
+// instead of looking identical to a healthy response. The public
+// fetchOpenCodeModels/fetchOpenRouterModels keep returning just the array —
+// existing callers (and their tests) only ever needed the models.
+async function fetchOpenCodeModelsDetailed(): Promise<{
+  models: ModelInfo[];
+  error: string | null;
+}> {
   try {
     const res = await fetch(`${OPENCODE_BASE}/models`, {
       signal: AbortSignal.timeout(10000),
     });
-    if (!res.ok) return FALLBACK_OPENCODE_MODELS;
+    if (!res.ok) {
+      return { models: FALLBACK_OPENCODE_MODELS, error: `Failed to fetch models: ${res.status}` };
+    }
     const data = await res.json();
     const models: ModelInfo[] = (data.data || [])
       .filter(
@@ -60,18 +70,31 @@ export async function fetchOpenCodeModels(): Promise<ModelInfo[]> {
           category: known ? known.category : inferCategory(m.id),
         };
       });
-    return models.length > 0 ? models : FALLBACK_OPENCODE_MODELS;
-  } catch {
-    return FALLBACK_OPENCODE_MODELS;
+    return models.length > 0
+      ? { models, error: null }
+      : { models: FALLBACK_OPENCODE_MODELS, error: "Zen gateway returned no free models" };
+  } catch (err) {
+    return {
+      models: FALLBACK_OPENCODE_MODELS,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
   }
 }
 
-export async function fetchOpenRouterModels(): Promise<ModelInfo[]> {
+async function fetchOpenRouterModelsDetailed(): Promise<{
+  models: ModelInfo[];
+  error: string | null;
+}> {
   try {
     const res = await fetch(`${OPENROUTER_BASE}/models`, {
       signal: AbortSignal.timeout(10000),
     });
-    if (!res.ok) return FALLBACK_OPENROUTER_MODELS;
+    if (!res.ok) {
+      return {
+        models: FALLBACK_OPENROUTER_MODELS,
+        error: `Failed to fetch models: ${res.status}`,
+      };
+    }
     const data = await res.json();
     const models: ModelInfo[] = (data.data || [])
       .filter((m: { id?: string }) => typeof m.id === "string" && m.id.endsWith(":free"))
@@ -88,10 +111,23 @@ export async function fetchOpenRouterModels(): Promise<ModelInfo[]> {
           ? { contextLength: m.context_length }
           : {}),
       }));
-    return models.length > 0 ? models : FALLBACK_OPENROUTER_MODELS;
-  } catch {
-    return FALLBACK_OPENROUTER_MODELS;
+    return models.length > 0
+      ? { models, error: null }
+      : { models: FALLBACK_OPENROUTER_MODELS, error: "OpenRouter returned no free-tier models" };
+  } catch (err) {
+    return {
+      models: FALLBACK_OPENROUTER_MODELS,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
   }
+}
+
+export async function fetchOpenCodeModels(): Promise<ModelInfo[]> {
+  return (await fetchOpenCodeModelsDetailed()).models;
+}
+
+export async function fetchOpenRouterModels(): Promise<ModelInfo[]> {
+  return (await fetchOpenRouterModelsDetailed()).models;
 }
 
 export async function fetchNvidiaModels(apiKey: string): Promise<ModelInfo[]> {
@@ -101,6 +137,9 @@ export async function fetchNvidiaModels(apiKey: string): Promise<ModelInfo[]> {
   });
   if (!res.ok) throw new Error(`Failed to fetch models: ${res.status}`);
   const data = await res.json();
+  if (!Array.isArray(data?.data)) {
+    throw new Error("NVIDIA catalog response had an unexpected shape");
+  }
   return data.data.map((m: { id: string; owned_by: string }) => ({
     id: m.id,
     displayName: m.id.split("/").pop() || m.id,
@@ -111,9 +150,12 @@ export async function fetchNvidiaModels(apiKey: string): Promise<ModelInfo[]> {
 }
 
 // Aggregated discovery across all three providers; a failing provider is
-// reported per-key instead of failing the whole listing. Models are then
-// annotated and sorted with live BenchLM / OpenRouter benchmark ranks so the
-// catalog stays ordered best-first as upstream lineups change.
+// reported per-key instead of failing the whole listing. OpenCode/OpenRouter
+// never reject (they resolve to curated fallback data so the dashboard stays
+// usable during an outage), so their failure reason travels through the
+// "detailed" result rather than Promise.allSettled's rejection path. Models
+// are then annotated and sorted with live BenchLM / OpenRouter benchmark
+// ranks so the catalog stays ordered best-first as upstream lineups change.
 export async function fetchAllProviderModels(apiKey: string): Promise<{
   models: ModelInfo[];
   errors: Record<Provider, string | null>;
@@ -121,15 +163,23 @@ export async function fetchAllProviderModels(apiKey: string): Promise<{
 }> {
   const [nvidia, opencode, openrouter] = await Promise.allSettled([
     fetchNvidiaModels(apiKey),
-    fetchOpenCodeModels(),
-    fetchOpenRouterModels(),
+    fetchOpenCodeModelsDetailed(),
+    fetchOpenRouterModelsDetailed(),
   ]);
-  const pick = (r: PromiseSettledResult<ModelInfo[]>) =>
-    r.status === "fulfilled" ? r.value : [];
-  const reason = (r: PromiseSettledResult<ModelInfo[]>) =>
-    r.status === "rejected" ? r.reason?.message || "Unknown error" : null;
 
-  const raw = [...pick(nvidia), ...pick(opencode), ...pick(openrouter)];
+  const nvidiaModels = nvidia.status === "fulfilled" ? nvidia.value : [];
+  const nvidiaError =
+    nvidia.status === "rejected" ? nvidia.reason?.message || "Unknown error" : null;
+  const opencodeResult =
+    opencode.status === "fulfilled"
+      ? opencode.value
+      : { models: [], error: opencode.reason?.message || "Unknown error" };
+  const openrouterResult =
+    openrouter.status === "fulfilled"
+      ? openrouter.value
+      : { models: [], error: openrouter.reason?.message || "Unknown error" };
+
+  const raw = [...nvidiaModels, ...opencodeResult.models, ...openrouterResult.models];
   let ranked = raw;
   let rankingMeta = { asOf: null as string | null, sources: [] as string[] };
   try {
@@ -143,9 +193,9 @@ export async function fetchAllProviderModels(apiKey: string): Promise<{
   return {
     models: ranked,
     errors: {
-      nvidia: reason(nvidia),
-      opencode: reason(opencode),
-      openrouter: reason(openrouter),
+      nvidia: nvidiaError,
+      opencode: opencodeResult.error,
+      openrouter: openrouterResult.error,
     },
     rankingMeta,
   };

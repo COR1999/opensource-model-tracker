@@ -1,3 +1,5 @@
+"use client";
+
 import type { ModelInfo, TestResult } from "@/lib/models";
 import { accents, styles, statusDot } from "@/lib/display";
 import type { Theme } from "@/lib/display";

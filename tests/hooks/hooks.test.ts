@@ -107,7 +107,61 @@ describe("useModelTesting", () => {
     });
 
     expect(result.current.results.get(sampleModel.id)?.status).toBe("working");
-    expect(result.current.testingSingle).toBeNull();
+    expect(result.current.testingIds.size).toBe(0);
+  });
+
+  it("keeps a slower testOne's in-progress flag set while a faster concurrent testOne finishes", async () => {
+    const modelB: ModelInfo = {
+      id: "opencode/other-model",
+      displayName: "Other",
+      provider: "opencode",
+      ownedBy: "opencode",
+      category: "chat",
+    };
+    const resultFor = (model: ModelInfo): TestResult => ({
+      modelId: model.id,
+      provider: "opencode",
+      status: "working",
+      httpCode: 200,
+      responseTimeMs: 50,
+      supportsFunctionCalling: false,
+    });
+
+    let releaseA: (() => void) | undefined;
+    globalThis.fetch = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body));
+      if (body.model.id === sampleModel.id) {
+        await new Promise<void>((resolve) => {
+          releaseA = resolve;
+        });
+        return jsonResponse(resultFor(sampleModel));
+      }
+      return jsonResponse(resultFor(modelB));
+    }) as typeof fetch;
+
+    const { result } = renderHook(() => useModelTesting());
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
+
+    let testADone: Promise<void> = Promise.resolve();
+    await act(async () => {
+      testADone = result.current.testOne(sampleModel);
+      // Let testOne(A)'s synchronous setTestingIds + fetch call register.
+      await Promise.resolve();
+    });
+    expect(result.current.testingIds.has(sampleModel.id)).toBe(true);
+
+    await act(async () => {
+      await result.current.testOne(modelB);
+    });
+    // B resolved first; A is still in flight and must still show as testing.
+    expect(result.current.testingIds.has(sampleModel.id)).toBe(true);
+    expect(result.current.testingIds.has(modelB.id)).toBe(false);
+
+    await act(async () => {
+      releaseA?.();
+      await testADone;
+    });
+    expect(result.current.testingIds.has(sampleModel.id)).toBe(false);
   });
 
   it("testMany fills missing server results with an error entry", async () => {

@@ -1,3 +1,5 @@
+"use client";
+
 import type { UptimeRecord } from "@/lib/models";
 import { dailyBuckets, type Theme } from "@/lib/display";
 

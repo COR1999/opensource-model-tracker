@@ -210,6 +210,38 @@ describe("testModel rate-limit retry", () => {
   });
 });
 
+describe("runModelTests batching", () => {
+  it("tests every model across more than one concurrency batch, in order", async () => {
+    const { runModelTests } = await import("@/lib/testing");
+    const models = Array.from({ length: 12 }, (_, i) => ({
+      id: `opencode/model-${i}-free`,
+      displayName: `Model ${i}`,
+      provider: "opencode" as const,
+      ownedBy: "opencode",
+      category: "chat" as const,
+    }));
+
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: "hi" } }] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })) as typeof fetch;
+
+    try {
+      // concurrency=5 against 12 models forces 3 batches (5 + 5 + 2), unlike
+      // every other runModelTests call in this codebase which only ever
+      // exercises a single batch.
+      const results = await runModelTests("", models, 5);
+      expect(results).toHaveLength(12);
+      expect(results.map((r) => r.modelId)).toEqual(models.map((m) => m.id));
+      expect(results.every((r) => r.status === "working")).toBe(true);
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+});
+
 describe("display + share + curated free lineup", () => {
   it("labels rate-limited distinctly", () => {
     expect(statusLabel("rate-limited")).toBe("Rate limited");

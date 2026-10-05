@@ -72,6 +72,17 @@ describe("GET /api/uptime branch preference", () => {
     expect(requested.every((u) => u.includes(`${REPO}/data/`))).toBe(true);
   });
 
+  it("reports cached:false on a cold fetch and cached:true once warm", async () => {
+    globalThis.fetch = vi.fn(async () => historyResponse("2026-10-01T15:43:00.000Z")) as typeof fetch;
+
+    const { GET } = await import("@/app/api/uptime/route");
+    const first = await (await GET()).json();
+    expect(first.cached).toBe(false);
+
+    const second = await (await GET()).json();
+    expect(second.cached).toBe(true);
+  });
+
   it("prefers the token-authenticated Contents API for the data branch when a token exists", async () => {
     process.env.SNAPSHOT_GITHUB_TOKEN = "pat";
     const requested: string[] = [];

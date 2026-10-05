@@ -63,7 +63,7 @@ describe("OpenCode app-only UX", () => {
         onTest: () => {},
         onCopyId: () => {},
         copiedId: null,
-        testingSingle: null,
+        testingIds: new Set<string>(),
         newModels: new Set<string>(),
         freeTierGone: new Set<string>(),
         shortlist: new Set<string>(),

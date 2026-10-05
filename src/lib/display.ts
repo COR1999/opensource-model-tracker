@@ -33,7 +33,13 @@ export function styles(theme: Theme): StyleTokens {
     // (~2.5:1), far below the 4.5:1 WCAG AA minimum for body text. Dark mode
     // used gray-500 on gray-900 (~4.0:1), also short.
     textMuted: dark ? "text-gray-400" : "text-gray-600",
-    textSubtle: dark ? "text-gray-500" : "text-gray-500",
+    // textSubtle's own dark-mode fix was missed in the pass above: gray-500 on
+    // gray-900 measures 3.67:1 (confirmed via canvas-rendered pixel sampling,
+    // since Tailwind v4's default palette is lab()/oklch() and getComputedStyle
+    // doesn't expose contrast directly) -- still short of 4.5:1, contradicting
+    // this token's own doc comment. #828a99 measures 5.11:1 against gray-900,
+    // keeping it visibly a step darker than textMuted's gray-400 (6.82:1).
+    textSubtle: dark ? "text-[#828a99]" : "text-gray-500",
     inputBg: dark ? "bg-gray-900" : "bg-white",
     hoverBg: dark ? "hover:bg-gray-800/60" : "hover:bg-gray-100",
     raisedBg: dark ? "bg-gray-900/80" : "bg-gray-50",

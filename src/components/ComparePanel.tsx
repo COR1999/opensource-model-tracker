@@ -1,3 +1,5 @@
+"use client";
+
 import type { ModelInfo, TestResult, UptimeRecord } from "@/lib/models";
 import { isT3Available } from "@/lib/models";
 import {

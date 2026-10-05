@@ -106,6 +106,8 @@ Layer 3 — State            src/hooks/      Custom React hooks
 | `subscriptions.ts` | Webhook CRUD + `statusChangeAlerts` + best-effort `dispatchAlerts` |
 | `api-auth.ts` | `isAuthorized` — CRON_SECRET bearer OR same-origin Origin/Referer check |
 | `cache.ts` | `TtlCache<T>` — single-flight + stale-while-error, module-scoped |
+| `catalog-cache.ts` | `getCachedCatalog` — module-scoped 5-min `TtlCache<Catalog>` wrapping `fetchAllProviderModels`, shared by `/api/models` and `/api/test-all` |
+| `filters.ts` | `matchesStatusFilter`, `STATUS_FILTER_OPTIONS` — the dashboard's status-filter predicate, extracted from the page's filter chain |
 | `storage.ts` | localStorage wrappers incl. shortlist |
 | `share.ts` | `encodeSnapshot`/`decodeSnapshot` — URL-safe base64 |
 | `display.ts` | Theme/color/formatting helpers (no React imports) |

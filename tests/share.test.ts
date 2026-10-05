@@ -100,6 +100,29 @@ describe("share codec", () => {
     expect(decoded.results).toEqual([]);
   });
 
+  it("caps a hand-crafted payload that never went through encodeSnapshot", () => {
+    // decodeSnapshot must enforce its own limits — a link doesn't have to come
+    // from this app's Share button, so the caps can't live only on the encode side.
+    const hostile = JSON.stringify({
+      ts: 1,
+      results: Array.from({ length: 300 }, (_, i) => ({
+        modelId: `prov/model-${i}`,
+        provider: "nvidia",
+        status: "error",
+        httpCode: 500,
+        responseTimeMs: 1,
+        supportsFunctionCalling: false,
+        error: "y".repeat(5000),
+      })),
+    });
+    const encoded = btoa(hostile).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const decoded = decodeSnapshot(encoded);
+    expect(decoded.valid).toBe(true);
+    expect(decoded.results.length).toBe(150);
+    expect(decoded.omitted).toBe(150);
+    expect(decoded.results.every((r) => (r.error ?? "").length === 140)).toBe(true);
+  });
+
   it("caps result count and error length, reporting omissions", () => {
     const many: TestResult[] = Array.from({ length: 200 }, (_, i) => ({
       ...sample[0],
