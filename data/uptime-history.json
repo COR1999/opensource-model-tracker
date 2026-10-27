@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T08:02:26.860Z",
+  "updatedAt": "2026-10-27T08:02:26.802Z",
   "days": {
     "openrouter/dots-studio/dots-3-note-preview:free": [
       {
@@ -36,6 +36,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 1380
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 423
       }
     ],
     "openrouter/thinkingmachines/inkling-small:free": [
@@ -73,6 +78,11 @@
         "timestamp": 1793001746860,
         "status": "error",
         "responseTimeMs": 61
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "error",
+        "responseTimeMs": 66
       }
     ],
     "openrouter/thinkingmachines/inkling:free": [
@@ -110,6 +120,11 @@
         "timestamp": 1793001746860,
         "status": "error",
         "responseTimeMs": 58
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "error",
+        "responseTimeMs": 53
       }
     ],
     "nvidia/nemotron-3-ultra-550b-a55b": [
@@ -147,6 +162,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 705
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 840
       }
     ],
     "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free": [
@@ -184,6 +204,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 296
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 290
       }
     ],
     "openrouter/google/gemma-4-26b-a4b-it:free": [
@@ -221,6 +246,11 @@
         "timestamp": 1793001746860,
         "status": "rate-limited",
         "responseTimeMs": 174
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "rate-limited",
+        "responseTimeMs": 154
       }
     ],
     "nvidia/nemotron-3-super-120b-a12b": [
@@ -292,6 +322,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 1752
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 208
       }
     ],
     "nvidia/nemotron-3.5-lightning-30b-a3b": [
@@ -329,6 +364,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 185
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 159
       }
     ],
     "openrouter/nvidia/nemotron-3.5-lightning:free": [
@@ -366,6 +406,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 98
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 179
       }
     ],
     "openai/gpt-oss-20b": [
@@ -403,6 +448,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 297
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 458
       }
     ],
     "mistralai/mistral-large-2-instruct": [
@@ -452,6 +502,11 @@
         "timestamp": 1793001746860,
         "status": "error",
         "responseTimeMs": 135
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 658
       }
     ],
     "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": [
@@ -489,6 +544,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 140
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 183
       }
     ],
     "openrouter/poolside/laguna-s-2.1:free": [
@@ -526,6 +586,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 574
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 1546
       }
     ],
     "openrouter/liquid/lfm-2.5-2.6b:free": [
@@ -563,6 +628,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 96
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "rate-limited",
+        "responseTimeMs": 53
       }
     ],
     "openrouter/poolside/laguna-xs-2.1:free": [
@@ -600,6 +670,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 132
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 178
       }
     ],
     "bigcode/starcoder2-15b": [
@@ -721,6 +796,11 @@
         "timestamp": 1793001746860,
         "status": "timeout",
         "responseTimeMs": 8003
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "timeout",
+        "responseTimeMs": 8003
       }
     ],
     "meta/llama-3.2-90b-vision-instruct": [
@@ -756,6 +836,11 @@
       },
       {
         "timestamp": 1793001746860,
+        "status": "timeout",
+        "responseTimeMs": 8003
+      },
+      {
+        "timestamp": 1793088146802,
         "status": "timeout",
         "responseTimeMs": 8003
       }
@@ -828,6 +913,11 @@
         "timestamp": 1792915346797,
         "status": "slow",
         "responseTimeMs": 6907
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "timeout",
+        "responseTimeMs": 8005
       }
     ],
     "openrouter/nvidia/nemotron-3.5-super-vl:free": [
@@ -865,6 +955,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 259
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 242
       }
     ],
     "nvidia/nemotron-3.5-super-vl-120b-a12b": [
@@ -902,6 +997,11 @@
         "timestamp": 1793001746860,
         "status": "working",
         "responseTimeMs": 325
+      },
+      {
+        "timestamp": 1793088146802,
+        "status": "working",
+        "responseTimeMs": 308
       }
     ]
   }
