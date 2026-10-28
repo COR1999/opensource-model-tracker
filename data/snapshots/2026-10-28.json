@@ -1,0 +1,222 @@
+{
+  "date": "2026-10-28",
+  "timestamp": 1793174546915,
+  "durationMs": 19995,
+  "discoveredTotal": 109,
+  "scopedTotal": 25,
+  "skippedRemoved": 6,
+  "testedTotal": 25,
+  "working": 13,
+  "slow": 0,
+  "rateLimited": 2,
+  "down": 4,
+  "removed": 6,
+  "results": [
+    {
+      "modelId": "openrouter/dots-studio/dots-3-note-preview:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 471,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/thinkingmachines/inkling-small:free",
+      "provider": "openrouter",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 55,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"thinkingmachines/inkling-small:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":40"
+    },
+    {
+      "modelId": "openrouter/thinkingmachines/inkling:free",
+      "provider": "openrouter",
+      "status": "error",
+      "httpCode": 403,
+      "responseTimeMs": 63,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"thinkingmachines/inkling:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":403,\"met"
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 312,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/google/gemma-4-26b-a4b-it:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 430,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/cohere/north-mini-code:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 231,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-lightning:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 209,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 89,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-super-vl:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 259,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/poolside/laguna-s-2.1:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 1305,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/liquid/lfm-2.5-2.6b:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 46,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"liquid/lfm-2.5-2.6b:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your "
+    },
+    {
+      "modelId": "openrouter/poolside/laguna-xs-2.1:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 77,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"poolside/laguna-xs-2.1:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate yo"
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 4339,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 90,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 422,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "provider": "nvidia",
+      "status": "error",
+      "httpCode": 503,
+      "responseTimeMs": 87,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"ResourceExhausted: Worker local total request limit reached (16/16)\",\"type\":\"Service Unavailable\",\"code\":503}}"
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 299,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openai/gpt-oss-20b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 215,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "meta/codellama-70b",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 52,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "meta/llama-3.2-11b-vision-instruct",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 315,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "meta/llama-3.2-90b-vision-instruct",
+      "provider": "nvidia",
+      "status": "timeout",
+      "httpCode": 0,
+      "responseTimeMs": 8002,
+      "supportsFunctionCalling": false,
+      "error": "This operation was aborted"
+    },
+    {
+      "modelId": "microsoft/phi-3-vision-128k-instruct",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 55,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "mistralai/codestral-22b-instruct-v0.1",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 62,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "mistralai/mistral-large-2-instruct",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 49,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 50,
+      "supportsFunctionCalling": false
+    }
+  ]
+}
