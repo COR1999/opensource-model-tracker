@@ -1,19 +1,62 @@
 {
-  "fetchedAt": "2026-10-28T08:02:26.915Z",
-  "lastUpdated": "2026-10-27",
+  "fetchedAt": "2026-10-29T08:02:26.860Z",
+  "lastUpdated": "2026-10-29",
   "models": [
     {
       "rank": 1,
+      "model": "Gemini 4 Carbon",
+      "creator": "Google",
+      "sourceType": "Proprietary",
+      "overallScore": 88.37,
+      "categoryScores": {
+        "agentic": null,
+        "coding": 81.08,
+        "reasoning": 79.5,
+        "multimodalGrounded": null,
+        "knowledge": 88.18,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": null
+      },
+      "inputPrice": 2,
+      "outputPrice": 10,
+      "evidenceStatus": "estimated",
+      "interval90": {
+        "lower": 78.65,
+        "upper": 98.1,
+        "scope": "source-pattern",
+        "sourcePattern": "objective-and-preference",
+        "patternCalibrationFamilies": 12,
+        "patternIntervalAvailable": true,
+        "validatedFutureTruth": false,
+        "coverageValidated": false,
+        "simultaneousRosterCoverageValidated": false
+      },
+      "categoryRanks": {
+        "agentic": null,
+        "coding": 3,
+        "knowledge": 2
+      },
+      "categoryEvidence": {
+        "agentic": null,
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 2,
       "model": "Claude Opus 5.5",
       "creator": "Anthropic",
       "sourceType": "Proprietary",
-      "overallScore": 86.66,
+      "overallScore": 86.29,
       "categoryScores": {
-        "agentic": 90.48,
-        "coding": 82.74,
+        "agentic": 90,
+        "coding": 82.86,
         "reasoning": 86.1,
         "multimodalGrounded": 91.8,
-        "knowledge": 89.79,
+        "knowledge": 89.48,
         "multilingual": null,
         "instructionFollowing": null,
         "math": 97.3
@@ -22,12 +65,12 @@
       "outputPrice": 20,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 81.83,
-        "upper": 91.49
+        "lower": 81.64,
+        "upper": 90.94
       },
       "categoryRanks": {
         "agentic": 1,
-        "coding": 2,
+        "coding": 1,
         "knowledge": 1
       },
       "categoryEvidence": {
@@ -39,17 +82,17 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 2,
+      "rank": 3,
       "model": "GPT-6 Astra",
       "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 84.43,
+      "overallScore": 86.08,
       "categoryScores": {
-        "agentic": 75.96,
-        "coding": 75.56,
+        "agentic": 75.94,
+        "coding": 74.7,
         "reasoning": 93.3,
         "multimodalGrounded": 88.2,
-        "knowledge": 85.93,
+        "knowledge": 85.72,
         "multilingual": null,
         "instructionFollowing": null,
         "math": 97.3
@@ -58,192 +101,12 @@
       "outputPrice": 50,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 79.99,
-        "upper": 88.86
-      },
-      "categoryRanks": {
-        "agentic": 6,
-        "coding": 4,
-        "knowledge": 3
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 3,
-      "model": "GPT-6.1 Sol",
-      "creator": "OpenAI",
-      "sourceType": "Proprietary",
-      "overallScore": 84.38,
-      "categoryScores": {
-        "agentic": 76.31,
-        "coding": 71.11,
-        "reasoning": 90.5,
-        "multimodalGrounded": 88.2,
-        "knowledge": 85.69,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 97.3
-      },
-      "inputPrice": 2,
-      "outputPrice": 10,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 80.25,
-        "upper": 88.5
-      },
-      "categoryRanks": {
-        "agentic": 5,
-        "coding": 8,
-        "knowledge": 4
-      },
-      "categoryEvidence": {
-        "agentic": "estimated",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 4,
-      "model": "Claude Fable 5.1",
-      "creator": "Anthropic",
-      "sourceType": "Proprietary",
-      "overallScore": 83.22,
-      "categoryScores": {
-        "agentic": 81.03,
-        "coding": 77.17,
-        "reasoning": 85.2,
-        "multimodalGrounded": null,
-        "knowledge": 86.4,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 96.8
-      },
-      "inputPrice": 10,
-      "outputPrice": 50,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 79.95,
-        "upper": 86.5
-      },
-      "categoryRanks": {
-        "agentic": 2,
-        "coding": 3,
-        "knowledge": 2
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 5,
-      "model": "Gemini 4 Argon",
-      "creator": "Google",
-      "sourceType": "Proprietary",
-      "overallScore": 82.93,
-      "categoryScores": {
-        "agentic": 78.8,
-        "coding": 73.24,
-        "reasoning": 86.9,
-        "multimodalGrounded": null,
-        "knowledge": 81.02,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 92.8
-      },
-      "inputPrice": 2,
-      "outputPrice": 10,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 80.04,
-        "upper": 85.81
-      },
-      "categoryRanks": {
-        "agentic": 4,
-        "coding": 6,
-        "knowledge": 8
-      },
-      "categoryEvidence": {
-        "agentic": "estimated",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 6,
-      "model": "Claude Sonnet 5.5",
-      "creator": "Anthropic",
-      "sourceType": "Proprietary",
-      "overallScore": 82.25,
-      "categoryScores": {
-        "agentic": 69.06,
-        "coding": 84.51,
-        "reasoning": 81.8,
-        "multimodalGrounded": 85.1,
-        "knowledge": 82.37,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 95.2
-      },
-      "inputPrice": 2,
-      "outputPrice": 10,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 76.56,
-        "upper": 87.94
-      },
-      "categoryRanks": {
-        "agentic": 11,
-        "coding": 1,
-        "knowledge": 6
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 7,
-      "model": "Claude Fable 5",
-      "creator": "Anthropic",
-      "sourceType": "Proprietary",
-      "overallScore": 81.27,
-      "categoryScores": {
-        "agentic": 75.76,
-        "coding": 71.82,
-        "reasoning": 84.3,
-        "multimodalGrounded": 64.9,
-        "knowledge": 82.74,
-        "multilingual": null,
-        "instructionFollowing": 77.1,
-        "math": 96
-      },
-      "inputPrice": 10,
-      "outputPrice": 50,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 78.34,
-        "upper": 84.2
+        "lower": 80.47,
+        "upper": 91.68
       },
       "categoryRanks": {
         "agentic": 7,
-        "coding": 7,
+        "coding": 5,
         "knowledge": 5
       },
       "categoryEvidence": {
@@ -255,31 +118,103 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 8,
-      "model": "Claude Opus 5",
-      "creator": "Anthropic",
+      "rank": 4,
+      "model": "GPT-6.1 Sol",
+      "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 80.06,
+      "overallScore": 85.25,
       "categoryScores": {
-        "agentic": 78.88,
-        "coding": 71,
-        "reasoning": 81,
-        "multimodalGrounded": 90.9,
-        "knowledge": 81.65,
+        "agentic": 76.92,
+        "coding": 70.3,
+        "reasoning": 90.5,
+        "multimodalGrounded": 88.2,
+        "knowledge": 86.15,
         "multilingual": null,
         "instructionFollowing": null,
-        "math": 91.6
+        "math": 97.3
       },
-      "inputPrice": 5,
-      "outputPrice": 25,
+      "inputPrice": 2,
+      "outputPrice": 10,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 77.2,
-        "upper": 82.93
+        "lower": 80.81,
+        "upper": 89.69
       },
       "categoryRanks": {
-        "agentic": 3,
-        "coding": 9,
+        "agentic": 5,
+        "coding": 10,
+        "knowledge": 3
+      },
+      "categoryEvidence": {
+        "agentic": "estimated",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 5,
+      "model": "Gemini 4 Argon",
+      "creator": "Google",
+      "sourceType": "Proprietary",
+      "overallScore": 82.3,
+      "categoryScores": {
+        "agentic": 78.09,
+        "coding": 72.16,
+        "reasoning": 86.9,
+        "multimodalGrounded": null,
+        "knowledge": 82.6,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 92.8
+      },
+      "inputPrice": 2,
+      "outputPrice": 10,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 78.94,
+        "upper": 85.65
+      },
+      "categoryRanks": {
+        "agentic": 4,
+        "coding": 6,
+        "knowledge": 6
+      },
+      "categoryEvidence": {
+        "agentic": "estimated",
+        "coding": "supported",
+        "knowledge": "estimated"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 6,
+      "model": "Claude Sonnet 5.5",
+      "creator": "Anthropic",
+      "sourceType": "Proprietary",
+      "overallScore": 81.85,
+      "categoryScores": {
+        "agentic": 69.04,
+        "coding": 81.7,
+        "reasoning": 81.8,
+        "multimodalGrounded": 85.1,
+        "knowledge": 81.62,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 95.2
+      },
+      "inputPrice": 2,
+      "outputPrice": 10,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 77.67,
+        "upper": 86.02
+      },
+      "categoryRanks": {
+        "agentic": 11,
+        "coding": 2,
         "knowledge": 7
       },
       "categoryEvidence": {
@@ -291,17 +226,168 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
+      "rank": 7,
+      "model": "Claude Fable 5.1",
+      "creator": "Anthropic",
+      "sourceType": "Proprietary",
+      "overallScore": 81.07,
+      "categoryScores": {
+        "agentic": 80.67,
+        "coding": 76.39,
+        "reasoning": 85.2,
+        "multimodalGrounded": null,
+        "knowledge": 86.01,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 96.8
+      },
+      "inputPrice": 10,
+      "outputPrice": 50,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 77.43,
+        "upper": 84.71
+      },
+      "categoryRanks": {
+        "agentic": 2,
+        "coding": 4,
+        "knowledge": 4
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 8,
+      "model": "Claude Fable 5",
+      "creator": "Anthropic",
+      "sourceType": "Proprietary",
+      "overallScore": 80.76,
+      "categoryScores": {
+        "agentic": 75.25,
+        "coding": 71.36,
+        "reasoning": 84.3,
+        "multimodalGrounded": 64.9,
+        "knowledge": 81.43,
+        "multilingual": null,
+        "instructionFollowing": 77.1,
+        "math": 96
+      },
+      "inputPrice": 10,
+      "outputPrice": 50,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 77.76,
+        "upper": 83.77
+      },
+      "categoryRanks": {
+        "agentic": 8,
+        "coding": 7,
+        "knowledge": 8
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
       "rank": 9,
+      "model": "GPT-6.1 Terra",
+      "creator": "OpenAI",
+      "sourceType": "Proprietary",
+      "overallScore": 80.43,
+      "categoryScores": {
+        "agentic": 76.45,
+        "coding": null,
+        "reasoning": 81.8,
+        "multimodalGrounded": 91.6,
+        "knowledge": 77.03,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 97.3
+      },
+      "inputPrice": 1,
+      "outputPrice": 5,
+      "evidenceStatus": "estimated",
+      "interval90": {
+        "lower": 66.08,
+        "upper": 94.78,
+        "scope": "source-pattern",
+        "sourcePattern": "objective-only",
+        "patternCalibrationFamilies": 12,
+        "patternIntervalAvailable": true,
+        "validatedFutureTruth": false,
+        "coverageValidated": false,
+        "simultaneousRosterCoverageValidated": false
+      },
+      "categoryRanks": {
+        "agentic": 6,
+        "coding": null,
+        "knowledge": 11
+      },
+      "categoryEvidence": {
+        "agentic": "estimated",
+        "coding": null,
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 10,
+      "model": "Claude Opus 5",
+      "creator": "Anthropic",
+      "sourceType": "Proprietary",
+      "overallScore": 79.68,
+      "categoryScores": {
+        "agentic": 78.75,
+        "coding": 70.47,
+        "reasoning": 81,
+        "multimodalGrounded": 90.9,
+        "knowledge": 81.37,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 91.6
+      },
+      "inputPrice": 5,
+      "outputPrice": 25,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 77.05,
+        "upper": 82.31
+      },
+      "categoryRanks": {
+        "agentic": 3,
+        "coding": 9,
+        "knowledge": 9
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 11,
       "model": "GPT-6 Sol",
       "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 79.01,
+      "overallScore": 77.96,
       "categoryScores": {
-        "agentic": 58.34,
-        "coding": 66.32,
+        "agentic": 58.09,
+        "coding": 64.95,
         "reasoning": 73.1,
         "multimodalGrounded": 87.5,
-        "knowledge": 79.79,
+        "knowledge": 80.14,
         "multilingual": null,
         "instructionFollowing": null,
         "math": 97.3
@@ -310,13 +396,13 @@
       "outputPrice": 10,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 75.9,
-        "upper": 82.11
+        "lower": 74.66,
+        "upper": 81.26
       },
       "categoryRanks": {
-        "agentic": 38,
-        "coding": 12,
-        "knowledge": 9
+        "agentic": 35,
+        "coding": 13,
+        "knowledge": 10
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -327,60 +413,17 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 10,
-      "model": "GPT-6.1 Terra",
-      "creator": "OpenAI",
-      "sourceType": "Proprietary",
-      "overallScore": 76.06,
-      "categoryScores": {
-        "agentic": 72.68,
-        "coding": null,
-        "reasoning": 81.8,
-        "multimodalGrounded": 91.6,
-        "knowledge": 75.19,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
-      },
-      "inputPrice": 1,
-      "outputPrice": 5,
-      "evidenceStatus": "estimated",
-      "interval90": {
-        "lower": 61.71,
-        "upper": 90.41,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-only",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
-      },
-      "categoryRanks": {
-        "agentic": 8,
-        "coding": null,
-        "knowledge": 12
-      },
-      "categoryEvidence": {
-        "agentic": "estimated",
-        "coding": null,
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 11,
+      "rank": 12,
       "model": "GPT-5.6 Sol",
       "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 75.34,
+      "overallScore": 74.83,
       "categoryScores": {
-        "agentic": 68.85,
-        "coding": 67.48,
+        "agentic": 68.74,
+        "coding": 67.09,
         "reasoning": 76.4,
         "multimodalGrounded": 90.1,
-        "knowledge": 76.61,
+        "knowledge": 76.29,
         "multilingual": null,
         "instructionFollowing": 89.1,
         "math": 95.8
@@ -389,13 +432,13 @@
       "outputPrice": 20,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 72.66,
-        "upper": 78.01
+        "lower": 71.75,
+        "upper": 77.9
       },
       "categoryRanks": {
-        "agentic": 13,
+        "agentic": 12,
         "coding": 11,
-        "knowledge": 11
+        "knowledge": 12
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -406,97 +449,11 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 12,
-      "model": "Muse Wonder Full",
-      "creator": "Meta",
-      "sourceType": "Proprietary",
-      "overallScore": 74.95,
-      "categoryScores": {
-        "agentic": null,
-        "coding": 74.37,
-        "reasoning": 82.5,
-        "multimodalGrounded": null,
-        "knowledge": 78.47,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
-      },
-      "inputPrice": null,
-      "outputPrice": null,
-      "evidenceStatus": "estimated",
-      "interval90": {
-        "lower": 60.6,
-        "upper": 89.3,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-only",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
-      },
-      "categoryRanks": {
-        "agentic": null,
-        "coding": 5,
-        "knowledge": 10
-      },
-      "categoryEvidence": {
-        "agentic": null,
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
       "rank": 13,
-      "model": "MiMo-V2.6-Pro",
-      "creator": "Xiaomi",
-      "sourceType": "Open Weight",
-      "overallScore": 73.85,
-      "categoryScores": {
-        "agentic": 69.06,
-        "coding": 64.03,
-        "reasoning": 82.5,
-        "multimodalGrounded": null,
-        "knowledge": 69.52,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
-      },
-      "inputPrice": 0.435,
-      "outputPrice": 0.87,
-      "evidenceStatus": "estimated",
-      "interval90": {
-        "lower": 64.12,
-        "upper": 83.57,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-and-preference",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
-      },
-      "categoryRanks": {
-        "agentic": 12,
-        "coding": 13,
-        "knowledge": 20
-      },
-      "categoryEvidence": {
-        "agentic": "estimated",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 14,
       "model": "GPT-5.5 Pro",
       "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 73.54,
+      "overallScore": 72.76,
       "categoryScores": {
         "agentic": null,
         "coding": null,
@@ -511,8 +468,8 @@
       "outputPrice": 180,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 59.19,
-        "upper": 87.89,
+        "lower": 58.41,
+        "upper": 87.11,
         "scope": "source-pattern",
         "sourcePattern": "objective-only",
         "patternCalibrationFamilies": 12,
@@ -535,60 +492,17 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 15,
-      "model": "Muse Wonder",
-      "creator": "Meta",
-      "sourceType": "Proprietary",
-      "overallScore": 71.7,
-      "categoryScores": {
-        "agentic": null,
-        "coding": 70.26,
-        "reasoning": 80.4,
-        "multimodalGrounded": null,
-        "knowledge": 74.54,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
-      },
-      "inputPrice": 4,
-      "outputPrice": 20,
-      "evidenceStatus": "estimated",
-      "interval90": {
-        "lower": 57.35,
-        "upper": 86.05,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-only",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
-      },
-      "categoryRanks": {
-        "agentic": null,
-        "coding": 10,
-        "knowledge": 13
-      },
-      "categoryEvidence": {
-        "agentic": null,
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 16,
+      "rank": 14,
       "model": "GPT-5.6 Terra",
       "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 70.27,
+      "overallScore": 69.81,
       "categoryScores": {
-        "agentic": 60.97,
-        "coding": 61.91,
+        "agentic": 60.9,
+        "coding": 61.97,
         "reasoning": 69.1,
         "multimodalGrounded": 84.9,
-        "knowledge": 69.59,
+        "knowledge": 69.06,
         "multilingual": null,
         "instructionFollowing": 87.1,
         "math": 90.1
@@ -597,13 +511,85 @@
       "outputPrice": 12,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 66.59,
-        "upper": 73.95
+        "lower": 65.45,
+        "upper": 74.16
+      },
+      "categoryRanks": {
+        "agentic": 26,
+        "coding": 16,
+        "knowledge": 18
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 15,
+      "model": "Claude Opus 4.8",
+      "creator": "Anthropic",
+      "sourceType": "Proprietary",
+      "overallScore": 69.63,
+      "categoryScores": {
+        "agentic": 60.66,
+        "coding": 60.69,
+        "reasoning": 62.8,
+        "multimodalGrounded": 88.1,
+        "knowledge": 70.91,
+        "multilingual": null,
+        "instructionFollowing": 75.4,
+        "math": 84.4
+      },
+      "inputPrice": 5,
+      "outputPrice": 25,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 65.27,
+        "upper": 74
       },
       "categoryRanks": {
         "agentic": 27,
-        "coding": 16,
-        "knowledge": 19
+        "coding": 18,
+        "knowledge": 15
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 16,
+      "model": "Kimi K3",
+      "creator": "Moonshot AI",
+      "sourceType": "Pending",
+      "overallScore": 69.33,
+      "categoryScores": {
+        "agentic": 67.63,
+        "coding": 58.7,
+        "reasoning": 69.7,
+        "multimodalGrounded": 90.2,
+        "knowledge": 67.19,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": null
+      },
+      "inputPrice": 3,
+      "outputPrice": 15,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 64.96,
+        "upper": 73.7
+      },
+      "categoryRanks": {
+        "agentic": 13,
+        "coding": 20,
+        "knowledge": 23
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -615,34 +601,41 @@
     },
     {
       "rank": 17,
-      "model": "Kimi K3",
-      "creator": "Moonshot AI",
-      "sourceType": "Pending",
-      "overallScore": 70.21,
+      "model": "Muse Wonder Full",
+      "creator": "Meta",
+      "sourceType": "Proprietary",
+      "overallScore": 68.92,
       "categoryScores": {
-        "agentic": 67.66,
-        "coding": 59.05,
-        "reasoning": 69.8,
-        "multimodalGrounded": 90.2,
-        "knowledge": 67.93,
+        "agentic": null,
+        "coding": 71.13,
+        "reasoning": 82.5,
+        "multimodalGrounded": null,
+        "knowledge": 74.17,
         "multilingual": null,
         "instructionFollowing": null,
         "math": null
       },
-      "inputPrice": 3,
-      "outputPrice": 15,
-      "evidenceStatus": "supported",
+      "inputPrice": null,
+      "outputPrice": null,
+      "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 66.12,
-        "upper": 74.29
+        "lower": 54.57,
+        "upper": 83.27,
+        "scope": "source-pattern",
+        "sourcePattern": "objective-only",
+        "patternCalibrationFamilies": 12,
+        "patternIntervalAvailable": true,
+        "validatedFutureTruth": false,
+        "coverageValidated": false,
+        "simultaneousRosterCoverageValidated": false
       },
       "categoryRanks": {
-        "agentic": 14,
-        "coding": 22,
-        "knowledge": 25
+        "agentic": null,
+        "coding": 8,
+        "knowledge": 13
       },
       "categoryEvidence": {
-        "agentic": "supported",
+        "agentic": null,
         "coding": "supported",
         "knowledge": "supported"
       },
@@ -651,131 +644,16 @@
     },
     {
       "rank": 18,
-      "model": "Qwen3.8 Max",
-      "creator": "Alibaba",
-      "sourceType": "Open Weight",
-      "overallScore": 69.98,
-      "categoryScores": {
-        "agentic": 66.53,
-        "coding": 53.62,
-        "reasoning": 87,
-        "multimodalGrounded": 92,
-        "knowledge": 67.6,
-        "multilingual": null,
-        "instructionFollowing": 94.7,
-        "math": 78.9
-      },
-      "inputPrice": null,
-      "outputPrice": null,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 65.88,
-        "upper": 74.08
-      },
-      "categoryRanks": {
-        "agentic": 15,
-        "coding": 38,
-        "knowledge": 26
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 19,
-      "model": "Claude Opus 4.8",
-      "creator": "Anthropic",
-      "sourceType": "Proprietary",
-      "overallScore": 69.95,
-      "categoryScores": {
-        "agentic": 60.7,
-        "coding": 60.84,
-        "reasoning": 62.8,
-        "multimodalGrounded": 88.1,
-        "knowledge": 71.41,
-        "multilingual": null,
-        "instructionFollowing": 75.4,
-        "math": 84.4
-      },
-      "inputPrice": 5,
-      "outputPrice": 25,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 66.13,
-        "upper": 73.78
-      },
-      "categoryRanks": {
-        "agentic": 30,
-        "coding": 19,
-        "knowledge": 17
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 20,
-      "model": "Step 5 Preview",
-      "creator": "StepFun",
-      "sourceType": "Open Weight",
-      "overallScore": 69.51,
-      "categoryScores": {
-        "agentic": 65.55,
-        "coding": 60.67,
-        "reasoning": 82.5,
-        "multimodalGrounded": 73.4,
-        "knowledge": 68.42,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
-      },
-      "inputPrice": 1,
-      "outputPrice": 2.7,
-      "evidenceStatus": "estimated",
-      "interval90": {
-        "lower": 59.79,
-        "upper": 79.23,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-and-preference",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
-      },
-      "categoryRanks": {
-        "agentic": 18,
-        "coding": 20,
-        "knowledge": 23
-      },
-      "categoryEvidence": {
-        "agentic": "estimated",
-        "coding": "estimated",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 21,
       "model": "GPT-5.5",
       "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 69.25,
+      "overallScore": 68.82,
       "categoryScores": {
-        "agentic": 60.95,
-        "coding": 62.17,
+        "agentic": 61.02,
+        "coding": 62.29,
         "reasoning": 69.7,
         "multimodalGrounded": 74.4,
-        "knowledge": 71.59,
+        "knowledge": 71.2,
         "multilingual": null,
         "instructionFollowing": 93.3,
         "math": 91.2
@@ -784,48 +662,12 @@
       "outputPrice": 30,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 62.99,
-        "upper": 75.52
+        "lower": 61.78,
+        "upper": 75.86
       },
       "categoryRanks": {
-        "agentic": 28,
+        "agentic": 25,
         "coding": 15,
-        "knowledge": 16
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 22,
-      "model": "Gemini 3.8 Flash",
-      "creator": "Google",
-      "sourceType": "Proprietary",
-      "overallScore": 69.08,
-      "categoryScores": {
-        "agentic": 66.49,
-        "coding": 60.98,
-        "reasoning": 74.3,
-        "multimodalGrounded": 88.2,
-        "knowledge": 72.98,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 69.7
-      },
-      "inputPrice": 0.75,
-      "outputPrice": 3.75,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 63.53,
-        "upper": 74.63
-      },
-      "categoryRanks": {
-        "agentic": 16,
-        "coding": 18,
         "knowledge": 14
       },
       "categoryEvidence": {
@@ -837,11 +679,11 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 23,
+      "rank": 19,
       "model": "GPT-5.4 Pro",
       "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 68.89,
+      "overallScore": 68.23,
       "categoryScores": {
         "agentic": null,
         "coding": null,
@@ -856,8 +698,8 @@
       "outputPrice": 180,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 54.54,
-        "upper": 83.24,
+        "lower": 53.88,
+        "upper": 82.58,
         "scope": "source-pattern",
         "sourcePattern": "objective-only",
         "patternCalibrationFamilies": 12,
@@ -880,17 +722,17 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 24,
+      "rank": 20,
       "model": "Claude Opus 4.7 (Adaptive)",
       "creator": "Anthropic",
       "sourceType": "Proprietary",
-      "overallScore": 68.88,
+      "overallScore": 68.12,
       "categoryScores": {
-        "agentic": 60.7,
-        "coding": 55.94,
+        "agentic": 61.2,
+        "coding": 55.33,
         "reasoning": 57.4,
         "multimodalGrounded": 51.3,
-        "knowledge": 65.79,
+        "knowledge": 65.53,
         "multilingual": null,
         "instructionFollowing": null,
         "math": null
@@ -899,8 +741,8 @@
       "outputPrice": 25,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 54.53,
-        "upper": 83.23,
+        "lower": 53.77,
+        "upper": 82.47,
         "scope": "global-pool-pattern-unvalidated",
         "sourcePattern": "preference-only",
         "patternCalibrationFamilies": 4,
@@ -910,9 +752,9 @@
         "simultaneousRosterCoverageValidated": false
       },
       "categoryRanks": {
-        "agentic": 29,
-        "coding": 31,
-        "knowledge": 31
+        "agentic": 23,
+        "coding": 30,
+        "knowledge": 26
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -923,96 +765,17 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 25,
-      "model": "GLM-5.3",
-      "creator": "Z.AI",
-      "sourceType": "Open Weight",
-      "overallScore": 68.32,
-      "categoryScores": {
-        "agentic": 70.5,
-        "coding": 56.31,
-        "reasoning": 79.8,
-        "multimodalGrounded": null,
-        "knowledge": 62,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 71.5
-      },
-      "inputPrice": 0,
-      "outputPrice": 0,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 63.71,
-        "upper": 72.92
-      },
-      "categoryRanks": {
-        "agentic": 9,
-        "coding": 29,
-        "knowledge": 46
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 26,
-      "model": "Ling 3.1 Flash",
-      "creator": "InclusionAI",
-      "sourceType": "Open Weight",
-      "overallScore": 68.19,
-      "categoryScores": {
-        "agentic": 62.99,
-        "coding": 57.38,
-        "reasoning": 82,
-        "multimodalGrounded": null,
-        "knowledge": 63.04,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
-      },
-      "inputPrice": null,
-      "outputPrice": null,
-      "evidenceStatus": "estimated",
-      "interval90": {
-        "lower": 53.84,
-        "upper": 82.53,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-only",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
-      },
-      "categoryRanks": {
-        "agentic": 22,
-        "coding": 27,
-        "knowledge": 44
-      },
-      "categoryEvidence": {
-        "agentic": "estimated",
-        "coding": "estimated",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 27,
+      "rank": 21,
       "model": "Grok 4.6",
       "creator": "xAI",
       "sourceType": "Proprietary",
-      "overallScore": 67.42,
+      "overallScore": 66.61,
       "categoryScores": {
         "agentic": 70.03,
-        "coding": 58.73,
+        "coding": 58.43,
         "reasoning": 61.4,
         "multimodalGrounded": null,
-        "knowledge": 68.94,
+        "knowledge": 68.46,
         "multilingual": null,
         "instructionFollowing": null,
         "math": 70.1
@@ -1021,13 +784,13 @@
       "outputPrice": 6,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 64.02,
-        "upper": 70.83
+        "lower": 63.41,
+        "upper": 69.81
       },
       "categoryRanks": {
-        "agentic": 10,
-        "coding": 24,
-        "knowledge": 21
+        "agentic": 9,
+        "coding": 21,
+        "knowledge": 20
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -1038,42 +801,35 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 28,
-      "model": "MiniMax M3.1 Flash",
-      "creator": "MiniMax",
+      "rank": 22,
+      "model": "Gemini 3.7 Flash",
+      "creator": "Google",
       "sourceType": "Proprietary",
-      "overallScore": 67.39,
+      "overallScore": 66.54,
       "categoryScores": {
-        "agentic": 64.33,
-        "coding": 58.99,
-        "reasoning": 79.8,
-        "multimodalGrounded": 73,
-        "knowledge": 72.97,
+        "agentic": 61.06,
+        "coding": 57.52,
+        "reasoning": 81.6,
+        "multimodalGrounded": 85.9,
+        "knowledge": 70.74,
         "multilingual": null,
         "instructionFollowing": null,
-        "math": null
+        "math": 74.8
       },
-      "inputPrice": 0.15,
-      "outputPrice": 0.6,
-      "evidenceStatus": "estimated",
+      "inputPrice": 0.75,
+      "outputPrice": 3.75,
+      "evidenceStatus": "supported",
       "interval90": {
-        "lower": 53.04,
-        "upper": 81.74,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-only",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
+        "lower": 60.24,
+        "upper": 72.84
       },
       "categoryRanks": {
-        "agentic": 20,
+        "agentic": 24,
         "coding": 23,
-        "knowledge": 15
+        "knowledge": 16
       },
       "categoryEvidence": {
-        "agentic": "estimated",
+        "agentic": "supported",
         "coding": "supported",
         "knowledge": "supported"
       },
@@ -1081,38 +837,31 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 29,
+      "rank": 23,
       "model": "Claude Haiku 5.5",
       "creator": "Anthropic",
       "sourceType": "Proprietary",
-      "overallScore": 67.37,
+      "overallScore": 66.43,
       "categoryScores": {
-        "agentic": 61.72,
-        "coding": 52.14,
-        "reasoning": 59.9,
+        "agentic": 61.81,
+        "coding": 52.4,
+        "reasoning": 59.8,
         "multimodalGrounded": null,
-        "knowledge": 66.11,
+        "knowledge": 64.82,
         "multilingual": null,
         "instructionFollowing": null,
         "math": 79.1
       },
       "inputPrice": 0.1,
       "outputPrice": 0.5,
-      "evidenceStatus": "estimated",
+      "evidenceStatus": "supported",
       "interval90": {
-        "lower": 53.02,
-        "upper": 81.72,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-only",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
+        "lower": 57.55,
+        "upper": 75.32
       },
       "categoryRanks": {
-        "agentic": 24,
-        "coding": 42,
+        "agentic": 21,
+        "coding": 40,
         "knowledge": 30
       },
       "categoryEvidence": {
@@ -1124,32 +873,32 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 30,
-      "model": "Gemini 3.7 Flash",
-      "creator": "Google",
+      "rank": 24,
+      "model": "GPT-5.4",
+      "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 67.11,
+      "overallScore": 66.39,
       "categoryScores": {
-        "agentic": 61.1,
-        "coding": 57.89,
-        "reasoning": 81.6,
-        "multimodalGrounded": 85.9,
-        "knowledge": 71.18,
+        "agentic": 54.41,
+        "coding": 47.83,
+        "reasoning": 64.2,
+        "multimodalGrounded": 71.5,
+        "knowledge": 68.08,
         "multilingual": null,
-        "instructionFollowing": null,
-        "math": 74.8
+        "instructionFollowing": 90.7,
+        "math": 82
       },
-      "inputPrice": 0.75,
-      "outputPrice": 3.75,
+      "inputPrice": 2.5,
+      "outputPrice": 15,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 61.36,
-        "upper": 72.87
+        "lower": 61.37,
+        "upper": 71.41
       },
       "categoryRanks": {
-        "agentic": 26,
-        "coding": 25,
-        "knowledge": 18
+        "agentic": 43,
+        "coding": 50,
+        "knowledge": 21
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -1160,11 +909,11 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 31,
+      "rank": 25,
       "model": "GPT-5.2 Pro",
       "creator": "OpenAI",
       "sourceType": "Proprietary",
-      "overallScore": 66.95,
+      "overallScore": 66.23,
       "categoryScores": {
         "agentic": null,
         "coding": null,
@@ -1179,8 +928,8 @@
       "outputPrice": 168,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 57.22,
-        "upper": 76.67,
+        "lower": 56.51,
+        "upper": 75.95,
         "scope": "source-pattern",
         "sourcePattern": "objective-and-preference",
         "patternCalibrationFamilies": 12,
@@ -1203,31 +952,225 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 32,
-      "model": "GPT-5.4",
-      "creator": "OpenAI",
+      "rank": 26,
+      "model": "Gemini 3.8 Flash",
+      "creator": "Google",
       "sourceType": "Proprietary",
-      "overallScore": 66.8,
+      "overallScore": 66.22,
       "categoryScores": {
-        "agentic": 54.25,
-        "coding": 48.04,
-        "reasoning": 64.2,
-        "multimodalGrounded": 71.5,
-        "knowledge": 68.63,
+        "agentic": 65.79,
+        "coding": 59.79,
+        "reasoning": 74.3,
+        "multimodalGrounded": 88.2,
+        "knowledge": 69.16,
         "multilingual": null,
-        "instructionFollowing": 90.7,
-        "math": 82
+        "instructionFollowing": null,
+        "math": 69.7
       },
-      "inputPrice": 2.5,
-      "outputPrice": 15,
+      "inputPrice": 0.75,
+      "outputPrice": 3.75,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 62.35,
-        "upper": 71.26
+        "lower": 54.07,
+        "upper": 78.36
       },
       "categoryRanks": {
-        "agentic": 46,
-        "coding": 49,
+        "agentic": 16,
+        "coding": 19,
+        "knowledge": 17
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 27,
+      "model": "Ling 3.1 Flash",
+      "creator": "InclusionAI",
+      "sourceType": "Open Weight",
+      "overallScore": 65.47,
+      "categoryScores": {
+        "agentic": 63.36,
+        "coding": 58.07,
+        "reasoning": 82,
+        "multimodalGrounded": null,
+        "knowledge": null,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": null
+      },
+      "inputPrice": null,
+      "outputPrice": null,
+      "evidenceStatus": "estimated",
+      "interval90": {
+        "lower": 51.12,
+        "upper": 79.82,
+        "scope": "global-pool-pattern-unvalidated",
+        "sourcePattern": "benchmark-only",
+        "patternCalibrationFamilies": 4,
+        "patternIntervalAvailable": false,
+        "validatedFutureTruth": false,
+        "coverageValidated": false,
+        "simultaneousRosterCoverageValidated": false
+      },
+      "categoryRanks": {
+        "agentic": 17,
+        "coding": 22,
+        "knowledge": null
+      },
+      "categoryEvidence": {
+        "agentic": "estimated",
+        "coding": "estimated",
+        "knowledge": null
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 28,
+      "model": "Muse Spark 1.2",
+      "creator": "Meta",
+      "sourceType": "Proprietary",
+      "overallScore": 65.4,
+      "categoryScores": {
+        "agentic": 59.89,
+        "coding": 52.81,
+        "reasoning": 79.3,
+        "multimodalGrounded": null,
+        "knowledge": 64.63,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": null
+      },
+      "inputPrice": 1.25,
+      "outputPrice": 4.25,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 58.96,
+        "upper": 71.85
+      },
+      "categoryRanks": {
+        "agentic": 29,
+        "coding": 37,
+        "knowledge": 32
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 29,
+      "model": "DeepSeek V4.1 Flash 1017",
+      "creator": "DeepSeek",
+      "sourceType": "Open Weight",
+      "overallScore": 65.21,
+      "categoryScores": {
+        "agentic": 62.15,
+        "coding": 62.9,
+        "reasoning": 82.5,
+        "multimodalGrounded": 78.8,
+        "knowledge": 64.2,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 70.1
+      },
+      "inputPrice": 0.3,
+      "outputPrice": 1.2,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 59.82,
+        "upper": 70.59
+      },
+      "categoryRanks": {
+        "agentic": 20,
+        "coding": 14,
+        "knowledge": 37
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 30,
+      "model": "Claude Opus 4.7",
+      "creator": "Anthropic",
+      "sourceType": "Proprietary",
+      "overallScore": 65.2,
+      "categoryScores": {
+        "agentic": 54.49,
+        "coding": 55.08,
+        "reasoning": 31.4,
+        "multimodalGrounded": null,
+        "knowledge": 65.28,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 72.9
+      },
+      "inputPrice": 5,
+      "outputPrice": 25,
+      "evidenceStatus": "estimated",
+      "interval90": {
+        "lower": 55.47,
+        "upper": 74.92,
+        "scope": "source-pattern",
+        "sourcePattern": "objective-and-preference",
+        "patternCalibrationFamilies": 12,
+        "patternIntervalAvailable": true,
+        "validatedFutureTruth": false,
+        "coverageValidated": false,
+        "simultaneousRosterCoverageValidated": false
+      },
+      "categoryRanks": {
+        "agentic": 42,
+        "coding": 31,
+        "knowledge": 28
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "estimated"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 31,
+      "model": "Muse Spark 1.1",
+      "creator": "Meta",
+      "sourceType": "Proprietary",
+      "overallScore": 65.15,
+      "categoryScores": {
+        "agentic": 59.07,
+        "coding": 52.56,
+        "reasoning": 78.4,
+        "multimodalGrounded": 79,
+        "knowledge": 67.59,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": null
+      },
+      "inputPrice": null,
+      "outputPrice": null,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 56.1,
+        "upper": 74.21
+      },
+      "categoryRanks": {
+        "agentic": 32,
+        "coding": 39,
         "knowledge": 22
       },
       "categoryEvidence": {
@@ -1239,261 +1182,31 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 33,
-      "model": "GPT-6 Luna",
-      "creator": "OpenAI",
-      "sourceType": "Proprietary",
-      "overallScore": 66.61,
+      "rank": 32,
+      "model": "Qwen3.8 Max",
+      "creator": "Alibaba",
+      "sourceType": "Open Weight",
+      "overallScore": 64.86,
       "categoryScores": {
-        "agentic": 58.67,
-        "coding": 53.56,
-        "reasoning": 59.2,
-        "multimodalGrounded": 82.8,
-        "knowledge": 67.08,
+        "agentic": 65.99,
+        "coding": 52.72,
+        "reasoning": 87,
+        "multimodalGrounded": 92,
+        "knowledge": 65.46,
         "multilingual": null,
-        "instructionFollowing": null,
-        "math": 83.7
-      },
-      "inputPrice": 0.1,
-      "outputPrice": 0.5,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 62.51,
-        "upper": 70.71
-      },
-      "categoryRanks": {
-        "agentic": 37,
-        "coding": 39,
-        "knowledge": 28
-      },
-      "categoryEvidence": {
-        "agentic": "estimated",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 34,
-      "model": "Muse Spark 1.1",
-      "creator": "Meta",
-      "sourceType": "Proprietary",
-      "overallScore": 66.29,
-      "categoryScores": {
-        "agentic": 58.84,
-        "coding": 52.82,
-        "reasoning": 78.4,
-        "multimodalGrounded": 79,
-        "knowledge": 67.96,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
+        "instructionFollowing": 94.7,
+        "math": 78.9
       },
       "inputPrice": null,
       "outputPrice": null,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 57.84,
-        "upper": 74.74
+        "lower": 56.05,
+        "upper": 73.68
       },
       "categoryRanks": {
-        "agentic": 36,
-        "coding": 41,
-        "knowledge": 24
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 35,
-      "model": "Muse Spark 1.2",
-      "creator": "Meta",
-      "sourceType": "Proprietary",
-      "overallScore": 66.16,
-      "categoryScores": {
-        "agentic": 59.88,
-        "coding": 53.07,
-        "reasoning": 79.3,
-        "multimodalGrounded": null,
-        "knowledge": 65.25,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
-      },
-      "inputPrice": 1.25,
-      "outputPrice": 4.25,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 60.06,
-        "upper": 72.27
-      },
-      "categoryRanks": {
-        "agentic": 33,
-        "coding": 40,
-        "knowledge": 34
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 36,
-      "model": "DeepSeek V4.1 Flash 1017",
-      "creator": "DeepSeek",
-      "sourceType": "Open Weight",
-      "overallScore": 65.98,
-      "categoryScores": {
-        "agentic": 62.01,
-        "coding": 63.89,
-        "reasoning": 82.5,
-        "multimodalGrounded": 78.8,
-        "knowledge": 64.72,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 70.1
-      },
-      "inputPrice": 0.3,
-      "outputPrice": 1.2,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 60.98,
-        "upper": 70.99
-      },
-      "categoryRanks": {
-        "agentic": 23,
-        "coding": 14,
-        "knowledge": 38
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 37,
-      "model": "Claude Opus 4.7",
-      "creator": "Anthropic",
-      "sourceType": "Proprietary",
-      "overallScore": 65.44,
-      "categoryScores": {
-        "agentic": 54.67,
-        "coding": 55.69,
-        "reasoning": 31.4,
-        "multimodalGrounded": null,
-        "knowledge": 65.54,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 72.9
-      },
-      "inputPrice": 5,
-      "outputPrice": 25,
-      "evidenceStatus": "estimated",
-      "interval90": {
-        "lower": 55.71,
-        "upper": 75.16,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-and-preference",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
-      },
-      "categoryRanks": {
-        "agentic": 45,
-        "coding": 32,
-        "knowledge": 33
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "estimated"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 38,
-      "model": "Claude Sonnet 5",
-      "creator": "Anthropic",
-      "sourceType": "Proprietary",
-      "overallScore": 65.15,
-      "categoryScores": {
-        "agentic": 66.35,
-        "coding": 57.7,
-        "reasoning": 81.3,
-        "multimodalGrounded": 80.6,
-        "knowledge": 64.89,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 69.4
-      },
-      "inputPrice": 2,
-      "outputPrice": 10,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 60.18,
-        "upper": 70.11
-      },
-      "categoryRanks": {
-        "agentic": 17,
-        "coding": 26,
-        "knowledge": 36
-      },
-      "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
-        "knowledge": "supported"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 39,
-      "model": "Gemini 3.1 Pro",
-      "creator": "Google",
-      "sourceType": "Proprietary",
-      "overallScore": 65.03,
-      "categoryScores": {
-        "agentic": 40.95,
-        "coding": 39.53,
-        "reasoning": 58.2,
-        "multimodalGrounded": 81.2,
-        "knowledge": 67.31,
-        "multilingual": null,
-        "instructionFollowing": 90.3,
-        "math": 65
-      },
-      "inputPrice": 2,
-      "outputPrice": 12,
-      "evidenceStatus": "estimated",
-      "interval90": {
-        "lower": 55.31,
-        "upper": 74.75,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-and-preference",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
-      },
-      "categoryRanks": {
-        "agentic": 68,
-        "coding": 70,
+        "agentic": 15,
+        "coding": 38,
         "knowledge": 27
       },
       "categoryEvidence": {
@@ -1505,27 +1218,27 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 40,
-      "model": "MiMo-V2.6-Flash",
-      "creator": "Xiaomi",
-      "sourceType": "Open Weight",
-      "overallScore": 64.81,
+      "rank": 33,
+      "model": "Gemini 3.1 Pro",
+      "creator": "Google",
+      "sourceType": "Proprietary",
+      "overallScore": 64.41,
       "categoryScores": {
-        "agentic": 56.47,
-        "coding": 60.65,
-        "reasoning": 76,
-        "multimodalGrounded": 73.1,
-        "knowledge": 61.19,
+        "agentic": 40.9,
+        "coding": 39.13,
+        "reasoning": 58.2,
+        "multimodalGrounded": 81.1,
+        "knowledge": 66.43,
         "multilingual": null,
-        "instructionFollowing": null,
-        "math": null
+        "instructionFollowing": 90.3,
+        "math": 65
       },
-      "inputPrice": 0.14,
-      "outputPrice": 0.28,
+      "inputPrice": 2,
+      "outputPrice": 12,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 55.09,
-        "upper": 74.53,
+        "lower": 54.68,
+        "upper": 74.13,
         "scope": "source-pattern",
         "sourcePattern": "objective-and-preference",
         "patternCalibrationFamilies": 12,
@@ -1535,45 +1248,9 @@
         "simultaneousRosterCoverageValidated": false
       },
       "categoryRanks": {
-        "agentic": 43,
-        "coding": 21,
-        "knowledge": 47
-      },
-      "categoryEvidence": {
-        "agentic": "estimated",
-        "coding": "supported",
-        "knowledge": "estimated"
-      },
-      "methodologyVersion": "bench-align-v5.8-2026-09-30",
-      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
-    },
-    {
-      "rank": 41,
-      "model": "GPT-5.6 Luna",
-      "creator": "OpenAI",
-      "sourceType": "Proprietary",
-      "overallScore": 64.67,
-      "categoryScores": {
-        "agentic": 59.23,
-        "coding": 61.66,
-        "reasoning": 58.2,
-        "multimodalGrounded": 80,
-        "knowledge": 64.03,
-        "multilingual": null,
-        "instructionFollowing": null,
-        "math": 84
-      },
-      "inputPrice": 0.2,
-      "outputPrice": 1.2,
-      "evidenceStatus": "supported",
-      "interval90": {
-        "lower": 59.63,
-        "upper": 69.71
-      },
-      "categoryRanks": {
-        "agentic": 34,
-        "coding": 17,
-        "knowledge": 42
+        "agentic": 68,
+        "coding": 70,
+        "knowledge": 24
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -1584,13 +1261,13 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 42,
+      "rank": 34,
       "model": "dots3-note Preview",
       "creator": "Dots Studio",
       "sourceType": "Open Weight",
-      "overallScore": 64.46,
+      "overallScore": 64.32,
       "categoryScores": {
-        "agentic": 60.11,
+        "agentic": 60.64,
         "coding": null,
         "reasoning": 76.6,
         "multimodalGrounded": 79.9,
@@ -1603,8 +1280,8 @@
       "outputPrice": 0,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 50.11,
-        "upper": 78.8,
+        "lower": 49.97,
+        "upper": 78.67,
         "scope": "global-pool-pattern-unvalidated",
         "sourcePattern": "benchmark-only",
         "patternCalibrationFamilies": 4,
@@ -1614,7 +1291,7 @@
         "simultaneousRosterCoverageValidated": false
       },
       "categoryRanks": {
-        "agentic": 32,
+        "agentic": 28,
         "coding": null,
         "knowledge": null
       },
@@ -1627,32 +1304,32 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 43,
-      "model": "Grok 4.5",
-      "creator": "xAI",
+      "rank": 35,
+      "model": "Claude Sonnet 5",
+      "creator": "Anthropic",
       "sourceType": "Proprietary",
-      "overallScore": 63.59,
+      "overallScore": 64.25,
       "categoryScores": {
-        "agentic": 61.3,
-        "coding": 55.51,
-        "reasoning": 54.1,
-        "multimodalGrounded": 83.8,
-        "knowledge": 66.81,
+        "agentic": 66.37,
+        "coding": 57.45,
+        "reasoning": 81.3,
+        "multimodalGrounded": 80.6,
+        "knowledge": 64.26,
         "multilingual": null,
         "instructionFollowing": null,
-        "math": 62.9
+        "math": 69.4
       },
       "inputPrice": 2,
-      "outputPrice": 6,
+      "outputPrice": 10,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 58.22,
-        "upper": 68.95
+        "lower": 58.65,
+        "upper": 69.85
       },
       "categoryRanks": {
-        "agentic": 25,
-        "coding": 33,
-        "knowledge": 29
+        "agentic": 14,
+        "coding": 24,
+        "knowledge": 35
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -1663,57 +1340,50 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 44,
-      "model": "DeepSeek V4 Pro 0813",
-      "creator": "DeepSeek",
-      "sourceType": "Open Weight",
-      "overallScore": 63.36,
+      "rank": 36,
+      "model": "GPT-5.6 Luna",
+      "creator": "OpenAI",
+      "sourceType": "Proprietary",
+      "overallScore": 63.79,
       "categoryScores": {
-        "agentic": 53.38,
-        "coding": 47.5,
-        "reasoning": 60.7,
-        "multimodalGrounded": null,
-        "knowledge": 63.19,
+        "agentic": 59.22,
+        "coding": 61.72,
+        "reasoning": 58.2,
+        "multimodalGrounded": 80,
+        "knowledge": 63.4,
         "multilingual": null,
         "instructionFollowing": null,
-        "math": 87.4
+        "math": 84
       },
-      "inputPrice": 1.32,
-      "outputPrice": 3.96,
-      "evidenceStatus": "estimated",
+      "inputPrice": 0.2,
+      "outputPrice": 1.2,
+      "evidenceStatus": "supported",
       "interval90": {
-        "lower": 49.01,
-        "upper": 77.71,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-only",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
-        "validatedFutureTruth": false,
-        "coverageValidated": false,
-        "simultaneousRosterCoverageValidated": false
+        "lower": 58.05,
+        "upper": 69.53
       },
       "categoryRanks": {
-        "agentic": 47,
-        "coding": 52,
-        "knowledge": 43
+        "agentic": 31,
+        "coding": 17,
+        "knowledge": 39
       },
       "categoryEvidence": {
         "agentic": "supported",
         "coding": "supported",
-        "knowledge": "estimated"
+        "knowledge": "supported"
       },
       "methodologyVersion": "bench-align-v5.8-2026-09-30",
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 45,
+      "rank": 37,
       "model": "Sage-A1.5",
       "creator": "InternScience",
       "sourceType": "Open Weight",
-      "overallScore": 63.23,
+      "overallScore": 62.99,
       "categoryScores": {
-        "agentic": 58.24,
-        "coding": 54.38,
+        "agentic": 58.89,
+        "coding": 55.08,
         "reasoning": 80.6,
         "multimodalGrounded": null,
         "knowledge": null,
@@ -1725,8 +1395,8 @@
       "outputPrice": 0,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 48.88,
-        "upper": 77.58,
+        "lower": 48.64,
+        "upper": 77.34,
         "scope": "global-pool-pattern-unvalidated",
         "sourcePattern": "benchmark-only",
         "patternCalibrationFamilies": 4,
@@ -1736,8 +1406,8 @@
         "simultaneousRosterCoverageValidated": false
       },
       "categoryRanks": {
-        "agentic": 39,
-        "coding": 34,
+        "agentic": 33,
+        "coding": 32,
         "knowledge": null
       },
       "categoryEvidence": {
@@ -1749,32 +1419,32 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 46,
-      "model": "Gemini 3.6 Flash",
-      "creator": "Google",
+      "rank": 38,
+      "model": "Grok 4.5",
+      "creator": "xAI",
       "sourceType": "Proprietary",
-      "overallScore": 63.06,
+      "overallScore": 62.92,
       "categoryScores": {
-        "agentic": 52.29,
-        "coding": 51.35,
-        "reasoning": 67.6,
-        "multimodalGrounded": 87.9,
-        "knowledge": 64.78,
+        "agentic": 61.35,
+        "coding": 55.46,
+        "reasoning": 54.1,
+        "multimodalGrounded": 83.8,
+        "knowledge": 66.4,
         "multilingual": null,
         "instructionFollowing": null,
-        "math": 63.5
+        "math": 62.9
       },
-      "inputPrice": 0.75,
-      "outputPrice": 3.75,
+      "inputPrice": 2,
+      "outputPrice": 6,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 55.31,
-        "upper": 70.8
+        "lower": 57.37,
+        "upper": 68.47
       },
       "categoryRanks": {
-        "agentic": 49,
-        "coding": 44,
-        "knowledge": 37
+        "agentic": 22,
+        "coding": 28,
+        "knowledge": 25
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -1785,27 +1455,70 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 47,
-      "model": "Muse Spark Open",
-      "creator": "Meta",
-      "sourceType": "Open Weight",
-      "overallScore": 63.01,
+      "rank": 39,
+      "model": "GPT-5.3 Codex",
+      "creator": "OpenAI",
+      "sourceType": "Proprietary",
+      "overallScore": 62.78,
       "categoryScores": {
-        "agentic": 60.39,
-        "coding": 56.3,
-        "reasoning": 78.8,
-        "multimodalGrounded": 84.6,
-        "knowledge": 64.4,
+        "agentic": 56.95,
+        "coding": 53.5,
+        "reasoning": 82.2,
+        "multimodalGrounded": 81,
+        "knowledge": 64.28,
+        "multilingual": null,
+        "instructionFollowing": 92.6,
+        "math": null
+      },
+      "inputPrice": 1.75,
+      "outputPrice": 14,
+      "evidenceStatus": "estimated",
+      "interval90": {
+        "lower": 53.06,
+        "upper": 72.51,
+        "scope": "source-pattern",
+        "sourcePattern": "objective-and-preference",
+        "patternCalibrationFamilies": 12,
+        "patternIntervalAvailable": true,
+        "validatedFutureTruth": false,
+        "coverageValidated": false,
+        "simultaneousRosterCoverageValidated": false
+      },
+      "categoryRanks": {
+        "agentic": 38,
+        "coding": 35,
+        "knowledge": 34
+      },
+      "categoryEvidence": {
+        "agentic": "estimated",
+        "coding": "supported",
+        "knowledge": "estimated"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 40,
+      "model": "Muse Wonder",
+      "creator": "Meta",
+      "sourceType": "Proprietary",
+      "overallScore": 62.75,
+      "categoryScores": {
+        "agentic": null,
+        "coding": 65.71,
+        "reasoning": 80.4,
+        "multimodalGrounded": null,
+        "knowledge": 68.66,
         "multilingual": null,
         "instructionFollowing": null,
         "math": null
       },
-      "inputPrice": null,
-      "outputPrice": null,
+      "inputPrice": 4,
+      "outputPrice": 20,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 48.66,
-        "upper": 77.36,
+        "lower": 48.4,
+        "upper": 77.1,
         "scope": "source-pattern",
         "sourcePattern": "objective-only",
         "patternCalibrationFamilies": 12,
@@ -1815,9 +1528,203 @@
         "simultaneousRosterCoverageValidated": false
       },
       "categoryRanks": {
-        "agentic": 31,
-        "coding": 30,
-        "knowledge": 39
+        "agentic": null,
+        "coding": 12,
+        "knowledge": 19
+      },
+      "categoryEvidence": {
+        "agentic": null,
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 41,
+      "model": "DeepSeek V4 Pro 0813",
+      "creator": "DeepSeek",
+      "sourceType": "Open Weight",
+      "overallScore": 62.52,
+      "categoryScores": {
+        "agentic": 53.4,
+        "coding": 47.71,
+        "reasoning": 60.7,
+        "multimodalGrounded": null,
+        "knowledge": 62.9,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 87.4
+      },
+      "inputPrice": 1.32,
+      "outputPrice": 3.96,
+      "evidenceStatus": "estimated",
+      "interval90": {
+        "lower": 48.17,
+        "upper": 76.87,
+        "scope": "source-pattern",
+        "sourcePattern": "objective-only",
+        "patternCalibrationFamilies": 12,
+        "patternIntervalAvailable": true,
+        "validatedFutureTruth": false,
+        "coverageValidated": false,
+        "simultaneousRosterCoverageValidated": false
+      },
+      "categoryRanks": {
+        "agentic": 45,
+        "coding": 51,
+        "knowledge": 40
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "estimated"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 42,
+      "model": "Ornith-1.5-397B",
+      "creator": "Ornith AI",
+      "sourceType": "Open Weight",
+      "overallScore": 62.45,
+      "categoryScores": {
+        "agentic": 59.82,
+        "coding": 54.63,
+        "reasoning": null,
+        "multimodalGrounded": null,
+        "knowledge": 64.67,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": null
+      },
+      "inputPrice": 0,
+      "outputPrice": 0,
+      "evidenceStatus": "estimated",
+      "interval90": {
+        "lower": 48.1,
+        "upper": 76.8,
+        "scope": "global-pool-pattern-unvalidated",
+        "sourcePattern": "benchmark-only",
+        "patternCalibrationFamilies": 4,
+        "patternIntervalAvailable": false,
+        "validatedFutureTruth": false,
+        "coverageValidated": false,
+        "simultaneousRosterCoverageValidated": false
+      },
+      "categoryRanks": {
+        "agentic": 30,
+        "coding": 33,
+        "knowledge": 31
+      },
+      "categoryEvidence": {
+        "agentic": "estimated",
+        "coding": "estimated",
+        "knowledge": "estimated"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 43,
+      "model": "Gemini 3.6 Flash",
+      "creator": "Google",
+      "sourceType": "Proprietary",
+      "overallScore": 62.41,
+      "categoryScores": {
+        "agentic": 52.39,
+        "coding": 51.16,
+        "reasoning": 67.6,
+        "multimodalGrounded": 87.9,
+        "knowledge": 64.31,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 63.5
+      },
+      "inputPrice": 0.75,
+      "outputPrice": 3.75,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 54.17,
+        "upper": 70.66
+      },
+      "categoryRanks": {
+        "agentic": 48,
+        "coding": 42,
+        "knowledge": 33
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 44,
+      "model": "Qwen3.7 Max",
+      "creator": "Alibaba",
+      "sourceType": "Proprietary",
+      "overallScore": 62.33,
+      "categoryScores": {
+        "agentic": 41.35,
+        "coding": 44.56,
+        "reasoning": 81.4,
+        "multimodalGrounded": null,
+        "knowledge": 59.7,
+        "multilingual": 100,
+        "instructionFollowing": 92.8,
+        "math": 79
+      },
+      "inputPrice": null,
+      "outputPrice": null,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 51.94,
+        "upper": 72.72
+      },
+      "categoryRanks": {
+        "agentic": 66,
+        "coding": 58,
+        "knowledge": 47
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "supported"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 45,
+      "model": "GPT-6 Luna",
+      "creator": "OpenAI",
+      "sourceType": "Proprietary",
+      "overallScore": 62.14,
+      "categoryScores": {
+        "agentic": 53.73,
+        "coding": 51.39,
+        "reasoning": 59.2,
+        "multimodalGrounded": 82.8,
+        "knowledge": 62.75,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 83.7
+      },
+      "inputPrice": 0.1,
+      "outputPrice": 0.5,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 51,
+        "upper": 73.28
+      },
+      "categoryRanks": {
+        "agentic": 44,
+        "coding": 41,
+        "knowledge": 41
       },
       "categoryEvidence": {
         "agentic": "estimated",
@@ -1828,39 +1735,111 @@
       "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
     },
     {
-      "rank": 48,
-      "model": "Qwen3.8-Flash-Next",
-      "creator": "Alibaba",
-      "sourceType": "Open Weight",
-      "overallScore": 62.99,
+      "rank": 46,
+      "model": "Claude Opus 4.6",
+      "creator": "Anthropic",
+      "sourceType": "Proprietary",
+      "overallScore": 61.82,
       "categoryScores": {
-        "agentic": 64.95,
-        "coding": 51.92,
-        "reasoning": 79.8,
-        "multimodalGrounded": 86.1,
-        "knowledge": 59.3,
+        "agentic": 46.46,
+        "coding": 46.13,
+        "reasoning": 51.2,
+        "multimodalGrounded": 74.9,
+        "knowledge": 58.65,
         "multilingual": null,
-        "instructionFollowing": 91.2,
+        "instructionFollowing": 52.4,
+        "math": 69.1
+      },
+      "inputPrice": 5,
+      "outputPrice": 25,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 48.97,
+        "upper": 74.68
+      },
+      "categoryRanks": {
+        "agentic": 54,
+        "coding": 55,
+        "knowledge": 52
+      },
+      "categoryEvidence": {
+        "agentic": "supported",
+        "coding": "supported",
+        "knowledge": "estimated"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 47,
+      "model": "Hy4 preview",
+      "creator": "Tencent",
+      "sourceType": "Open Weight",
+      "overallScore": 61.47,
+      "categoryScores": {
+        "agentic": 57.18,
+        "coding": 56.33,
+        "reasoning": null,
+        "multimodalGrounded": 86.7,
+        "knowledge": 64.24,
+        "multilingual": null,
+        "instructionFollowing": null,
         "math": null
       },
       "inputPrice": 0,
       "outputPrice": 0,
       "evidenceStatus": "estimated",
       "interval90": {
-        "lower": 48.64,
-        "upper": 77.34,
-        "scope": "source-pattern",
-        "sourcePattern": "objective-only",
-        "patternCalibrationFamilies": 12,
-        "patternIntervalAvailable": true,
+        "lower": 47.12,
+        "upper": 75.82,
+        "scope": "global-pool-pattern-unvalidated",
+        "sourcePattern": "benchmark-only",
+        "patternCalibrationFamilies": 4,
+        "patternIntervalAvailable": false,
         "validatedFutureTruth": false,
         "coverageValidated": false,
         "simultaneousRosterCoverageValidated": false
       },
       "categoryRanks": {
-        "agentic": 19,
-        "coding": 43,
-        "knowledge": 53
+        "agentic": 36,
+        "coding": 26,
+        "knowledge": 36
+      },
+      "categoryEvidence": {
+        "agentic": "estimated",
+        "coding": "supported",
+        "knowledge": "estimated"
+      },
+      "methodologyVersion": "bench-align-v5.8-2026-09-30",
+      "orderingMeaning": "Point-estimate order; conditional ranges do not establish rank confidence."
+    },
+    {
+      "rank": 48,
+      "model": "Gemini 3.5 Flash",
+      "creator": "Google",
+      "sourceType": "Proprietary",
+      "overallScore": 61.4,
+      "categoryScores": {
+        "agentic": 51.92,
+        "coding": 50.34,
+        "reasoning": 70.9,
+        "multimodalGrounded": 87.4,
+        "knowledge": 65.06,
+        "multilingual": null,
+        "instructionFollowing": 87.7,
+        "math": 67.1
+      },
+      "inputPrice": 1.5,
+      "outputPrice": 9,
+      "evidenceStatus": "supported",
+      "interval90": {
+        "lower": 52.56,
+        "upper": 70.23
+      },
+      "categoryRanks": {
+        "agentic": 49,
+        "coding": 45,
+        "knowledge": 29
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -1872,31 +1851,31 @@
     },
     {
       "rank": 49,
-      "model": "Qwen3.7 Max",
-      "creator": "Alibaba",
-      "sourceType": "Proprietary",
-      "overallScore": 62.72,
+      "model": "GLM-5.3",
+      "creator": "Z.AI",
+      "sourceType": "Open Weight",
+      "overallScore": 61.03,
       "categoryScores": {
-        "agentic": 41.39,
-        "coding": 44.5,
-        "reasoning": 81.4,
+        "agentic": 69.94,
+        "coding": 55.35,
+        "reasoning": 79.8,
         "multimodalGrounded": null,
-        "knowledge": 60.84,
-        "multilingual": 100,
-        "instructionFollowing": 92.8,
-        "math": 79
+        "knowledge": 58.88,
+        "multilingual": null,
+        "instructionFollowing": null,
+        "math": 71.5
       },
-      "inputPrice": null,
-      "outputPrice": null,
+      "inputPrice": 0,
+      "outputPrice": 0,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 53,
-        "upper": 72.44
+        "lower": 51.18,
+        "upper": 70.88
       },
       "categoryRanks": {
-        "agentic": 66,
-        "coding": 57,
-        "knowledge": 48
+        "agentic": 10,
+        "coding": 29,
+        "knowledge": 50
       },
       "categoryEvidence": {
         "agentic": "supported",
@@ -1908,35 +1887,35 @@
     },
     {
       "rank": 50,
-      "model": "Claude Opus 4.6",
-      "creator": "Anthropic",
+      "model": "Gemini 3 Pro",
+      "creator": "Google",
       "sourceType": "Proprietary",
-      "overallScore": 62.51,
+      "overallScore": 60.68,
       "categoryScores": {
-        "agentic": 46.14,
-        "coding": 46.62,
-        "reasoning": 51.2,
-        "multimodalGrounded": 74.9,
-        "knowledge": 59.06,
+        "agentic": null,
+        "coding": 43.62,
+        "reasoning": 50.1,
+        "multimodalGrounded": 79.8,
+        "knowledge": 60.26,
         "multilingual": null,
-        "instructionFollowing": 52.4,
-        "math": 69.1
+        "instructionFollowing": 86.1,
+        "math": null
       },
-      "inputPrice": 5,
-      "outputPrice": 25,
+      "inputPrice": 2,
+      "outputPrice": 12,
       "evidenceStatus": "supported",
       "interval90": {
-        "lower": 50.33,
-        "upper": 74.69
+        "lower": 49.18,
+        "upper": 72.17
       },
       "categoryRanks": {
-        "agentic": 57,
-        "coding": 54,
-        "knowledge": 54
+        "agentic": null,
+        "coding": 60,
+        "knowledge": 44
       },
       "categoryEvidence": {
-        "agentic": "supported",
-        "coding": "supported",
+        "agentic": null,
+        "coding": "estimated",
         "knowledge": "estimated"
       },
       "methodologyVersion": "bench-align-v5.8-2026-09-30",
