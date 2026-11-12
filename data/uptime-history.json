@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T08:02:27.160Z",
+  "updatedAt": "2026-11-12T08:02:27.028Z",
   "days": {
     "openrouter/dots-studio/dots-3-note-preview:free": [
       {
@@ -36,6 +36,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 3012
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 834
       }
     ],
     "nvidia/nemotron-3-ultra-550b-a55b": [
@@ -73,6 +78,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 1953
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 818
       }
     ],
     "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free": [
@@ -110,6 +120,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 326
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 299
       }
     ],
     "openrouter/google/gemma-4-26b-a4b-it:free": [
@@ -147,6 +162,11 @@
         "timestamp": 1794384147160,
         "status": "rate-limited",
         "responseTimeMs": 147
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "rate-limited",
+        "responseTimeMs": 172
       }
     ],
     "nvidia/nemotron-3-super-120b-a12b": [
@@ -196,6 +216,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 177
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 1497
       }
     ],
     "nvidia/nemotron-3.5-lightning-30b-a3b": [
@@ -233,6 +258,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 154
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 164
       }
     ],
     "openrouter/nvidia/nemotron-3.5-lightning:free": [
@@ -270,6 +300,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 82
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 90
       }
     ],
     "openai/gpt-oss-20b": [
@@ -307,6 +342,11 @@
         "timestamp": 1794384147160,
         "status": "timeout",
         "responseTimeMs": 8002
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "timeout",
+        "responseTimeMs": 8003
       }
     ],
     "mistralai/mistral-large-2-instruct": [
@@ -356,6 +396,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 263
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 227
       }
     ],
     "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": [
@@ -393,6 +438,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 99
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 92
       }
     ],
     "openrouter/liquid/lfm-2.5-2.6b:free": [
@@ -430,6 +480,11 @@
         "timestamp": 1794384147160,
         "status": "timeout",
         "responseTimeMs": 15002
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "slow",
+        "responseTimeMs": 5591
       }
     ],
     "bigcode/starcoder2-15b": [
@@ -558,6 +613,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 4761
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 1487
       }
     ],
     "microsoft/phi-3-vision-128k-instruct": [
@@ -633,6 +693,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 105
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 109
       }
     ],
     "openrouter/nvidia/nemotron-3.5-super-vl:free": [
@@ -670,6 +735,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 217
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 284
       }
     ],
     "nvidia/nemotron-3.5-super-vl-120b-a12b": [
@@ -707,6 +777,11 @@
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 343
+      },
+      {
+        "timestamp": 1794470547028,
+        "status": "working",
+        "responseTimeMs": 317
       }
     ]
   }
