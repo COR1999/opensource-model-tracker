@@ -1,0 +1,217 @@
+{
+  "date": "2026-11-13",
+  "timestamp": 1794556946908,
+  "durationMs": 28486,
+  "discoveredTotal": 110,
+  "scopedTotal": 25,
+  "skippedRemoved": 2,
+  "testedTotal": 25,
+  "working": 11,
+  "slow": 2,
+  "rateLimited": 0,
+  "down": 1,
+  "removed": 11,
+  "results": [
+    {
+      "modelId": "openrouter/dots-studio/dots-3-note-preview:free",
+      "provider": "openrouter",
+      "status": "slow",
+      "httpCode": 200,
+      "responseTimeMs": 8645,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 301,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/google/gemma-4-26b-a4b-it:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 505,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/cohere/north-mini-code:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 209,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-lightning:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 90,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 229,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/liquid/lfm-2.5-2.6b:free",
+      "provider": "openrouter",
+      "status": "slow",
+      "httpCode": 200,
+      "responseTimeMs": 14126,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-super-vl:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 240,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 1225,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 74,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 1501,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openai/gpt-oss-20b",
+      "provider": "nvidia",
+      "status": "timeout",
+      "httpCode": 0,
+      "responseTimeMs": 8003,
+      "supportsFunctionCalling": false,
+      "error": "This operation was aborted"
+    },
+    {
+      "modelId": "mistralai/mistral-large-2-instruct",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 72,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 239,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 2881,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "bigcode/starcoder2-15b",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 49,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "deepseek-ai/deepseek-coder-6.7b-instruct",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 61,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "google/codegemma-1.1-7b",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 59,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "google/codegemma-7b",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 56,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "ibm/granite-34b-code-instruct",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 53,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "ibm/granite-8b-code-instruct",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 42,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "meta/codellama-70b",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 53,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "meta/llama-3.2-90b-vision-instruct",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 2564,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "microsoft/phi-3-vision-128k-instruct",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 57,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "mistralai/codestral-22b-instruct-v0.1",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 49,
+      "supportsFunctionCalling": false
+    }
+  ]
+}
