@@ -1,0 +1,139 @@
+{
+  "date": "2026-11-16",
+  "timestamp": 1794816147092,
+  "durationMs": 16213,
+  "discoveredTotal": 66,
+  "scopedTotal": 15,
+  "skippedRemoved": 0,
+  "testedTotal": 15,
+  "working": 10,
+  "slow": 1,
+  "rateLimited": 1,
+  "down": 2,
+  "removed": 1,
+  "results": [
+    {
+      "modelId": "openrouter/dots-studio/dots-3-note-preview:free",
+      "provider": "openrouter",
+      "status": "slow",
+      "httpCode": 200,
+      "responseTimeMs": 6967,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 288,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/google/gemma-4-26b-a4b-it:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 72,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemma-4-26b-a4b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to u"
+    },
+    {
+      "modelId": "openrouter/cohere/north-mini-code:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 345,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-lightning:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 98,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 85,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-super-vl:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 248,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 667,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 167,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openai/gpt-oss-20b",
+      "provider": "nvidia",
+      "status": "timeout",
+      "httpCode": 0,
+      "responseTimeMs": 8003,
+      "supportsFunctionCalling": false,
+      "error": "This operation was aborted"
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 191,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 305,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "bigcode/starcoder2-15b",
+      "provider": "nvidia",
+      "status": "removed",
+      "httpCode": 404,
+      "responseTimeMs": 47,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "meta/llama-3.2-90b-vision-instruct",
+      "provider": "nvidia",
+      "status": "timeout",
+      "httpCode": 0,
+      "responseTimeMs": 8003,
+      "supportsFunctionCalling": false,
+      "error": "This operation was aborted"
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 1640,
+      "supportsFunctionCalling": false
+    }
+  ]
+}
