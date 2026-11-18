@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-18",
+  "timestamp": 1794988946968,
+  "durationMs": 11144,
+  "discoveredTotal": 57,
+  "scopedTotal": 12,
+  "skippedRemoved": 1,
+  "testedTotal": 12,
+  "working": 11,
+  "slow": 0,
+  "rateLimited": 1,
+  "down": 0,
+  "removed": 0,
+  "results": [
+    {
+      "modelId": "openrouter/dots-studio/dots-3-note-preview:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 1415,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 602,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/google/gemma-4-26b-a4b-it:free",
+      "provider": "openrouter",
+      "status": "rate-limited",
+      "httpCode": 429,
+      "responseTimeMs": 57,
+      "supportsFunctionCalling": false,
+      "error": "{\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemma-4-26b-a4b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to u"
+    },
+    {
+      "modelId": "openrouter/cohere/north-mini-code:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 248,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-lightning:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 243,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 241,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "openrouter/nvidia/nemotron-3.5-super-vl:free",
+      "provider": "openrouter",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 749,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 500,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 167,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 217,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 839,
+      "supportsFunctionCalling": false
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1",
+      "provider": "nvidia",
+      "status": "working",
+      "httpCode": 200,
+      "responseTimeMs": 129,
+      "supportsFunctionCalling": false
+    }
+  ]
+}
