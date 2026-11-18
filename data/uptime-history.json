@@ -1,12 +1,7 @@
 {
-  "updatedAt": "2026-11-17T08:02:26.938Z",
+  "updatedAt": "2026-11-18T08:02:26.968Z",
   "days": {
     "openrouter/dots-studio/dots-3-note-preview:free": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 1353
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -41,14 +36,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 1741
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 1415
       }
     ],
     "nvidia/nemotron-3-ultra-550b-a55b": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 1762
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -83,14 +78,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 385
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 500
       }
     ],
     "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 392
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -125,14 +120,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 439
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 602
       }
     ],
     "openrouter/google/gemma-4-26b-a4b-it:free": [
-      {
-        "timestamp": 1794297747128,
-        "status": "rate-limited",
-        "responseTimeMs": 171
-      },
       {
         "timestamp": 1794384147160,
         "status": "rate-limited",
@@ -167,6 +162,11 @@
         "timestamp": 1794902546938,
         "status": "rate-limited",
         "responseTimeMs": 96
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "rate-limited",
+        "responseTimeMs": 57
       }
     ],
     "nvidia/nemotron-3-super-120b-a12b": [
@@ -177,11 +177,6 @@
       }
     ],
     "openrouter/cohere/north-mini-code:free": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 2691
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -216,14 +211,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 208
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 248
       }
     ],
     "nvidia/nemotron-3.5-lightning-30b-a3b": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 702
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -258,14 +253,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 164
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 167
       }
     ],
     "openrouter/nvidia/nemotron-3.5-lightning:free": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 123
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -300,14 +295,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 184
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 243
       }
     ],
     "openai/gpt-oss-20b": [
-      {
-        "timestamp": 1794297747128,
-        "status": "timeout",
-        "responseTimeMs": 8001
-      },
       {
         "timestamp": 1794384147160,
         "status": "timeout",
@@ -353,11 +348,6 @@
     ],
     "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": [
       {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 268
-      },
-      {
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 263
@@ -391,14 +381,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 186
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 217
       }
     ],
     "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 178
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -433,14 +423,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 218
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 241
       }
     ],
     "openrouter/liquid/lfm-2.5-2.6b:free": [
-      {
-        "timestamp": 1794297747128,
-        "status": "slow",
-        "responseTimeMs": 5540
-      },
       {
         "timestamp": 1794384147160,
         "status": "timeout",
@@ -513,11 +503,6 @@
     ],
     "meta/llama-3.2-90b-vision-instruct": [
       {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 4164
-      },
-      {
         "timestamp": 1794384147160,
         "status": "working",
         "responseTimeMs": 4761
@@ -564,11 +549,6 @@
     ],
     "nvidia/llama-3.1-nemotron-ultra-253b-v1": [
       {
-        "timestamp": 1794297747128,
-        "status": "removed",
-        "responseTimeMs": 81
-      },
-      {
         "timestamp": 1794643346985,
         "status": "removed",
         "responseTimeMs": 88
@@ -576,22 +556,12 @@
     ],
     "nvidia/neva-22b": [
       {
-        "timestamp": 1794297747128,
-        "status": "removed",
-        "responseTimeMs": 81
-      },
-      {
         "timestamp": 1794643346985,
         "status": "removed",
         "responseTimeMs": 83
       }
     ],
     "poolside/laguna-xs-2.1": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 88
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -621,14 +591,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 130
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 129
       }
     ],
     "openrouter/nvidia/nemotron-3.5-super-vl:free": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 334
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -663,14 +633,14 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 802
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 749
       }
     ],
     "nvidia/nemotron-3.5-super-vl-120b-a12b": [
-      {
-        "timestamp": 1794297747128,
-        "status": "working",
-        "responseTimeMs": 329
-      },
       {
         "timestamp": 1794384147160,
         "status": "working",
@@ -705,6 +675,11 @@
         "timestamp": 1794902546938,
         "status": "working",
         "responseTimeMs": 275
+      },
+      {
+        "timestamp": 1794988946968,
+        "status": "working",
+        "responseTimeMs": 839
       }
     ]
   }
